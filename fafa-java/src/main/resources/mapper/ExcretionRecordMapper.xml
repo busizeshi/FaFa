@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fafa.infrastructure.persistence.mapper.ExcretionRecordMapper">
+    
+    <select id="countByPetIdAndTypeAndDateRange" resultType="int">
+        SELECT COUNT(*)
+        FROM excretion_record
+        WHERE pet_id = #{petId}
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+        <if test="startDate != null">
+            AND DATE(excretion_time) >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND DATE(excretion_time) &lt;= #{endDate}
+        </if>
+    </select>
+    
+</mapper>

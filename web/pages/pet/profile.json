@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "宠物资料",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#0F1117",
+  "enableShareAppMessage": true,
+  "enableShareTimeline": true
+}

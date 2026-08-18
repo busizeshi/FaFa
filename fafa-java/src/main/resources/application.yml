@@ -111,6 +111,12 @@ logging:
     max-history: 30
     total-size-cap: 10GB
 
+# 微信小程序配置
+wechat:
+  miniapp:
+    appid: ${WECHAT_APPID:your_appid}
+    secret: ${WECHAT_SECRET:your_secret}
+
 # 应用配置
 fafa:
   # Python AI 服务地址

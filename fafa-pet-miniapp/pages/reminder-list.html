@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>提醒中心</title>
+    <style id="theme-vars">
+/* ============================================
+   FaFa Pet Life Assistant - Brand CSS
+   Warm Earth Tones · Terracotta Orange · Cream
+   ============================================ */
+
+:root,
+html.light {
+  --fafa-primary-50: #FAF0EB;
+  --fafa-primary-100: #F5E0D5;
+  --fafa-primary-200: #EDC5B0;
+  --fafa-primary-300: #E0A585;
+  --fafa-primary-400: #D38057;
+  --fafa-primary-500: #C4612F;
+  --fafa-primary-600: #A85228;
+  --fafa-primary-700: #8B4221;
+  --fafa-primary-800: #6E331A;
+  --fafa-primary-900: #522513;
+  --fafa-primary-950: #3B180D;
+  --fafa-primary-foreground: #FFFFFF;
+
+  --fafa-neutral-0: #FFFFFF;
+  --fafa-neutral-50: #FBF9F5;
+  --fafa-neutral-100: #F7F4EF;
+  --fafa-neutral-200: #EFEAE1;
+  --fafa-neutral-300: #E7E1D7;
+  --fafa-neutral-400: #D4CDC0;
+  --fafa-neutral-500: #B8B0A3;
+  --fafa-neutral-600: #9A9185;
+  --fafa-neutral-700: #7C7367;
+  --fafa-neutral-800: #5C635D;
+  --fafa-neutral-900: #3D3D3A;
+  --fafa-neutral-950: #1F2421;
+
+  --state-success: #5B8C5A;
+  --state-warning: #D49B3A;
+  --state-error: #C44A3F;
+  --state-info: #5A8EAD;
+
+  --fafa-background: var(--fafa-neutral-100);
+  --fafa-foreground: var(--fafa-neutral-950);
+  --fafa-card: #FFFFFF;
+  --fafa-card-foreground: var(--fafa-neutral-950);
+  --fafa-popover: #FFFFFF;
+  --fafa-popover-foreground: var(--fafa-neutral-950);
+  --fafa-primary: var(--fafa-primary-500);
+  --fafa-primary-foreground: #FFFFFF;
+  --fafa-muted: var(--fafa-neutral-50);
+  --fafa-muted-foreground: var(--fafa-neutral-800);
+  --fafa-border: var(--fafa-neutral-300);
+  --fafa-input: var(--fafa-neutral-300);
+  --fafa-ring: var(--fafa-primary-500);
+  --fafa-secondary: var(--fafa-neutral-200);
+  --fafa-secondary-foreground: var(--fafa-neutral-950);
+  --fafa-accent: var(--fafa-primary-50);
+  --fafa-accent-foreground: var(--fafa-primary-700);
+
+  --fafa-radius-sm: 4px;
+  --fafa-radius-md: 8px;
+  --fafa-radius-lg: 16px;
+  --fafa-radius-full: 9999px;
+
+  --fafa-font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --fafa-font-display: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", -apple-system, sans-serif;
+
+  --shadow-card: 0 2px 8px rgba(31, 36, 33, 0.04);
+  --shadow-hover: 0 4px 12px rgba(31, 36, 33, 0.06);
+  --shadow-popover: 0 8px 24px rgba(31, 36, 33, 0.10);
+}
+
+body {
+  font-family: var(--fafa-font-sans);
+  background-color: var(--fafa-background);
+  color: var(--fafa-foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.card-surface {
+  background-color: var(--fafa-card);
+  border-radius: var(--fafa-radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.ai-element {
+  border: 1.5px dashed var(--fafa-primary-200);
+  background-color: var(--fafa-primary-50);
+  border-radius: var(--fafa-radius-lg);
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--fafa-radius-full);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+</head>
+<body style="background-color:var(--fafa-background); font-family:var(--fafa-font-sans); color:var(--fafa-foreground); max-width:414px; margin:0 auto; min-height:100vh; padding-bottom:80px;">
+
+    <!-- Sticky Header -->
+    <header style="position:sticky;top:0;z-index:30;background-color:var(--fafa-neutral-100);padding:12px 16px;display:flex;align-items:center;gap:12px;">
+        <button data-dom-id="back-mine" type="button" aria-label="返回" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;color:var(--fafa-neutral-950);background:transparent;border:none;cursor:pointer;padding:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <h1 style="font-size:18px;font-weight:700;margin:0;color:var(--fafa-neutral-950);">提醒中心</h1>
+    </header>
+
+    <!-- View Toggle: Segmented Control -->
+    <div style="display:flex;background-color:var(--fafa-neutral-200);border-radius:9999px;padding:3px;margin:8px 16px 0;">
+        <button data-dom-id="view-list" type="button" style="flex:1;padding:7px 0;border:none;border-radius:9999px;background-color:var(--fafa-neutral-0);font-size:13px;font-weight:600;color:var(--fafa-primary-500);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;gap:6px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            列表视图
+        </button>
+        <button data-dom-id="view-calendar" type="button" style="flex:1;padding:7px 0;border:none;border-radius:9999px;background:transparent;font-size:13px;font-weight:500;color:var(--fafa-neutral-600);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            日历视图
+        </button>
+    </div>
+
+    <!-- Type Filter: Horizontal Scrollable Pills -->
+    <div class="no-scrollbar" style="display:flex;gap:8px;overflow-x:auto;padding:12px 16px 4px;">
+        <button data-dom-id="filter-all" type="button" class="tag-pill" style="white-space:nowrap;background-color:var(--fafa-primary-500);color:#fff;padding:6px 14px;border:none;cursor:pointer;font-size:13px;">全部</button>
+        <button data-dom-id="filter-vaccine" type="button" class="tag-pill" style="white-space:nowrap;background-color:var(--fafa-neutral-0);color:var(--fafa-neutral-700);padding:6px 14px;border:1px solid var(--fafa-neutral-300);cursor:pointer;font-size:13px;">疫苗</button>
+        <button data-dom-id="filter-deworming" type="button" class="tag-pill" style="white-space:nowrap;background-color:var(--fafa-neutral-0);color:var(--fafa-neutral-700);padding:6px 14px;border:1px solid var(--fafa-neutral-300);cursor:pointer;font-size:13px;">驱虫</button>
+        <button data-dom-id="filter-bath" type="button" class="tag-pill" style="white-space:nowrap;background-color:var(--fafa-neutral-0);color:var(--fafa-neutral-700);padding:6px 14px;border:1px solid var(--fafa-neutral-300);cursor:pointer;font-size:13px;">洗澡</button>
+        <button data-dom-id="filter-nail" type="button" class="tag-pill" style="white-space:nowrap;background-color:var(--fafa-neutral-0);color:var(--fafa-neutral-700);padding:6px 14px;border:1px solid var(--fafa-neutral-300);cursor:pointer;font-size:13px;">剪指甲</button>
+        <button data-dom-id="filter-checkup" type="button" class="tag-pill" style="white-space:nowrap;background-color:var(--fafa-neutral-0);color:var(--fafa-neutral-700);padding:6px 14px;border:1px solid var(--fafa-neutral-300);cursor:pointer;font-size:13px;">体检</button>
+        <button data-dom-id="filter-medicine" type="button" class="tag-pill" style="white-space:nowrap;background-color:var(--fafa-neutral-0);color:var(--fafa-neutral-700);padding:6px 14px;border:1px solid var(--fafa-neutral-300);cursor:pointer;font-size:13px;">药物</button>
+        <button data-dom-id="filter-birthday" type="button" class="tag-pill" style="white-space:nowrap;background-color:var(--fafa-neutral-0);color:var(--fafa-neutral-700);padding:6px 14px;border:1px solid var(--fafa-neutral-300);cursor:pointer;font-size:13px;">生日</button>
+        <button data-dom-id="filter-custom" type="button" class="tag-pill" style="white-space:nowrap;background-color:var(--fafa-neutral-0);color:var(--fafa-neutral-700);padding:6px 14px;border:1px solid var(--fafa-neutral-300);cursor:pointer;font-size:13px;">自定义</button>
+    </div>
+
+    <!-- Content -->
+    <div style="padding:12px 16px 0;">
+
+        <!-- 待办 Section -->
+        <section style="margin-bottom:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <span style="font-size:15px;font-weight:700;color:var(--fafa-neutral-950);">待办</span>
+                    <span class="tag-pill" style="background-color:var(--fafa-primary-50);color:var(--fafa-primary-600);">3</span>
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;">
+
+                <!-- Reminder 1: 体内驱虫 -->
+                <div data-dom-id="reminder-1" class="card-surface" style="padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;">
+                    <div style="width:44px;height:44px;border-radius:12px;background-color:var(--fafa-primary-50);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">💊</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:15px;font-weight:600;color:var(--fafa-neutral-950);">体内驱虫</div>
+                        <div style="font-size:12px;color:var(--fafa-neutral-500);margin-top:2px;">每3个月 · 2026年8月20日到期</div>
+                        <div style="margin-top:6px;">
+                            <span class="tag-pill" style="background-color:var(--fafa-neutral-100);color:var(--fafa-neutral-700);">豆包</span>
+                        </div>
+                    </div>
+                    <button data-dom-id="complete-1" type="button" class="tag-pill" style="background-color:var(--fafa-primary-500);color:#fff;border:none;cursor:pointer;padding:6px 14px;white-space:nowrap;font-size:13px;">已完成</button>
+                </div>
+
+                <!-- Reminder 2: 剪指甲 -->
+                <div data-dom-id="reminder-2" class="card-surface" style="padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;">
+                    <div style="width:44px;height:44px;border-radius:12px;background-color:var(--fafa-primary-50);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">✂️</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:15px;font-weight:600;color:var(--fafa-neutral-950);">剪指甲</div>
+                        <div style="font-size:12px;color:var(--fafa-neutral-500);margin-top:2px;">每月 · 2026年8月25日到期</div>
+                        <div style="margin-top:6px;">
+                            <span class="tag-pill" style="background-color:var(--fafa-neutral-100);color:var(--fafa-neutral-700);">豆包</span>
+                        </div>
+                    </div>
+                    <button data-dom-id="complete-2" type="button" class="tag-pill" style="background-color:var(--fafa-primary-500);color:#fff;border:none;cursor:pointer;padding:6px 14px;white-space:nowrap;font-size:13px;">已完成</button>
+                </div>
+
+                <!-- Reminder 3: 豆包生日 -->
+                <div data-dom-id="reminder-3" class="card-surface" style="padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;">
+                    <div style="width:44px;height:44px;border-radius:12px;background-color:var(--fafa-primary-50);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🎂</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:15px;font-weight:600;color:var(--fafa-neutral-950);">豆包生日</div>
+                        <div style="font-size:12px;color:var(--fafa-neutral-500);margin-top:2px;">每年 · 2026年9月15日</div>
+                        <div style="margin-top:6px;">
+                            <span class="tag-pill" style="background-color:var(--fafa-neutral-100);color:var(--fafa-neutral-700);">豆包</span>
+                        </div>
+                    </div>
+                    <button data-dom-id="complete-3" type="button" class="tag-pill" style="background-color:var(--fafa-primary-500);color:#fff;border:none;cursor:pointer;padding:6px 14px;white-space:nowrap;font-size:13px;">已完成</button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 已完成 Section (Collapsed) -->
+        <section style="margin-bottom:20px;">
+            <button data-dom-id="toggle-done" type="button" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:transparent;border:none;cursor:pointer;padding:0;margin-bottom:0;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <span style="font-size:15px;font-weight:700;color:var(--fafa-neutral-950);">已完成</span>
+                    <span class="tag-pill" style="background-color:var(--fafa-neutral-200);color:var(--fafa-neutral-700);">2</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--fafa-neutral-500)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+
+            <!-- Collapsed content (hidden by default, shown for structure reference) -->
+            <div style="display:none;flex-direction:column;gap:10px;margin-top:12px;">
+                <!-- Done Reminder 1: 洗澡 -->
+                <div data-dom-id="reminder-done-1" class="card-surface" style="padding:14px;display:flex;align-items:center;gap:12px;opacity:0.65;">
+                    <div style="width:44px;height:44px;border-radius:12px;background-color:var(--fafa-neutral-100);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🛁</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:15px;font-weight:600;color:var(--fafa-neutral-700);text-decoration:line-through;">洗澡</div>
+                        <div style="font-size:12px;color:var(--fafa-neutral-500);margin-top:2px;">2026年8月14日已完成</div>
+                        <div style="margin-top:6px;">
+                            <span class="tag-pill" style="background-color:rgba(91,140,90,0.12);color:var(--state-success);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;"><path d="M20 6 9 17l-5-5"/></svg>
+                                已完成
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Done Reminder 2: 疫苗 -->
+                <div data-dom-id="reminder-done-2" class="card-surface" style="padding:14px;display:flex;align-items:center;gap:12px;opacity:0.65;">
+                    <div style="width:44px;height:44px;border-radius:12px;background-color:var(--fafa-neutral-100);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">💉</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:15px;font-weight:600;color:var(--fafa-neutral-700);text-decoration:line-through;">疫苗</div>
+                        <div style="font-size:12px;color:var(--fafa-neutral-500);margin-top:2px;">2026年7月20日已完成</div>
+                        <div style="margin-top:6px;">
+                            <span class="tag-pill" style="background-color:rgba(91,140,90,0.12);color:var(--state-success);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;"><path d="M20 6 9 17l-5-5"/></svg>
+                                已完成
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Floating Add Button -->
+    <button data-dom-id="add-reminder" type="button" aria-label="添加提醒" style="position:fixed;bottom:24px;right:calc(50% - 191px);width:56px;height:56px;border-radius:9999px;background-color:var(--fafa-primary-500);border:none;cursor:pointer;box-shadow:0 4px 16px rgba(196,97,47,0.30);display:flex;align-items:center;justify-content:center;z-index:50;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+
+</body>
+</html>

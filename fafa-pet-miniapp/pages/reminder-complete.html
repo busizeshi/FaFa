@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>完成提醒</title>
+  <style id="theme-vars">
+    :root, html.light {
+      --fafa-primary-50:#FAF0EB; --fafa-primary-100:#F5E0D5; --fafa-primary-200:#EDC5B0; --fafa-primary-300:#E0A585; --fafa-primary-400:#D38057; --fafa-primary-500:#C4612F; --fafa-primary-600:#A85228; --fafa-primary-700:#8B4221; --fafa-primary-foreground:#FFFFFF;
+      --fafa-neutral-0:#FFFFFF; --fafa-neutral-50:#FBF9F5; --fafa-neutral-100:#F7F4EF; --fafa-neutral-200:#EFEAE1; --fafa-neutral-300:#E7E1D7; --fafa-neutral-400:#D4CDC0; --fafa-neutral-500:#B8B0A3; --fafa-neutral-600:#9A9185; --fafa-neutral-700:#7C7367; --fafa-neutral-800:#5C635D; --fafa-neutral-900:#3D3D3A; --fafa-neutral-950:#1F2421;
+      --state-success:#5B8C5A; --state-warning:#D49B3A; --state-error:#C44A3F; --state-info:#5A8EAD;
+      --fafa-background:var(--fafa-neutral-100); --fafa-foreground:var(--fafa-neutral-950); --fafa-card:#FFFFFF; --fafa-border:var(--fafa-neutral-300);
+      --fafa-radius-sm:4px; --fafa-radius-md:8px; --fafa-radius-lg:16px; --fafa-radius-full:9999px;
+      --fafa-font-sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",-apple-system,sans-serif;
+      --shadow-card:0 2px 8px rgba(31,36,33,0.04); --shadow-hover:0 4px 12px rgba(31,36,33,0.06); --shadow-popover:0 8px 24px rgba(31,36,33,0.10);
+    }
+    body { font-family:var(--fafa-font-sans); background-color:var(--fafa-background); color:var(--fafa-foreground); -webkit-font-smoothing:antialiased; font-size:16px; line-height:1.6; }
+    .card-surface { background-color:var(--fafa-card); border-radius:var(--fafa-radius-lg); box-shadow:var(--shadow-card); }
+    .ai-element { border:1.5px dashed var(--fafa-primary-200); background-color:var(--fafa-primary-50); border-radius:var(--fafa-radius-lg); }
+    .tag-pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:var(--fafa-radius-full); font-size:12px; font-weight:500; }
+    * { box-sizing:border-box; }
+    input, textarea, button, select { font-family:inherit; }
+    .field-label { font-size:15px; color:var(--fafa-neutral-900); font-weight:500; }
+    .field-input { width:100%; height:40px; padding:0 12px; border:1px solid var(--fafa-neutral-300); border-radius:var(--fafa-radius-md); font-size:15px; color:var(--fafa-neutral-900); background:var(--fafa-neutral-50); outline:none; }
+    .field-input:focus { border-color:var(--fafa-primary-400); background:#fff; }
+    .row-divider { border-bottom:1px solid var(--fafa-neutral-200); }
+    .pill-btn { padding:6px 16px; border-radius:var(--fafa-radius-full); font-size:13px; font-weight:500; cursor:pointer; border:1px solid var(--fafa-neutral-300); background:var(--fafa-neutral-50); color:var(--fafa-neutral-700); }
+    .pill-btn-active { border:1px solid var(--fafa-primary-500); background:var(--fafa-primary-500); color:#fff; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+</head>
+<body style="background-color:var(--fafa-background); font-family:var(--fafa-font-sans); color:var(--fafa-foreground); max-width:414px; margin:0 auto; min-height:100vh; padding-bottom:120px;">
+
+  <!-- Header -->
+  <header style="position:sticky; top:0; z-index:30; background-color:var(--fafa-neutral-100); border-bottom:1px solid var(--fafa-neutral-200); padding:12px 16px; display:flex; align-items:center; gap:12px;">
+    <button data-dom-id="back-reminder-list" type="button" aria-label="返回" style="display:flex; align-items:center; justify-content:center; width:32px; height:32px; color:var(--fafa-neutral-950); background:transparent; border:none; cursor:pointer; padding:0;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <h1 style="font-size:18px; font-weight:700; margin:0; color:var(--fafa-neutral-950);">完成提醒</h1>
+  </header>
+
+  <!-- Content -->
+  <div style="padding:16px; display:flex; flex-direction:column; gap:12px;">
+
+    <!-- Reminder info card -->
+    <div class="card-surface" style="padding:20px 16px; display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center;">
+      <!-- Type icon -->
+      <div style="width:64px; height:64px; border-radius:50%; background-color:var(--fafa-primary-50); display:flex; align-items:center; justify-content:center;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fafa-primary-500);">
+          <path d="M10.5 20.5a2.5 2.5 0 1 1-5 0V6a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v14.5z"/><path d="M8.5 10.5v10"/><path d="M14 13c0-2 2-2.5 3.5-2.5S21 11 21 13c0 1.8-2 2.5-3.5 2.5S14 14.8 14 13z"/><path d="M18 9V6a2 2 0 0 0-2-2h-1"/>
+        </svg>
+      </div>
+      <!-- Title -->
+      <div data-dom-id="reminder-title" style="font-size:20px; font-weight:700; color:var(--fafa-neutral-950);">体内驱虫</div>
+      <!-- Type tag -->
+      <span class="tag-pill" style="background-color:var(--fafa-primary-100); color:var(--fafa-primary-700);">驱虫</span>
+      <!-- Info rows -->
+      <div style="width:100%; margin-top:8px; display:flex; flex-direction:column; gap:8px;">
+        <!-- Scheduled time -->
+        <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fafa-neutral-500);">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+          </svg>
+          <span style="font-size:14px; color:var(--fafa-neutral-600);">计划时间</span>
+          <span style="font-size:14px; color:var(--fafa-neutral-900); font-weight:500;">2026年8月18日</span>
+        </div>
+        <!-- Pet -->
+        <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fafa-neutral-500);">
+            <path d="M11.25 16.25h7a3.5 3.5 0 0 0 0-7c-.5-3-2.5-6-6.5-6.5-3.5-.5-6.5 2-7 5.5-2.5.5-4 2.5-4 5a3.5 3.5 0 0 0 3.5 3.5h7"/>
+          </svg>
+          <div style="width:20px; height:20px; border-radius:50%; background:var(--fafa-primary-100); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:var(--fafa-primary-700);">豆</div>
+          <span style="font-size:14px; color:var(--fafa-neutral-900); font-weight:500;">豆包</span>
+        </div>
+        <!-- Repeat rule -->
+        <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fafa-neutral-500);">
+            <path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>
+          </svg>
+          <span style="font-size:14px; color:var(--fafa-neutral-600);">重复规则</span>
+          <span style="font-size:14px; color:var(--fafa-neutral-900); font-weight:500;">每3个月一次</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Completion confirmation card -->
+    <div class="card-surface" style="padding:0; overflow:hidden;">
+      <!-- Title -->
+      <div style="padding:14px 16px 10px;">
+        <div style="font-size:16px; font-weight:600; color:var(--fafa-neutral-950);">完成确认</div>
+      </div>
+      <!-- Completion time -->
+      <div class="row-divider" style="padding:12px 16px; display:flex; align-items:center; justify-content:space-between;">
+        <span class="field-label">完成时间</span>
+        <div data-dom-id="complete-time" style="display:flex; align-items:center; gap:6px; font-size:15px; color:var(--fafa-neutral-900); font-weight:500;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--state-success);">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          2026年8月18日 14:30
+        </div>
+      </div>
+      <!-- Completion note -->
+      <div class="row-divider" style="padding:12px 16px;">
+        <label class="field-label" style="display:block; margin-bottom:8px;">完成备注</label>
+        <textarea data-dom-id="complete-note" rows="3" placeholder="可记录本次完成情况..." style="width:100%; padding:10px 12px; border:1px solid var(--fafa-neutral-300); border-radius:var(--fafa-radius-md); font-size:15px; color:var(--fafa-neutral-900); background:var(--fafa-neutral-50); outline:none; resize:none; font-family:inherit; line-height:1.6;"></textarea>
+      </div>
+      <!-- Photo upload -->
+      <div style="padding:12px 16px 16px;">
+        <label class="field-label" style="display:block; margin-bottom:8px;">完成照片</label>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <!-- Uploaded thumbnail -->
+          <div data-dom-id="complete-photo-thumb" style="position:relative; width:72px; height:72px; border-radius:var(--fafa-radius-md); overflow:hidden; background:linear-gradient(135deg, var(--fafa-primary-100), var(--fafa-primary-300)); flex-shrink:0;">
+            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:rgba(255,255,255,0.8);">
+                <path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16l7-3 7 3z"/>
+              </svg>
+            </div>
+            <button data-dom-id="complete-photo-remove" type="button" aria-label="删除照片" style="position:absolute; top:2px; right:2px; width:20px; height:20px; border-radius:50%; background:rgba(0,0,0,0.45); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+          <!-- Upload trigger -->
+          <button data-dom-id="complete-photo-upload" type="button" style="width:72px; height:72px; border:1.5px dashed var(--fafa-neutral-400); border-radius:var(--fafa-radius-md); background:var(--fafa-neutral-50); cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--fafa-neutral-500);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>
+            </svg>
+            <span style="font-size:11px;">添加照片</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Next reminder auto-generation card -->
+    <div class="ai-element" style="padding:14px 16px; display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" style="flex-shrink:0; color:var(--fafa-primary-500);">
+          <path d="M12 3l1.6 4.3L18 9l-4.4 1.7L12 15l-1.6-4.3L6 9l4.4-1.7L12 3z"/>
+          <path d="M19 14l.8 2.1L22 17l-2.2.9L19 20l-.8-2.1L16 17l2.2-.9L19 14z"/>
+        </svg>
+        <span style="font-size:14px; font-weight:600; color:var(--fafa-primary-700);">下一次提醒</span>
+      </div>
+      <div style="font-size:13px; color:var(--fafa-primary-700); line-height:1.5;">
+        系统将自动在 <span style="font-weight:700;">2026年11月18日</span> 创建下一次驱虫提醒
+      </div>
+      <div style="display:flex; align-items:center; gap:4px; margin-top:2px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fafa-primary-400);">
+          <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+        </svg>
+        <span style="font-size:11px; color:var(--fafa-primary-400);">此信息为自动预览，不可编辑</span>
+      </div>
+    </div>
+
+    <!-- Cascade actions info -->
+    <div style="padding:4px 4px 0; display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--state-success); flex-shrink:0;">
+          <path d="M20 6 9 17l-5-5"/>
+        </svg>
+        <span style="font-size:12px; color:var(--fafa-neutral-500);">更新提醒状态为已完成</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--state-success); flex-shrink:0;">
+          <path d="M20 6 9 17l-5-5"/>
+        </svg>
+        <span style="font-size:12px; color:var(--fafa-neutral-500);">自动生成事件记录</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--state-success); flex-shrink:0;">
+          <path d="M20 6 9 17l-5-5"/>
+        </svg>
+        <span style="font-size:12px; color:var(--fafa-neutral-500);">计算并创建下一次提醒</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom action bar -->
+  <div style="position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:414px; max-width:100%; background-color:var(--fafa-neutral-0); border-top:1px solid var(--fafa-neutral-200); padding:12px 16px; display:flex; flex-direction:column; gap:6px; box-sizing:border-box; z-index:40;">
+    <button data-dom-id="btn-confirm-complete" type="button" style="width:100%; height:48px; border:none; cursor:pointer; background-color:var(--state-success); color:#fff; border-radius:var(--fafa-radius-full); font-size:16px; font-weight:600; box-shadow:0 4px 12px rgba(91,140,90,0.25);">确认完成</button>
+    <button data-dom-id="btn-cancel" type="button" style="width:100%; height:36px; background:transparent; border:none; color:var(--fafa-neutral-600); font-size:14px; cursor:pointer;">取消</button>
+  </div>
+
+</body>
+</html>

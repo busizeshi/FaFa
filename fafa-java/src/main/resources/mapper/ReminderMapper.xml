@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fafa.infrastructure.persistence.mapper.ReminderMapper">
+
+    <select id="findPendingNotifications" resultType="com.fafa.infrastructure.persistence.dataobject.ReminderDO">
+        SELECT *
+        FROM reminder
+        WHERE status = 'pending'
+          AND is_notified = 0
+          AND remind_time BETWEEN #{startTime} AND #{endTime}
+        ORDER BY remind_time ASC
+    </select>
+
+    <select id="countByPetId" resultType="int">
+        SELECT COUNT(*)
+        FROM reminder
+        WHERE pet_id = #{petId}
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+    </select>
+
+    <select id="countByUserId" resultType="int">
+        SELECT COUNT(*)
+        FROM reminder
+        WHERE user_id = #{userId}
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+    </select>
+
+</mapper>

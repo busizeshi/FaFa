@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     # RocketMQ 配置
     ROCKETMQ_HOST: str = "localhost"
     ROCKETMQ_PORT: int = 9876
+    ROCKETMQ_NAME_SERVER: str = "localhost:9876"
     
     # Java 服务地址
     JAVA_SERVICE_URL: str = "http://localhost:8080"

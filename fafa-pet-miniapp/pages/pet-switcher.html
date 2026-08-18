@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>切换宠物</title>
+  <style id="theme-vars">
+    :root, html.light {
+      --fafa-primary-50:#FAF0EB; --fafa-primary-100:#F5E0D5; --fafa-primary-200:#EDC5B0; --fafa-primary-300:#E0A585; --fafa-primary-400:#D38057; --fafa-primary-500:#C4612F; --fafa-primary-600:#A85228; --fafa-primary-700:#8B4221; --fafa-primary-foreground:#FFFFFF;
+      --fafa-neutral-0:#FFFFFF; --fafa-neutral-50:#FBF9F5; --fafa-neutral-100:#F7F4EF; --fafa-neutral-200:#EFEAE1; --fafa-neutral-300:#E7E1D7; --fafa-neutral-400:#D4CDC0; --fafa-neutral-500:#B8B0A3; --fafa-neutral-600:#9A9185; --fafa-neutral-700:#7C7367; --fafa-neutral-800:#5C635D; --fafa-neutral-900:#3D3D3A; --fafa-neutral-950:#1F2421;
+      --state-success:#5B8C5A; --state-warning:#D49B3A; --state-error:#C44A3F; --state-info:#5A8EAD;
+      --fafa-background:var(--fafa-neutral-100); --fafa-foreground:var(--fafa-neutral-950); --fafa-card:#FFFFFF; --fafa-border:var(--fafa-neutral-300);
+      --fafa-radius-sm:4px; --fafa-radius-md:8px; --fafa-radius-lg:16px; --fafa-radius-full:9999px;
+      --fafa-font-sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",-apple-system,sans-serif;
+      --shadow-card:0 2px 8px rgba(31,36,33,0.04); --shadow-hover:0 4px 12px rgba(31,36,33,0.06); --shadow-popover:0 8px 24px rgba(31,36,33,0.10);
+    }
+    body { font-family:var(--fafa-font-sans); background-color:var(--fafa-background); color:var(--fafa-foreground); -webkit-font-smoothing:antialiased; font-size:16px; line-height:1.6; }
+    .card-surface { background-color:var(--fafa-card); border-radius:var(--fafa-radius-lg); box-shadow:var(--shadow-card); }
+    .ai-element { border:1.5px dashed var(--fafa-primary-200); background-color:var(--fafa-primary-50); border-radius:var(--fafa-radius-lg); }
+    .tag-pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:var(--fafa-radius-full); font-size:12px; font-weight:500; }
+    * { box-sizing:border-box; }
+    input, textarea, button, select { font-family:inherit; }
+    .field-label { font-size:15px; color:var(--fafa-neutral-900); font-weight:500; }
+    .field-input { width:100%; height:40px; padding:0 12px; border:1px solid var(--fafa-neutral-300); border-radius:var(--fafa-radius-md); font-size:15px; color:var(--fafa-neutral-900); background:var(--fafa-neutral-50); outline:none; }
+    .field-input:focus { border-color:var(--fafa-primary-400); background:#fff; }
+    .row-divider { border-bottom:1px solid var(--fafa-neutral-200); }
+    .pill-btn { padding:6px 16px; border-radius:var(--fafa-radius-full); font-size:13px; font-weight:500; cursor:pointer; border:1px solid var(--fafa-neutral-300); background:var(--fafa-neutral-50); color:var(--fafa-neutral-700); }
+    .pill-btn-active { border:1px solid var(--fafa-primary-500); background:var(--fafa-primary-500); color:#fff; }
+    .no-scrollbar::-webkit-scrollbar { display:none; }
+    .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+    .bottom-sheet {
+      position:fixed;
+      bottom:0;
+      left:50%;
+      transform:translateX(-50%);
+      width:414px;
+      max-width:100%;
+      background-color:var(--fafa-card);
+      border-radius:24px 24px 0 0;
+      box-shadow:var(--shadow-popover);
+      z-index:50;
+      animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform:translateX(-50%) translateY(100%); }
+      to { transform:translateX(-50%) translateY(0); }
+    }
+    .overlay {
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.4);
+      z-index:40;
+      animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity:0; }
+      to { opacity:1; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+</head>
+<body style="background-color:var(--fafa-background); font-family:var(--fafa-font-sans); color:var(--fafa-foreground); max-width:414px; margin:0 auto; min-height:100vh;">
+
+  <!-- Semi-transparent overlay -->
+  <div class="overlay" data-dom-id="switcher-overlay"></div>
+
+  <!-- Bottom sheet -->
+  <div class="bottom-sheet">
+
+    <!-- Drag handle -->
+    <div style="display:flex; justify-content:center; padding:10px 0 4px;">
+      <div style="width:36px; height:5px; border-radius:9999px; background-color:var(--fafa-neutral-300);"></div>
+    </div>
+
+    <!-- Title row -->
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:4px 20px 14px;">
+      <h1 style="font-size:18px; font-weight:700; color:var(--fafa-neutral-950); margin:0;">选择宠物</h1>
+      <button data-dom-id="close-switcher" type="button" aria-label="关闭" style="display:flex; align-items:center; justify-content:center; width:32px; height:32px; background:transparent; border:none; cursor:pointer; color:var(--fafa-neutral-600);">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Horizontal scrollable pet card list -->
+    <div class="no-scrollbar" style="display:flex; gap:12px; overflow-x:auto; padding:4px 20px 16px; -webkit-overflow-scrolling:touch;">
+
+      <!-- Pet 1: 豆包 (active) -->
+      <button data-dom-id="select-pet-1" type="button" style="position:relative; flex-shrink:0; width:120px; padding:14px 10px; display:flex; flex-direction:column; align-items:center; gap:6px; border:2px solid var(--fafa-primary-500); border-radius:16px; background:var(--fafa-primary-50); cursor:pointer;">
+        <!-- Checkmark badge -->
+        <span style="position:absolute; top:8px; right:8px; width:20px; height:20px; border-radius:50%; background:var(--fafa-primary-500); display:flex; align-items:center; justify-content:center;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+        <div style="width:48px; height:48px; border-radius:50%; background:var(--fafa-primary-200); display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:600; color:var(--fafa-primary-700);">豆</div>
+        <div style="font-size:14px; font-weight:600; color:var(--fafa-primary-700); margin-top:2px;">豆包</div>
+        <div style="font-size:11px; color:var(--fafa-neutral-600);">英短 · 公</div>
+        <div style="font-size:11px; color:var(--fafa-neutral-500);">5.2kg</div>
+      </button>
+
+      <!-- Pet 2: 团子 -->
+      <button data-dom-id="select-pet-2" type="button" style="flex-shrink:0; width:120px; padding:14px 10px; display:flex; flex-direction:column; align-items:center; gap:6px; border:1px solid var(--fafa-neutral-300); border-radius:16px; background:var(--fafa-card); cursor:pointer;">
+        <div style="width:48px; height:48px; border-radius:50%; background:var(--fafa-neutral-200); display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:600; color:var(--fafa-neutral-700);">团</div>
+        <div style="font-size:14px; font-weight:600; color:var(--fafa-neutral-900); margin-top:2px;">团子</div>
+        <div style="font-size:11px; color:var(--fafa-neutral-600);">布偶 · 母</div>
+        <div style="font-size:11px; color:var(--fafa-neutral-500);">4.8kg</div>
+      </button>
+
+      <!-- Pet 3: 小花 -->
+      <button data-dom-id="select-pet-3" type="button" style="flex-shrink:0; width:120px; padding:14px 10px; display:flex; flex-direction:column; align-items:center; gap:6px; border:1px solid var(--fafa-neutral-300); border-radius:16px; background:var(--fafa-card); cursor:pointer;">
+        <div style="width:48px; height:48px; border-radius:50%; background:var(--fafa-primary-100); display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:600; color:var(--fafa-primary-600);">花</div>
+        <div style="font-size:14px; font-weight:600; color:var(--fafa-neutral-900); margin-top:2px;">小花</div>
+        <div style="font-size:11px; color:var(--fafa-neutral-600);">橘猫 · 公</div>
+        <div style="font-size:11px; color:var(--fafa-neutral-500);">6.5kg</div>
+      </button>
+
+      <!-- Add pet card -->
+      <button data-dom-id="add-pet-from-switcher" type="button" style="flex-shrink:0; width:120px; padding:14px 10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; border:1.5px dashed var(--fafa-neutral-400); border-radius:16px; background:var(--fafa-neutral-50); cursor:pointer; color:var(--fafa-neutral-500); min-height:130px;">
+        <div style="width:48px; height:48px; border-radius:50%; background:var(--fafa-neutral-200); display:flex; align-items:center; justify-content:center;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        </div>
+        <span style="font-size:13px; font-weight:500; color:var(--fafa-neutral-600);">添加宠物</span>
+      </button>
+
+    </div>
+
+    <!-- Long press hint -->
+    <div style="padding:0 20px 32px; display:flex; align-items:center; justify-content:center; gap:4px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fafa-neutral-400); flex-shrink:0;">
+        <path d="M5 9l-3 3 3 3"/><path d="M9 5l3-3 3 3"/><path d="M15 19l-3 3-3-3"/><path d="M19 9l3 3-3 3"/><path d="M2 12h20"/><path d="M12 2v20"/>
+      </svg>
+      <span style="font-size:12px; color:var(--fafa-neutral-400);">长按拖拽可以调整排序</span>
+    </div>
+
+  </div>
+
+</body>
+</html>

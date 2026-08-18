@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>宠物报告</title>
+    <style id="theme-vars">
+/* ============================================
+   FaFa Pet Life Assistant - Brand CSS
+   Warm Earth Tones · Terracotta Orange · Cream
+   ============================================ */
+
+:root,
+html.light {
+  --fafa-primary-50: #FAF0EB;
+  --fafa-primary-100: #F5E0D5;
+  --fafa-primary-200: #EDC5B0;
+  --fafa-primary-300: #E0A585;
+  --fafa-primary-400: #D38057;
+  --fafa-primary-500: #C4612F;
+  --fafa-primary-600: #A85228;
+  --fafa-primary-700: #8B4221;
+  --fafa-primary-800: #6E331A;
+  --fafa-primary-900: #522513;
+  --fafa-primary-950: #3B180D;
+  --fafa-primary-foreground: #FFFFFF;
+
+  --fafa-neutral-0: #FFFFFF;
+  --fafa-neutral-50: #FBF9F5;
+  --fafa-neutral-100: #F7F4EF;
+  --fafa-neutral-200: #EFEAE1;
+  --fafa-neutral-300: #E7E1D7;
+  --fafa-neutral-400: #D4CDC0;
+  --fafa-neutral-500: #B8B0A3;
+  --fafa-neutral-600: #9A9185;
+  --fafa-neutral-700: #7C7367;
+  --fafa-neutral-800: #5C635D;
+  --fafa-neutral-900: #3D3D3A;
+  --fafa-neutral-950: #1F2421;
+
+  --state-success: #5B8C5A;
+  --state-warning: #D49B3A;
+  --state-error: #C44A3F;
+  --state-info: #5A8EAD;
+
+  --fafa-background: var(--fafa-neutral-100);
+  --fafa-foreground: var(--fafa-neutral-950);
+  --fafa-card: #FFFFFF;
+  --fafa-card-foreground: var(--fafa-neutral-950);
+  --fafa-popover: #FFFFFF;
+  --fafa-popover-foreground: var(--fafa-neutral-950);
+  --fafa-primary: var(--fafa-primary-500);
+  --fafa-primary-foreground: #FFFFFF;
+  --fafa-muted: var(--fafa-neutral-50);
+  --fafa-muted-foreground: var(--fafa-neutral-800);
+  --fafa-border: var(--fafa-neutral-300);
+  --fafa-input: var(--fafa-neutral-300);
+  --fafa-ring: var(--fafa-primary-500);
+  --fafa-secondary: var(--fafa-neutral-200);
+  --fafa-secondary-foreground: var(--fafa-neutral-950);
+  --fafa-accent: var(--fafa-primary-50);
+  --fafa-accent-foreground: var(--fafa-primary-700);
+
+  --fafa-radius-sm: 4px;
+  --fafa-radius-md: 8px;
+  --fafa-radius-lg: 16px;
+  --fafa-radius-full: 9999px;
+
+  --fafa-font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --fafa-font-display: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", -apple-system, sans-serif;
+
+  --shadow-card: 0 2px 8px rgba(31, 36, 33, 0.04);
+  --shadow-hover: 0 4px 12px rgba(31, 36, 33, 0.06);
+  --shadow-popover: 0 8px 24px rgba(31, 36, 33, 0.10);
+}
+
+body {
+  font-family: var(--fafa-font-sans);
+  background-color: var(--fafa-background);
+  color: var(--fafa-foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.card-surface {
+  background-color: var(--fafa-card);
+  border-radius: var(--fafa-radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.ai-element {
+  border: 1.5px dashed var(--fafa-primary-200);
+  background-color: var(--fafa-primary-50);
+  border-radius: var(--fafa-radius-lg);
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--fafa-radius-full);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+</head>
+<body style="background-color:var(--fafa-background); font-family:var(--fafa-font-sans); color:var(--fafa-foreground); max-width:414px; margin:0 auto; min-height:100vh; padding-bottom:80px;">
+
+    <!-- Sticky Header -->
+    <header style="position:sticky;top:0;z-index:30;background-color:var(--fafa-neutral-100);padding:12px 16px;display:flex;align-items:center;gap:12px;">
+        <button data-dom-id="back-mine" type="button" aria-label="返回" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;color:var(--fafa-neutral-950);background:transparent;border:none;cursor:pointer;padding:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <h1 style="font-size:18px;font-weight:700;margin:0;color:var(--fafa-neutral-950);">宠物报告</h1>
+    </header>
+
+    <!-- Pet Switcher -->
+    <div style="padding:8px 16px 0;">
+        <button data-dom-id="report-pet-switcher" type="button" style="display:flex;align-items:center;gap:8px;background-color:var(--fafa-neutral-0);border:1px solid var(--fafa-neutral-200);border-radius:9999px;padding:6px 14px 6px 6px;cursor:pointer;">
+            <div style="width:28px;height:28px;border-radius:50%;background-color:var(--fafa-primary-50);display:flex;align-items:center;justify-content:center;font-size:16px;">🐱</div>
+            <span style="font-size:14px;font-weight:600;color:var(--fafa-neutral-950);">豆包</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--fafa-neutral-500)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+    </div>
+
+    <!-- Report Type Tabs -->
+    <div style="display:flex;gap:0;padding:12px 16px 4px;border-bottom:1px solid var(--fafa-neutral-200);">
+        <button data-dom-id="tab-weekly" type="button" style="flex:1;padding:8px 0;border:none;background:transparent;font-size:15px;font-weight:500;color:var(--fafa-neutral-500);cursor:pointer;border-bottom:2px solid transparent;">周报</button>
+        <button data-dom-id="tab-monthly" type="button" style="flex:1;padding:8px 0;border:none;background:transparent;font-size:15px;font-weight:600;color:var(--fafa-primary-500);cursor:pointer;border-bottom:2px solid var(--fafa-primary-500);">月报</button>
+    </div>
+
+    <!-- Report Card List -->
+    <div style="padding:12px 16px 0;display:flex;flex-direction:column;gap:12px;">
+
+        <!-- Report 1: 2026年8月月报 -->
+        <div data-dom-id="report-1" class="card-surface" style="overflow:hidden;cursor:pointer;">
+            <!-- Cover Gradient -->
+            <div style="height:100px;background:linear-gradient(135deg, var(--fafa-primary-300), var(--fafa-primary-600));position:relative;display:flex;align-items:center;justify-content:center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span style="position:absolute;top:12px;right:12px;font-size:12px;color:rgba(255,255,255,0.85);background-color:rgba(0,0,0,0.15);border-radius:9999px;padding:3px 10px;">2026.08</span>
+            </div>
+            <div style="padding:14px;">
+                <div style="font-size:16px;font-weight:700;color:var(--fafa-neutral-950);">豆包 · 2026年8月月报</div>
+                <div style="font-size:12px;color:var(--fafa-neutral-500);margin-top:4px;">2026.08.01 - 08.31</div>
+                <!-- AI Summary -->
+                <div class="ai-element" style="margin-top:10px;padding:10px 12px;display:flex;align-items:flex-start;gap:8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--fafa-primary-500)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+                    <span style="font-size:13px;color:var(--fafa-primary-700);line-height:1.5;">本月整体数据比较稳定，体重微降0.1kg</span>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
+                    <span style="font-size:12px;color:var(--fafa-neutral-500);">生成于 2026-08-17</span>
+                    <span style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--fafa-primary-500);font-weight:500;">查看详情
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report 2: 2026年7月月报 -->
+        <div data-dom-id="report-2" class="card-surface" style="overflow:hidden;cursor:pointer;">
+            <div style="height:100px;background:linear-gradient(135deg, var(--fafa-primary-200), var(--fafa-primary-400));position:relative;display:flex;align-items:center;justify-content:center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span style="position:absolute;top:12px;right:12px;font-size:12px;color:rgba(255,255,255,0.85);background-color:rgba(0,0,0,0.15);border-radius:9999px;padding:3px 10px;">2026.07</span>
+            </div>
+            <div style="padding:14px;">
+                <div style="font-size:16px;font-weight:700;color:var(--fafa-neutral-950);">豆包 · 2026年7月月报</div>
+                <div style="font-size:12px;color:var(--fafa-neutral-500);margin-top:4px;">2026.07.01 - 07.31</div>
+                <div class="ai-element" style="margin-top:10px;padding:10px 12px;display:flex;align-items:flex-start;gap:8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--fafa-primary-500)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+                    <span style="font-size:13px;color:var(--fafa-primary-700);line-height:1.5;">体重稳定，饮食规律</span>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
+                    <span style="font-size:12px;color:var(--fafa-neutral-500);">生成于 2026-07-18</span>
+                    <span style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--fafa-primary-500);font-weight:500;">查看详情
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report 3: 2026年6月月报 -->
+        <div data-dom-id="report-3" class="card-surface" style="overflow:hidden;cursor:pointer;">
+            <div style="height:100px;background:linear-gradient(135deg, var(--fafa-primary-100), var(--fafa-primary-300));position:relative;display:flex;align-items:center;justify-content:center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span style="position:absolute;top:12px;right:12px;font-size:12px;color:rgba(255,255,255,0.85);background-color:rgba(0,0,0,0.15);border-radius:9999px;padding:3px 10px;">2026.06</span>
+            </div>
+            <div style="padding:14px;">
+                <div style="font-size:16px;font-weight:700;color:var(--fafa-neutral-950);">豆包 · 2026年6月月报</div>
+                <div style="font-size:12px;color:var(--fafa-neutral-500);margin-top:4px;">2026.06.01 - 06.30</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
+                    <span style="font-size:12px;color:var(--fafa-neutral-500);">生成于 2026-07-01</span>
+                    <span style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--fafa-primary-500);font-weight:500;">查看详情
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Generate Button -->
+    <div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:414px;max-width:100%;background-color:var(--fafa-neutral-0);border-top:1px solid var(--fafa-neutral-200);padding:12px 16px;box-sizing:border-box;z-index:40;">
+        <button data-dom-id="generate-report" type="button" style="width:100%;border:none;cursor:pointer;background-color:var(--fafa-primary-500);color:#fff;border-radius:9999px;padding:14px 16px;font-size:16px;font-weight:600;box-shadow:0 4px 12px rgba(196,97,47,0.20);display:flex;align-items:center;justify-content:center;gap:8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+            生成本月报告
+        </button>
+    </div>
+
+</body>
+</html>

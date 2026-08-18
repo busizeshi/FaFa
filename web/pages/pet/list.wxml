@@ -1,0 +1,46 @@
+<view class="container">
+  <view class="page-header">
+    <text class="page-title">我的宠物</text>
+  </view>
+
+  <view class="pet-list" wx:if="{{!loading && pets.length > 0}}">
+    <view class="pet-card" wx:for="{{pets}}" wx:key="id"
+          data-id="{{item.id}}" data-index="{{index}}"
+          bindtap="onSelectPet"
+          bindlongpress="onDragStart"
+          bindtouchend="onDragEnd"
+          catchtouchmove="onDrop">
+      <image class="pet-card-avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+      <view class="pet-card-info">
+        <view class="pet-card-header">
+          <text class="pet-card-name">{{item.name}}</text>
+          <view class="pet-card-badges">
+            <text class="badge badge-primary" wx:if="{{item.id === currentPetId}}">当前</text>
+            <text class="badge badge-secondary" wx:if="{{item.status === 'deceased'}}">已离世</text>
+          </view>
+        </view>
+        <text class="pet-card-meta">{{getSpeciesText(item.species)}} · {{getGenderText(item.gender)}} · {{getAge(item.birthDate)}}</text>
+        <text class="pet-card-weight">{{formatNumber(item.weight)}}kg</text>
+      </view>
+      <view class="pet-card-actions">
+        <text class="action-btn" data-id="{{item.id}}" catchtap="onPetTap">查看</text>
+        <text class="action-btn" data-id="{{item.id}}" catchtap="onEditPet">编辑</text>
+        <text class="action-btn text-error" data-id="{{item.id}}" data-name="{{item.name}}" catchtap="onDeletePet">删除</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty-state" wx:if="{{!loading && pets.length === 0}}">
+    <text class="empty-icon">🐾</text>
+    <text class="empty-text">还没有宠物档案</text>
+    <button class="btn-primary" bindtap="onAddPet">创建第一只宠物</button>
+  </view>
+
+  <view class="loading-state" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <view class="fab" bindtap="onAddPet" wx:if="{{pets.length > 0}}">
+    <text class="fab-icon">+</text>
+  </view>
+</view>

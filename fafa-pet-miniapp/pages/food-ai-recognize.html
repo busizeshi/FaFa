@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AI 包装识别</title>
+  <style id="theme-vars">
+    :root, html.light {
+      --fafa-primary-50:#FAF0EB; --fafa-primary-100:#F5E0D5; --fafa-primary-200:#EDC5B0; --fafa-primary-300:#E0A585; --fafa-primary-400:#D38057; --fafa-primary-500:#C4612F; --fafa-primary-600:#A85228; --fafa-primary-700:#8B4221; --fafa-primary-foreground:#FFFFFF;
+      --fafa-neutral-0:#FFFFFF; --fafa-neutral-50:#FBF9F5; --fafa-neutral-100:#F7F4EF; --fafa-neutral-200:#EFEAE1; --fafa-neutral-300:#E7E1D7; --fafa-neutral-400:#D4CDC0; --fafa-neutral-500:#B8B0A3; --fafa-neutral-600:#9A9185; --fafa-neutral-700:#7C7367; --fafa-neutral-800:#5C635D; --fafa-neutral-900:#3D3D3A; --fafa-neutral-950:#1F2421;
+      --state-success:#5B8C5A; --state-warning:#D49B3A; --state-error:#C44A3F; --state-info:#5A8EAD;
+      --fafa-background:var(--fafa-neutral-100); --fafa-foreground:var(--fafa-neutral-950); --fafa-card:#FFFFFF; --fafa-border:var(--fafa-neutral-300);
+      --fafa-radius-sm:4px; --fafa-radius-md:8px; --fafa-radius-lg:16px; --fafa-radius-full:9999px;
+      --fafa-font-sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",-apple-system,sans-serif;
+      --shadow-card:0 2px 8px rgba(31,36,33,0.04); --shadow-hover:0 4px 12px rgba(31,36,33,0.06);
+    }
+    body { font-family:var(--fafa-font-sans); background-color:var(--fafa-background); color:var(--fafa-foreground); -webkit-font-smoothing:antialiased; font-size:16px; line-height:1.6; }
+    .card-surface { background-color:var(--fafa-card); border-radius:var(--fafa-radius-lg); box-shadow:var(--shadow-card); }
+    .ai-element { border:1.5px dashed var(--fafa-primary-200); background-color:var(--fafa-primary-50); border-radius:var(--fafa-radius-lg); }
+    .tag-pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:var(--fafa-radius-full); font-size:12px; font-weight:500; }
+    * { box-sizing:border-box; }
+    input, textarea, button, select { font-family:inherit; }
+    .field-label { font-size:15px; color:var(--fafa-neutral-900); font-weight:500; }
+    .field-input { width:100%; height:40px; padding:0 12px; border:1px solid var(--fafa-neutral-300); border-radius:var(--fafa-radius-md); font-size:15px; color:var(--fafa-neutral-900); background:var(--fafa-neutral-50); outline:none; }
+    .field-input:focus { border-color:var(--fafa-primary-400); background:#fff; }
+    .row-divider { border-bottom:1px solid var(--fafa-neutral-200); }
+    .pill-btn { padding:6px 16px; border-radius:var(--fafa-radius-full); font-size:13px; font-weight:500; cursor:pointer; border:1px solid var(--fafa-neutral-300); background:var(--fafa-neutral-50); color:var(--fafa-neutral-700); }
+    .pill-btn-active { border:1px solid var(--fafa-primary-500); background:var(--fafa-primary-500); color:#fff; }
+    @keyframes fafa-spin { to { transform:rotate(360deg); } }
+    .fafa-spinner { animation:fafa-spin 0.9s linear infinite; transform-origin:center; }
+    @keyframes fafa-blink { 0%,80%,100% { opacity:0.25; } 40% { opacity:1; } }
+    .fafa-dot { animation:fafa-blink 1.2s infinite both; }
+    .fafa-dot:nth-child(2) { animation-delay:0.2s; }
+    .fafa-dot:nth-child(3) { animation-delay:0.4s; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+</head>
+<body style="background-color:var(--fafa-background); font-family:var(--fafa-font-sans); color:var(--fafa-foreground); max-width:414px; margin:0 auto; min-height:100vh;">
+
+  <!-- Header -->
+  <header style="position:sticky; top:0; z-index:10; background-color:var(--fafa-neutral-100); border-bottom:1px solid var(--fafa-neutral-200); padding:10px 12px; display:flex; align-items:center; gap:4px;">
+    <button data-dom-id="back-food-list" style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; background:transparent; border:none; cursor:pointer; color:var(--fafa-neutral-900);">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <h1 style="font-size:17px; font-weight:600; color:var(--fafa-neutral-900); margin:0;">AI 包装识别</h1>
+  </header>
+
+  <div style="padding:16px 16px 96px;">
+
+    <!-- Camera upload area 1: 包装正面 -->
+    <div data-dom-id="camera-front" class="ai-element" style="padding:28px 16px; display:flex; flex-direction:column; align-items:center; gap:10px; cursor:pointer;">
+      <div style="display:flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:var(--fafa-radius-full); background:var(--fafa-primary-100); color:var(--fafa-primary-600);">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/></svg>
+      </div>
+      <div style="font-size:15px; font-weight:600; color:var(--fafa-primary-700);">拍摄食品包装正面</div>
+      <div style="font-size:12px; color:var(--fafa-primary-600);">点击拍照或上传图片</div>
+    </div>
+
+    <!-- Camera upload area 2: 营养成分表 -->
+    <div data-dom-id="camera-nutrition" class="ai-element" style="margin-top:12px; padding:28px 16px; display:flex; flex-direction:column; align-items:center; gap:10px; cursor:pointer;">
+      <div style="display:flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:var(--fafa-radius-full); background:var(--fafa-primary-100); color:var(--fafa-primary-600);">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/></svg>
+      </div>
+      <div style="font-size:15px; font-weight:600; color:var(--fafa-primary-700);">拍摄营养成分表</div>
+      <div style="font-size:12px; color:var(--fafa-primary-600);">拍背面成分表，识别更精准</div>
+    </div>
+
+    <!-- AI processing state -->
+    <div data-dom-id="ai-processing" class="card-surface" style="margin-top:12px; padding:18px 16px; display:flex; align-items:center; gap:12px;">
+      <svg class="fafa-spinner" width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0; color:var(--fafa-primary-500);"><path d="M21 12a9 9 0 1 1-6.219-8.56" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div style="flex:1;">
+        <div style="font-size:15px; font-weight:600; color:var(--fafa-neutral-900);">AI 正在识别<span class="fafa-dot">.</span><span class="fafa-dot">.</span><span class="fafa-dot">.</span></div>
+        <div style="font-size:12px; color:var(--fafa-neutral-600); margin-top:2px;">正在提取品牌、成分和喂食信息</div>
+      </div>
+    </div>
+
+    <!-- AI recognition result -->
+    <div class="ai-element" style="margin-top:12px; padding:16px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+        <div style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:var(--fafa-radius-full); background:var(--state-success); color:#fff;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span style="font-size:16px; font-weight:700; color:var(--fafa-primary-700);">识别结果</span>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:0;">
+
+        <div class="row-divider" style="display:flex; align-items:center; justify-content:space-between; padding:11px 0;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px; color:var(--fafa-neutral-600); min-width:72px;">品牌</span>
+            <span style="font-size:15px; color:var(--fafa-neutral-900); font-weight:500;">皇家</span>
+          </div>
+          <button data-dom-id="edit-field-brand" style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:transparent; border:none; cursor:pointer; color:var(--fafa-neutral-500);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div class="row-divider" style="display:flex; align-items:center; justify-content:space-between; padding:11px 0;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px; color:var(--fafa-neutral-600); min-width:72px;">产品名称</span>
+            <span style="font-size:15px; color:var(--fafa-neutral-900); font-weight:500;">英短成猫粮</span>
+          </div>
+          <button data-dom-id="edit-field-name" style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:transparent; border:none; cursor:pointer; color:var(--fafa-neutral-500);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div class="row-divider" style="display:flex; align-items:center; justify-content:space-between; padding:11px 0;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px; color:var(--fafa-neutral-600); min-width:72px;">净含量</span>
+            <span style="font-size:15px; color:var(--fafa-neutral-900); font-weight:500;">2kg</span>
+          </div>
+          <button data-dom-id="edit-field-weight" style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:transparent; border:none; cursor:pointer; color:var(--fafa-neutral-500);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div class="row-divider" style="display:flex; align-items:center; justify-content:space-between; padding:11px 0;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px; color:var(--fafa-neutral-600); min-width:72px;">适用对象</span>
+            <span style="font-size:15px; color:var(--fafa-neutral-900); font-weight:500;">成年猫</span>
+          </div>
+          <button data-dom-id="edit-field-target" style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:transparent; border:none; cursor:pointer; color:var(--fafa-neutral-500);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div class="row-divider" style="display:flex; align-items:center; justify-content:space-between; padding:11px 0;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px; color:var(--fafa-neutral-600); min-width:72px;">能量</span>
+            <span style="font-size:15px; color:var(--fafa-neutral-900); font-weight:500;">3800kcal/kg</span>
+          </div>
+          <button data-dom-id="edit-field-energy" style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:transparent; border:none; cursor:pointer; color:var(--fafa-neutral-500);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div class="row-divider" style="display:flex; align-items:center; justify-content:space-between; padding:11px 0;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px; color:var(--fafa-neutral-600); min-width:72px;">蛋白质</span>
+            <span style="font-size:15px; color:var(--fafa-neutral-900); font-weight:500;">32%</span>
+          </div>
+          <button data-dom-id="edit-field-protein" style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:transparent; border:none; cursor:pointer; color:var(--fafa-neutral-500);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div class="row-divider" style="display:flex; align-items:center; justify-content:space-between; padding:11px 0;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px; color:var(--fafa-neutral-600); min-width:72px;">脂肪</span>
+            <span style="font-size:15px; color:var(--fafa-neutral-900); font-weight:500;">14%</span>
+          </div>
+          <button data-dom-id="edit-field-fat" style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:transparent; border:none; cursor:pointer; color:var(--fafa-neutral-500);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:11px 0;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px; color:var(--fafa-neutral-600); min-width:72px;">建议喂食量</span>
+            <span style="font-size:15px; color:var(--fafa-neutral-900); font-weight:500;">60-70g/天</span>
+          </div>
+          <button data-dom-id="edit-field-amount" style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:transparent; border:none; cursor:pointer; color:var(--fafa-neutral-500);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom actions -->
+  <div style="position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:414px; padding:12px 16px 24px; background:var(--fafa-neutral-100); border-top:1px solid var(--fafa-neutral-200); z-index:10;">
+    <button data-dom-id="btn-confirm-save" style="width:100%; height:48px; border:none; border-radius:var(--fafa-radius-full); background:var(--fafa-primary-500); color:#fff; font-size:16px; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(196,97,47,0.25);">确认保存</button>
+    <button data-dom-id="btn-retry" style="display:block; width:100%; margin-top:8px; height:36px; background:transparent; border:none; color:var(--fafa-primary-600); font-size:14px; cursor:pointer;">重新拍照</button>
+  </div>
+
+</body>
+</html>

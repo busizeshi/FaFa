@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>生成结果</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+  <style id="theme-vars">
+    :root, html.light {
+      --fafa-primary-50:#FAF0EB; --fafa-primary-100:#F5E0D5; --fafa-primary-200:#EDC5B0; --fafa-primary-300:#E0A585; --fafa-primary-400:#D38057; --fafa-primary-500:#C4612F; --fafa-primary-600:#A85228; --fafa-primary-700:#8B4221; --fafa-primary-foreground:#FFFFFF;
+      --fafa-neutral-0:#FFFFFF; --fafa-neutral-50:#FBF9F5; --fafa-neutral-100:#F7F4EF; --fafa-neutral-200:#EFEAE1; --fafa-neutral-300:#E7E1D7; --fafa-neutral-400:#D4CDC0; --fafa-neutral-500:#B8B0A3; --fafa-neutral-600:#9A9185; --fafa-neutral-700:#7C7367; --fafa-neutral-800:#5C635D; --fafa-neutral-900:#3D3D3A; --fafa-neutral-950:#1F2421;
+      --state-success:#5B8C5A; --state-warning:#D49B3A; --state-error:#C44A3F; --state-info:#5A8EAD;
+      --fafa-background:var(--fafa-neutral-100); --fafa-foreground:var(--fafa-neutral-950); --fafa-card:#FFFFFF; --fafa-border:var(--fafa-neutral-300);
+      --fafa-radius-sm:4px; --fafa-radius-md:8px; --fafa-radius-lg:16px; --fafa-radius-full:9999px;
+      --fafa-font-sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",-apple-system,sans-serif;
+      --shadow-card:0 2px 8px rgba(31,36,33,0.04); --shadow-hover:0 4px 12px rgba(31,36,33,0.06);
+    }
+    body { font-family:var(--fafa-font-sans); background-color:var(--fafa-background); color:var(--fafa-foreground); -webkit-font-smoothing:antialiased; font-size:16px; line-height:1.6; }
+    .card-surface { background-color:var(--fafa-card); border-radius:var(--fafa-radius-lg); box-shadow:var(--shadow-card); }
+    .ai-element { border:1.5px dashed var(--fafa-primary-200); background-color:var(--fafa-primary-50); border-radius:var(--fafa-radius-lg); }
+    .tag-pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:var(--fafa-radius-full); font-size:12px; font-weight:500; }
+    * { box-sizing:border-box; }
+    input, textarea, button, select { font-family:inherit; }
+    .field-label { font-size:15px; color:var(--fafa-neutral-900); font-weight:500; }
+    .row-divider { border-bottom:1px solid var(--fafa-neutral-200); }
+    .pill-btn { padding:6px 16px; border-radius:var(--fafa-radius-full); font-size:13px; font-weight:500; cursor:pointer; border:1px solid var(--fafa-neutral-300); background:var(--fafa-neutral-50); color:var(--fafa-neutral-700); }
+    .pill-btn-active { border:1px solid var(--fafa-primary-500); background:var(--fafa-primary-500); color:#fff; }
+
+    .app-header { position:sticky; top:0; z-index:50; background-color:var(--fafa-neutral-50); border-bottom:1px solid var(--fafa-neutral-200); }
+    .header-back { display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:var(--fafa-radius-full); cursor:pointer; color:var(--fafa-neutral-900); }
+
+    .copy-btn { display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:var(--fafa-radius-md); border:1px solid var(--fafa-neutral-200); background:var(--fafa-neutral-50); color:var(--fafa-neutral-600); cursor:pointer; flex-shrink:0; }
+    .copy-btn:active { background:var(--fafa-neutral-100); }
+
+    .photo-thumb { width:88px; height:88px; border-radius:var(--fafa-radius-md); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:28px; overflow:hidden; position:relative; }
+    .photo-label { font-size:11px; color:var(--fafa-neutral-600); margin-top:6px; text-align:center; width:88px; }
+
+    .text-btn { background:none; border:none; color:var(--fafa-neutral-600); font-size:14px; cursor:pointer; padding:8px 12px; }
+    .text-btn:active { color:var(--fafa-primary-600); }
+
+    .primary-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:13px; border-radius:var(--fafa-radius-full); background:var(--fafa-primary-500); color:#fff; font-size:15px; font-weight:600; border:none; cursor:pointer; }
+    .primary-btn:active { background:var(--fafa-primary-600); }
+
+    .link-btn { background:none; border:none; color:var(--fafa-primary-600); font-size:13px; cursor:pointer; padding:4px 8px; }
+
+    .section-title { font-size:14px; font-weight:600; color:var(--fafa-neutral-900); }
+    .section-sub { font-size:12px; color:var(--fafa-neutral-500); }
+
+    .scroll-x { display:flex; gap:10px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px; }
+    .scroll-x::-webkit-scrollbar { display:none; }
+  </style>
+</head>
+<body style="background-color:var(--fafa-background); font-family:var(--fafa-font-sans); color:var(--fafa-foreground); max-width:414px; margin:0 auto; min-height:100vh;">
+
+  <!-- Header -->
+  <header class="app-header px-4 py-3 flex items-center">
+    <div class="header-back" data-dom-id="back-ai-home">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </div>
+    <h1 class="text-base font-semibold flex-1 text-center pr-9" style="color:var(--fafa-neutral-900);">生成结果</h1>
+  </header>
+
+  <div class="p-4 space-y-4">
+
+    <!-- Generation info card -->
+    <div class="card-surface p-3 flex items-center gap-2 flex-wrap">
+      <span class="tag-pill" style="background:#FFF0F0;color:#E84E3E;" data-dom-id="info-platform">小红书</span>
+      <span class="tag-pill" style="background:var(--fafa-primary-50);color:var(--fafa-primary-700);" data-dom-id="info-theme">生日</span>
+      <span class="text-sm" style="color:var(--fafa-neutral-700);" data-dom-id="info-pet">豆包三岁生日</span>
+      <span class="text-xs" style="color:var(--fafa-neutral-400);margin-left:auto;">刚刚生成</span>
+    </div>
+
+    <!-- Content preview card -->
+    <div class="card-surface p-4 space-y-4">
+
+      <!-- 标题 -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="section-title">标题</span>
+          <button class="copy-btn" data-dom-id="copy-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+        <p class="text-base font-semibold leading-snug" style="color:var(--fafa-neutral-900);" data-dom-id="content-title">🐱 豆包三岁啦！陪伴是最长情的告白</p>
+      </div>
+
+      <div class="row-divider"></div>
+
+      <!-- 正文 -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="section-title">正文</span>
+          <button class="copy-btn" data-dom-id="copy-body">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+        <div contenteditable="false" data-dom-id="content-body" class="text-sm leading-relaxed" style="color:var(--fafa-neutral-800); white-space:pre-wrap;">今天是豆包三岁的生日🎂
+三年前那个夏天，小小的一团来到我身边
+从第一次躲进纸箱，到现在的阳台霸主
+从5.2kg的小猫咪，到稳重的成年猫
+谢谢你，让平凡的每一天都变得特别✨
+#养猫日常 #英短成长记录 #猫咪生日</div>
+      </div>
+
+      <div class="row-divider"></div>
+
+      <!-- 推荐话题 -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="section-title">推荐话题</span>
+          <button class="link-btn" data-dom-id="copy-hashtags">复制全部话题</button>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span class="tag-pill" style="background:var(--fafa-primary-50);color:var(--fafa-primary-700);" data-dom-id="hashtag-1">#养猫日常</span>
+          <span class="tag-pill" style="background:var(--fafa-primary-50);color:var(--fafa-primary-700);" data-dom-id="hashtag-2">#猫咪成长记录</span>
+          <span class="tag-pill" style="background:var(--fafa-primary-50);color:var(--fafa-primary-700);" data-dom-id="hashtag-3">#英短</span>
+          <span class="tag-pill" style="background:var(--fafa-primary-50);color:var(--fafa-primary-700);" data-dom-id="hashtag-4">#宠物生日</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- AI selected photos -->
+    <div class="card-surface p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--fafa-primary-500)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M19 14l.75 2.25L22 17l-2.25.75L19 20l-.75-2.25L16 17l2.25-.75L19 14z"/></svg>
+        <span class="section-title">AI 挑选的代表照片</span>
+      </div>
+      <div class="scroll-x">
+        <div class="flex flex-col items-center" data-dom-id="selected-photo-1">
+          <div class="photo-thumb" style="background:linear-gradient(135deg,#F5E0D5,#EDC5B0);">🐱</div>
+          <span class="photo-label">第一天到家</span>
+        </div>
+        <div class="flex flex-col items-center" data-dom-id="selected-photo-2">
+          <div class="photo-thumb" style="background:linear-gradient(135deg,#E0A585,#D38057);">😴</div>
+          <span class="photo-label">第一次睡猫窝</span>
+        </div>
+        <div class="flex flex-col items-center" data-dom-id="selected-photo-3">
+          <div class="photo-thumb" style="background:linear-gradient(135deg,#FAF0EB,#F5E0D5);">🎂</div>
+          <span class="photo-label">一岁生日</span>
+        </div>
+        <div class="flex flex-col items-center" data-dom-id="selected-photo-4">
+          <div class="photo-thumb" style="background:linear-gradient(135deg,#EDC5B0,#E0A585);">🎉</div>
+          <span class="photo-label">两岁生日</span>
+        </div>
+        <div class="flex flex-col items-center" data-dom-id="selected-photo-5">
+          <div class="photo-thumb" style="background:linear-gradient(135deg,#D38057,#C4612F);">📸</div>
+          <span class="photo-label">最近照片</span>
+        </div>
+      </div>
+      <div class="mt-2">
+        <button class="link-btn" data-dom-id="re-select-photos">重新挑选</button>
+      </div>
+    </div>
+
+    <!-- Bottom actions -->
+    <div class="space-y-3">
+      <button class="primary-btn" data-dom-id="btn-copy-all">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        复制全部文案
+      </button>
+      <div class="flex items-center justify-center gap-2">
+        <button class="text-btn" data-dom-id="btn-regenerate">重新生成</button>
+        <span style="color:var(--fafa-neutral-300);">·</span>
+        <button class="text-btn" data-dom-id="btn-save-draft">保存草稿</button>
+      </div>
+      <p class="text-xs text-center" style="color:var(--fafa-neutral-400);">内容仅生成不代发布，请自行复制到各平台</p>
+    </div>
+
+  </div>
+
+  <div style="height:24px;"></div>
+</body>
+</html>

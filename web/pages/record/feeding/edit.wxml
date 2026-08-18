@@ -1,0 +1,65 @@
+<view class="container">
+  <view class="form-section">
+    <view class="input-group">
+      <text class="input-label input-required">食物类型</text>
+      <view class="radio-group">
+        <view class="radio-item" wx:for="{{foodTypeOptions}}" wx:key="value"
+              class="{{formData.foodType === item.value ? 'active' : ''}}"
+              data-value="{{item.value}}" bindtap="onFoodTypeChange">
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="input-group">
+      <text class="input-label input-required">食物名称</text>
+      <input class="input-field" type="text" placeholder="例如：皇家幼猫粮" 
+             value="{{formData.foodName}}" data-field="foodName" bindinput="onInputChange" />
+    </view>
+
+    <view class="input-group">
+      <text class="input-label input-required">份量</text>
+      <view class="amount-input">
+        <input class="input-field amount-field" type="digit" placeholder="0" 
+               value="{{formData.amount}}" data-field="amount" bindinput="onInputChange" />
+        <view class="unit-selector" bindtap="onShowUnitPicker">
+          <text class="unit-text">{{formData.unit}}</text>
+          <text class="unit-arrow">▾</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="input-group">
+      <text class="input-label input-required">喂食时间</text>
+      <picker mode="time" value="{{formData.feedTime}}" bindchange="onTimeChange">
+        <view class="picker-field">
+          <text>{{formData.feedTime}}</text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="input-group">
+      <text class="input-label">备注</text>
+      <textarea class="input-field textarea-field" placeholder="记录一些特别的事情..." 
+                value="{{formData.notes}}" data-field="notes" bindinput="onInputChange" 
+                maxlength="200"></textarea>
+    </view>
+
+    <button class="btn-primary btn-block" bindtap="onSubmit">
+      {{isEdit ? '保存修改' : '保存'}}
+    </button>
+
+    <button class="btn-danger btn-block" wx:if="{{isEdit}}" bindtap="onDelete">
+      删除记录
+    </button>
+  </view>
+
+  <picker-view class="unit-picker" wx:if="{{showUnitPicker}}" 
+               indicator-style="height: 50px;" bindchange="onUnitChange">
+    <picker-view-column>
+      <view class="picker-item" wx:for="{{unitOptions}}" wx:key="*this">{{item}}</view>
+    </picker-view-column>
+  </picker-view>
+
+  <view class="picker-mask" wx:if="{{showUnitPicker}}" bindtap="onCancelUnitPicker"></view>
+</view>

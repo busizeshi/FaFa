@@ -1,0 +1,63 @@
+.form-section {
+  padding: 32rpx;
+}
+
+.amount-input {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.amount-field {
+  flex: 1;
+}
+
+.unit-selector {
+  display: flex;
+  align-items: center;
+  background: #1E222E;
+  border-radius: 12rpx;
+  padding: 24rpx 28rpx;
+  min-width: 120rpx;
+}
+
+.unit-text {
+  font-size: 28rpx;
+  color: #E5E7EB;
+  margin-right: 8rpx;
+}
+
+.unit-arrow {
+  font-size: 20rpx;
+  color: #6B7280;
+}
+
+.unit-picker {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 400rpx;
+  background: #171A23;
+  border-top-left-radius: 24rpx;
+  border-top-right-radius: 24rpx;
+  z-index: 1000;
+}
+
+.picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: #E5E7EB;
+}
+
+.picker-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}

@@ -1,0 +1,78 @@
+<view class="container" wx:if="{{!loading}}">
+  <view class="page-header">
+    <view class="pet-info" bindtap="onPetSwitch" wx:if="{{currentPet}}">
+      <image class="pet-avatar" src="{{currentPet.avatar}}" mode="aspectFill"></image>
+      <view class="pet-details">
+        <text class="pet-name">{{currentPet.name}}</text>
+        <text class="pet-meta">{{getAge(currentPet.birthDate)}} · {{currentPet.weight}}kg</text>
+        <text class="pet-days">来到你身边 {{getDaysSince(currentPet.adoptDate)}} 天</text>
+      </view>
+      <text class="switch-icon">›</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">今天</view>
+    
+    <view class="today-feedings" wx:if="{{todayFeedings.length > 0}}">
+      <view class="feeding-item" wx:for="{{todayFeedings}}" wx:key="id">
+        <text class="feeding-time">{{formatTime(item.feedTime)}}</text>
+        <text class="feeding-status">✓</text>
+        <text class="feeding-detail">{{item.foodName}} {{item.amount}}{{item.unit}}</text>
+      </view>
+    </view>
+
+    <view class="quick-feeding-btn" bindtap="onQuickFeeding">
+      <text class="btn-icon">🍚</text>
+      <text class="btn-text">快速喂食</text>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{todayReminders.length > 0}}">
+    <view class="section-title">今日提醒</view>
+    <view class="reminder-list">
+      <view class="reminder-item" wx:for="{{todayReminders}}" wx:key="id">
+        <text class="reminder-icon">○</text>
+        <text class="reminder-title">{{item.title}}</text>
+        <text class="reminder-action" data-id="{{item.id}}" bindtap="onCompleteReminder">完成</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">快速记录</view>
+    <view class="quick-actions">
+      <view class="action-item" wx:for="{{quickActions}}" wx:key="id" 
+            data-url="{{item.url}}" bindtap="onQuickAction">
+        <text class="action-icon">{{item.icon}}</text>
+        <text class="action-name">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{aiDiscovery}}">
+    <view class="section-title">AI发现</view>
+    <view class="ai-card" bindtap="onAiDiscovery">
+      <text class="ai-icon">🤖</text>
+      <view class="ai-content">
+        <text class="ai-title">{{aiDiscovery.title}}</text>
+        <text class="ai-desc">{{aiDiscovery.content}}</text>
+      </view>
+      <text class="ai-arrow">›</text>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{memoryPhoto}}">
+    <view class="section-title">最近回忆</view>
+    <view class="memory-card" bindtap="onMemoryPhoto">
+      <image class="memory-image" src="{{memoryPhoto.thumbnailUrl}}" mode="aspectFill"></image>
+      <view class="memory-overlay">
+        <text class="memory-text">去年的今天，你上传了这张照片</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view class="loading-state" wx:else>
+  <text>加载中...</text>
+</view>

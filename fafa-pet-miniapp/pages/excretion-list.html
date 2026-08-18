@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>排便记录</title>
+  <style id="theme-vars">
+/* ============================================
+   FaFa Pet Life Assistant - Brand CSS
+   Warm Earth Tones · Terracotta Orange · Cream
+   ============================================ */
+:root,
+html.light {
+  --fafa-primary-50:#FAF0EB; --fafa-primary-100:#F5E0D5; --fafa-primary-200:#EDC5B0; --fafa-primary-300:#E0A585; --fafa-primary-400:#D38057; --fafa-primary-500:#C4612F; --fafa-primary-600:#A85228; --fafa-primary-700:#8B4221; --fafa-primary-foreground:#FFFFFF;
+  --fafa-neutral-0:#FFFFFF; --fafa-neutral-50:#FBF9F5; --fafa-neutral-100:#F7F4EF; --fafa-neutral-200:#EFEAE1; --fafa-neutral-300:#E7E1D7; --fafa-neutral-400:#D4CDC0; --fafa-neutral-500:#B8B0A3; --fafa-neutral-600:#9A9185; --fafa-neutral-700:#7C7367; --fafa-neutral-800:#5C635D; --fafa-neutral-900:#3D3D3A; --fafa-neutral-950:#1F2421;
+  --state-success:#5B8C5A; --state-warning:#D49B3A; --state-error:#C44A3F; --state-info:#5A8EAD;
+  --fafa-background:var(--fafa-neutral-100); --fafa-foreground:var(--fafa-neutral-950); --fafa-card:#FFFFFF; --fafa-border:var(--fafa-neutral-300);
+  --fafa-radius-sm:4px; --fafa-radius-md:8px; --fafa-radius-lg:16px; --fafa-radius-full:9999px;
+  --fafa-font-sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",-apple-system,sans-serif;
+  --shadow-card:0 2px 8px rgba(31,36,33,0.04);
+}
+body { font-family:var(--fafa-font-sans); background-color:var(--fafa-background); color:var(--fafa-foreground); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; font-size:16px; line-height:1.6; }
+.card-surface { background-color:var(--fafa-card); border-radius:var(--fafa-radius-lg); box-shadow:var(--shadow-card); }
+.ai-element { border:1.5px dashed var(--fafa-primary-200); background-color:var(--fafa-primary-50); border-radius:var(--fafa-radius-lg); }
+.no-scrollbar::-webkit-scrollbar { display:none; }
+.no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+.fab { position:fixed; bottom:24px; right:calc((100vw - 414px)/2 + 16px); width:56px; height:56px; border-radius:var(--fafa-radius-full); background:var(--fafa-primary-500); color:#fff; border:none; box-shadow:0 6px 18px rgba(196,97,47,0.32); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; z-index:40; }
+.pill { display:inline-flex; align-items:center; justify-content:center; border-radius:var(--fafa-radius-full); padding:7px 16px; font-size:13px; font-weight:600; border:1px solid var(--fafa-neutral-300); background:var(--fafa-neutral-0); color:var(--fafa-neutral-700); white-space:nowrap; cursor:pointer; }
+.pill-active { background:var(--fafa-primary-500); color:var(--fafa-primary-foreground); border-color:var(--fafa-primary-500); }
+.pill-sm { display:inline-flex; align-items:center; justify-content:center; border-radius:var(--fafa-radius-full); padding:4px 12px; font-size:12px; font-weight:600; border:1px solid var(--fafa-neutral-300); background:var(--fafa-neutral-0); color:var(--fafa-neutral-600); white-space:nowrap; cursor:pointer; }
+.pill-sm-active { background:var(--fafa-primary-50); color:var(--fafa-primary-600); border-color:var(--fafa-primary-300); }
+.tag { display:inline-flex; align-items:center; border-radius:var(--fafa-radius-full); padding:2px 9px; font-size:11px; font-weight:600; }
+.tag-ok { background:rgba(91,140,90,0.12); color:var(--state-success); }
+.tag-warn { background:rgba(212,155,58,0.14); color:var(--state-warning); }
+.tag-err { background:rgba(196,74,63,0.12); color:var(--state-error); }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+</head>
+<body style="background-color:var(--fafa-background); font-family:var(--fafa-font-sans); color:var(--fafa-foreground); max-width:414px; margin:0 auto; min-height:100vh; padding-bottom:96px;">
+
+  <!-- Custom Header -->
+  <header style="position:sticky; top:0; z-index:30; height:48px; padding:0 16px; box-sizing:border-box; background-color:var(--fafa-neutral-100); display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--fafa-neutral-200);">
+    <button data-dom-id="back-home" type="button" aria-label="返回" style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; color:var(--fafa-neutral-900); background:transparent; border:none; cursor:pointer; padding:0;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <h1 style="font-size:17px; font-weight:700; line-height:1.4; color:var(--fafa-neutral-950); margin:0; letter-spacing:0.3px;">排便记录</h1>
+    <span style="width:32px; height:32px; display:inline-block;"></span>
+  </header>
+
+  <!-- Content -->
+  <div style="padding:16px;">
+
+    <!-- Abnormal Rate Stats Card -->
+    <div data-dom-id="excretion-stats" class="card-surface" style="padding:18px; display:flex; align-items:center; gap:18px;">
+      <!-- circular progress -->
+      <div style="position:relative; width:84px; height:84px; flex-shrink:0;">
+        <svg width="84" height="84" viewBox="0 0 84 84" style="transform:rotate(-90deg);">
+          <circle cx="42" cy="42" r="34" fill="none" stroke="var(--fafa-neutral-200)" stroke-width="8"/>
+          <circle cx="42" cy="42" r="34" fill="none" stroke="var(--state-success)" stroke-width="8" stroke-linecap="round"
+                  stroke-dasharray="213.6 213.6" stroke-dashoffset="14.95"/>
+        </svg>
+        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+          <span style="font-size:22px; font-weight:800; color:var(--state-success); line-height:1;">93<span style="font-size:13px;">%</span></span>
+          <span style="font-size:10px; color:var(--fafa-neutral-500); margin-top:2px;">正常率</span>
+        </div>
+      </div>
+      <!-- text -->
+      <div style="flex:1; min-width:0;">
+        <div style="font-size:13px; color:var(--fafa-neutral-600); font-weight:600;">近30天排便健康度</div>
+        <div style="margin-top:8px; display:flex; align-items:center; gap:6px;">
+          <span class="tag tag-err">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px;"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+            异常记录 2 次
+          </span>
+        </div>
+        <div style="margin-top:8px; font-size:12px; color:var(--fafa-neutral-500); line-height:1.5;">共 30 条记录，建议关注偏软 / 异常情况</div>
+      </div>
+    </div>
+
+    <!-- Type Filter -->
+    <div style="display:flex; gap:8px; margin-top:16px;">
+      <button data-dom-id="type-all" type="button" class="pill pill-active">全部</button>
+      <button data-dom-id="type-poop" type="button" class="pill">排便</button>
+      <button data-dom-id="type-pee" type="button" class="pill">排尿</button>
+    </div>
+
+    <!-- Status Filter -->
+    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;">
+      <button data-dom-id="status-normal" type="button" class="pill-sm pill-sm-active">正常</button>
+      <button data-dom-id="status-soft" type="button" class="pill-sm">偏软</button>
+      <button data-dom-id="status-diarrhea" type="button" class="pill-sm">腹泻</button>
+      <button data-dom-id="status-hard" type="button" class="pill-sm">便秘</button>
+      <button data-dom-id="status-blood" type="button" class="pill-sm">带血</button>
+    </div>
+
+    <!-- Date Group: 8月18日 -->
+    <section style="margin-top:18px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:0 2px 8px;">
+        <span style="font-size:13px; font-weight:700; color:var(--fafa-neutral-700);">8月18日 · 今天</span>
+        <span style="font-size:12px; color:var(--fafa-neutral-500);">2 条记录</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <!-- record 1: 排便 正常 深色 -->
+        <div data-dom-id="excretion-record-1" class="card-surface" style="padding:14px; display:flex; gap:12px; cursor:pointer;">
+          <div style="width:40px; height:40px; border-radius:var(--fafa-radius-full); background:rgba(91,140,90,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="var(--state-success)" stroke="none"><path d="M6 8c0-2 1.5-3 3-3 .5-1.5 2-2 3.5-2 2 0 3.5 1.2 3.8 2.8C18.2 6 19 7 19 8.5c0 1.8-1.5 3-3.2 3 .2.4.3.9.3 1.4 0 1.8-1.5 3.1-3.3 3.1-.7 0-1.3-.2-1.8-.5-.6.7-1.5 1-2.5 1-1.9 0-3.4-1.4-3.4-3.2 0-.6.2-1.2.5-1.7C5.4 11.5 5 10.6 5 9.6 5 8.6 5.5 7.8 6 8Z"/></svg>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:14px; font-weight:700; color:var(--fafa-neutral-950);">10:20</span>
+                <span style="font-size:12px; color:var(--fafa-neutral-500);">排便</span>
+              </div>
+              <span class="tag tag-ok">正常</span>
+            </div>
+            <div style="margin-top:8px; display:flex; align-items:center; gap:14px; font-size:12px; color:var(--fafa-neutral-600);">
+              <div style="display:flex; align-items:center; gap:5px;">
+                <span style="display:inline-block; width:11px; height:11px; border-radius:3px; background:#5C4636;"></span>
+                <span>颜色 · 深色</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:5px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--fafa-neutral-500)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                <span>已拍照</span>
+              </div>
+            </div>
+            <div style="margin-top:8px; display:flex; gap:6px;">
+              <div style="width:48px; height:48px; border-radius:var(--fafa-radius-md); background:var(--fafa-neutral-200); background-image:linear-gradient(135deg, #8B6F5A, #5C4636); overflow:hidden;"></div>
+            </div>
+          </div>
+        </div>
+        <!-- record 2: 排尿 -->
+        <div data-dom-id="excretion-record-2" class="card-surface" style="padding:14px; display:flex; gap:12px; cursor:pointer;">
+          <div style="width:40px; height:40px; border-radius:var(--fafa-radius-full); background:rgba(90,142,173,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="var(--state-info)" stroke="none"><path d="M12 2.5S6 9 6 14a6 6 0 0 0 12 0c0-5-6-11.5-6-11.5Z"/></svg>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:14px; font-weight:700; color:var(--fafa-neutral-950);">14:00</span>
+                <span style="font-size:12px; color:var(--fafa-neutral-500);">排尿</span>
+              </div>
+              <span style="font-size:12px; color:var(--fafa-neutral-400);">—</span>
+            </div>
+            <div style="margin-top:8px; font-size:12px; color:var(--fafa-neutral-500);">颜色 / 状态 未记录</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Date Group: 8月17日 -->
+    <section style="margin-top:18px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:0 2px 8px;">
+        <span style="font-size:13px; font-weight:700; color:var(--fafa-neutral-700);">8月17日 · 昨天</span>
+        <span style="font-size:12px; color:var(--fafa-neutral-500);">1 条记录</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <!-- record 3: 排便 偏软 浅色 - warning highlight -->
+        <div data-dom-id="excretion-record-3" class="card-surface" style="padding:14px; display:flex; gap:12px; cursor:pointer; border:1.5px solid var(--state-warning); box-shadow:0 2px 8px rgba(212,155,58,0.12);">
+          <div style="width:40px; height:40px; border-radius:var(--fafa-radius-full); background:rgba(212,155,58,0.14); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="var(--state-warning)" stroke="none"><path d="M6 8c0-2 1.5-3 3-3 .5-1.5 2-2 3.5-2 2 0 3.5 1.2 3.8 2.8C18.2 6 19 7 19 8.5c0 1.8-1.5 3-3.2 3 .2.4.3.9.3 1.4 0 1.8-1.5 3.1-3.3 3.1-.7 0-1.3-.2-1.8-.5-.6.7-1.5 1-2.5 1-1.9 0-3.4-1.4-3.4-3.2 0-.6.2-1.2.5-1.7C5.4 11.5 5 10.6 5 9.6 5 8.6 5.5 7.8 6 8Z"/></svg>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:14px; font-weight:700; color:var(--fafa-neutral-950);">09:00</span>
+                <span style="font-size:12px; color:var(--fafa-neutral-500);">排便</span>
+              </div>
+              <span class="tag tag-warn">偏软</span>
+            </div>
+            <div style="margin-top:8px; display:flex; align-items:center; gap:14px; font-size:12px; color:var(--fafa-neutral-600);">
+              <div style="display:flex; align-items:center; gap:5px;">
+                <span style="display:inline-block; width:11px; height:11px; border-radius:3px; background:#C9A98A;"></span>
+                <span>颜色 · 浅色</span>
+              </div>
+            </div>
+            <div style="margin-top:8px; display:flex; align-items:center; gap:4px; font-size:11px; color:var(--state-warning); font-weight:600;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="m10.3 3.9-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3l-8-14a2 2 0 0 0-3.4 0Z"/></svg>
+              <span>AI 提示：建议持续观察，若 24h 内未恢复请就医</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Floating Add Button -->
+  <button data-dom-id="add-excretion" type="button" class="fab" aria-label="添加排便记录">
+    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+  </button>
+
+</body>
+</html>

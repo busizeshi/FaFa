@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>登录</title>
+  <style id="theme-vars">
+:root, html.light {
+  --fafa-primary-50:#FAF0EB; --fafa-primary-100:#F5E0D5; --fafa-primary-200:#EDC5B0; --fafa-primary-300:#E0A585; --fafa-primary-400:#D38057; --fafa-primary-500:#C4612F; --fafa-primary-600:#A85228; --fafa-primary-700:#8B4221; --fafa-primary-foreground:#FFFFFF;
+  --fafa-neutral-0:#FFFFFF; --fafa-neutral-50:#FBF9F5; --fafa-neutral-100:#F7F4EF; --fafa-neutral-200:#EFEAE1; --fafa-neutral-300:#E7E1D7; --fafa-neutral-400:#D4CDC0; --fafa-neutral-500:#B8B0A3; --fafa-neutral-600:#9A9185; --fafa-neutral-700:#7C7367; --fafa-neutral-800:#5C635D; --fafa-neutral-900:#3D3D3A; --fafa-neutral-950:#1F2421;
+  --state-success:#5B8C5A; --state-warning:#D49B3A; --state-error:#C44A3F; --state-info:#5A8EAD;
+  --fafa-background:var(--fafa-neutral-100); --fafa-foreground:var(--fafa-neutral-950); --fafa-card:#FFFFFF; --fafa-border:var(--fafa-neutral-300);
+  --fafa-radius-sm:4px; --fafa-radius-md:8px; --fafa-radius-lg:16px; --fafa-radius-full:9999px;
+  --fafa-font-sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",-apple-system,sans-serif;
+  --shadow-card:0 2px 8px rgba(31,36,33,0.04);
+}
+body { font-family:var(--fafa-font-sans); background-color:var(--fafa-background); color:var(--fafa-foreground); -webkit-font-smoothing:antialiased; font-size:16px; line-height:1.6; }
+.card-surface { background-color:var(--fafa-card); border-radius:var(--fafa-radius-lg); box-shadow:var(--shadow-card); }
+.ai-element { border:1.5px dashed var(--fafa-primary-200); background-color:var(--fafa-primary-50); border-radius:var(--fafa-radius-lg); }
+.tag-pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:var(--fafa-radius-full); font-size:12px; font-weight:500; }
+.no-scrollbar::-webkit-scrollbar { display:none; }
+.no-scrollbar { scrollbar-width:none; -ms-overflow-style:none; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+</head>
+<body style="background-color:var(--fafa-background); font-family:var(--fafa-font-sans); color:var(--fafa-foreground); max-width:414px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;">
+
+  <!-- Main content (centered, fills space) -->
+  <div class="flex-1 flex flex-col items-center justify-center px-6" style="padding-top:64px; padding-bottom:32px;">
+
+    <!-- App logo area -->
+    <div data-dom-id="app-branding" class="flex flex-col items-center text-center">
+      <!-- Paw print in terracotta circle -->
+      <div class="flex items-center justify-center" style="width:80px; height:80px; border-radius:9999px; background:linear-gradient(135deg,var(--fafa-primary-400),var(--fafa-primary-600)); box-shadow:0 8px 24px rgba(196,97,47,0.25);">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="4" r="2" fill="#FFFFFF" stroke="none"/>
+          <circle cx="18" cy="8" r="2" fill="#FFFFFF" stroke="none"/>
+          <circle cx="20" cy="16" r="2" fill="#FFFFFF" stroke="none"/>
+          <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.46 6 15.633A4 4 0 0 1 9 10z" fill="#FFFFFF" stroke="none"/>
+        </svg>
+      </div>
+      <h1 class="font-bold mt-4" style="font-size:32px; color:var(--fafa-neutral-950); letter-spacing:-0.02em;">FaFa</h1>
+      <p class="mt-2 text-sm" style="color:var(--fafa-neutral-600); line-height:1.5;">记录它的一生，也让 AI 记住它的一生</p>
+    </div>
+
+    <!-- Feature highlights -->
+    <div data-dom-id="feature-highlights" class="flex flex-col gap-4 mt-12 w-full">
+      <!-- 1. 日常记录 -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center justify-center shrink-0" style="width:44px; height:44px; border-radius:12px; background-color:var(--fafa-primary-50);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fafa-primary-500);"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+        </div>
+        <div>
+          <h3 class="text-[15px] font-semibold" style="color:var(--fafa-neutral-900);">日常记录</h3>
+          <p class="text-xs" style="color:var(--fafa-neutral-600);">喂食、体重、排便，2秒完成</p>
+        </div>
+      </div>
+      <!-- 2. 成长档案 -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center justify-center shrink-0" style="width:44px; height:44px; border-radius:12px; background-color:var(--fafa-primary-50);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fafa-primary-500);"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+        </div>
+        <div>
+          <h3 class="text-[15px] font-semibold" style="color:var(--fafa-neutral-900);">成长档案</h3>
+          <p class="text-xs" style="color:var(--fafa-neutral-600);">照片、日记、时间轴自动生成</p>
+        </div>
+      </div>
+      <!-- 3. AI 助手 -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center justify-center shrink-0" style="width:44px; height:44px; border-radius:12px; background-color:var(--fafa-primary-50);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fafa-primary-500);"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/></svg>
+        </div>
+        <div>
+          <h3 class="text-[15px] font-semibold" style="color:var(--fafa-neutral-900);">AI 助手</h3>
+          <p class="text-xs" style="color:var(--fafa-neutral-600);">读懂你的宠物数据</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spacer -->
+    <div class="flex-1" style="min-height:40px;"></div>
+
+    <!-- Login area -->
+    <div class="w-full flex flex-col items-center" style="max-width:320px;">
+      <!-- WeChat login button -->
+      <button data-dom-id="btn-wechat-login" class="w-full flex items-center justify-center gap-2.5 cursor-pointer" style="background-color:#07C160; color:#FFFFFF; border-radius:9999px; padding:14px 24px; font-size:16px; font-weight:600; box-shadow:0 4px 12px rgba(7,193,96,0.25); border:none;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M8.7 3.5C4.9 3.5 1.8 6 1.8 9.1c0 1.8 1 3.4 2.6 4.5l-.5 1.6 1.9-1c.7.2 1.4.3 2.1.3h.4c-.1-.5-.2-1-.2-1.5 0-3 2.9-5.4 6.4-5.4h.6C14.6 5.4 12 3.5 8.7 3.5zM6.5 8c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9zm4.4 0c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9z"/><path d="M22.2 13.1c0-2.6-2.6-4.7-5.8-4.7s-5.8 2.1-5.8 4.7 2.6 4.7 5.8 4.7c.7 0 1.4-.1 2-.3l1.6.8-.4-1.3c1.4-.9 2.6-2.3 2.6-3.9zm-7.7-.7c-.4 0-.8-.3-.8-.8 0-.4.3-.8.8-.8.4 0 .8.3.8.8 0 .4-.4.8-.8.8zm3.8 0c-.4 0-.8-.3-.8-.8 0-.4.3-.8.8-.8.4 0 .8.3.8.8 0 .4-.4.8-.8.8z"/></svg>
+        微信一键登录
+      </button>
+
+      <!-- User agreement checkbox -->
+      <div class="flex items-start gap-2 mt-4" style="max-width:300px;">
+        <div data-dom-id="agree-checkbox" class="flex items-center justify-center shrink-0 cursor-pointer" style="width:18px; height:18px; border-radius:4px; border:1.5px solid var(--fafa-primary-500); background-color:var(--fafa-primary-500); margin-top:1px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <label class="text-xs" style="color:var(--fafa-neutral-700); line-height:1.5;">
+          我已阅读并同意
+          <span data-dom-id="link-user-agreement" class="cursor-pointer" style="color:var(--fafa-primary-600);">《用户协议》</span>
+          和
+          <span data-dom-id="link-privacy-policy" class="cursor-pointer" style="color:var(--fafa-primary-600);">《隐私政策》</span>
+        </label>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="text-center" style="padding:16px 0 24px 0;">
+    <p class="text-xs" style="color:var(--fafa-neutral-400);">FaFa · 记录宠物一生</p>
+  </div>
+
+</body>
+</html>

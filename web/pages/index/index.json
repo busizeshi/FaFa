@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "今天",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#0F1117",
+  "backgroundTextStyle": "light"
+}

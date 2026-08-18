@@ -1,10 +1,13 @@
 package com.fafa.application.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.fafa.common.exception.BusinessException;
 import com.fafa.domain.model.pet.Pet;
+import com.fafa.domain.model.pet.PetGender;
 import com.fafa.domain.model.pet.PetId;
 import com.fafa.domain.model.pet.PetSpecies;
 import com.fafa.domain.repository.PetRepository;
+import com.fafa.interfaces.dto.request.UpdatePetRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -104,6 +107,121 @@ public class PetApplicationService {
     }
 
     /**
+     * 更新宠物信息
+     * 
+     * @param petId 宠物 ID
+     * @param userId 用户 ID
+     * @param request 更新请求
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updatePet(Long petId, Long userId, UpdatePetRequest request) {
+        log.info("更新宠物信息: petId={}, userId={}", petId, userId);
+
+        // 1. 加载领域对象
+        Pet pet = petRepository.findById(new PetId(petId))
+                .orElseThrow(() -> new BusinessException("宠物不存在"));
+
+        // 2. 权限校验
+        if (!pet.getUserId().equals(userId)) {
+            throw new BusinessException("无权修改该宠物");
+        }
+
+        // 3. 更新属性
+        if (StrUtil.isNotBlank(request.getName())) {
+            pet.setName(request.getName());
+        }
+        if (StrUtil.isNotBlank(request.getAvatar())) {
+            pet.setAvatar(request.getAvatar());
+        }
+        if (StrUtil.isNotBlank(request.getBreed())) {
+            pet.setBreed(request.getBreed());
+        }
+        if (StrUtil.isNotBlank(request.getGender())) {
+            pet.setGender(PetGender.fromCode(request.getGender()));
+        }
+        if (request.getBirthDate() != null) {
+            pet.setBirthDate(request.getBirthDate());
+        }
+        if (request.getAdoptDate() != null) {
+            pet.setAdoptDate(request.getAdoptDate());
+        }
+        if (request.getWeight() != null) {
+            pet.updateWeight(request.getWeight().doubleValue());
+        }
+        if (request.getIsNeutered() != null) {
+            pet.setIsNeutered(request.getIsNeutered());
+        }
+        if (StrUtil.isNotBlank(request.getCoatColor())) {
+            pet.setCoatColor(request.getCoatColor());
+        }
+        if (request.getRemarks() != null) {
+            pet.setRemarks(request.getRemarks());
+        }
+
+        // 4. 持久化
+        petRepository.save(pet);
+
+        log.info("宠物信息更新成功: petId={}", petId);
+    }
+
+    /**
+     * 更新宠物头像
+     * 
+     * @param petId 宠物 ID
+     * @param userId 用户 ID
+     * @param avatarUrl 头像 URL
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updatePetAvatar(Long petId, Long userId, String avatarUrl) {
+        log.info("更新宠物头像: petId={}, userId={}, avatarUrl={}", petId, userId, avatarUrl);
+
+        // 1. 加载领域对象
+        Pet pet = petRepository.findById(new PetId(petId))
+                .orElseThrow(() -> new BusinessException("宠物不存在"));
+
+        // 2. 权限校验
+        if (!pet.getUserId().equals(userId)) {
+            throw new BusinessException("无权修改该宠物");
+        }
+
+        // 3. 更新头像
+        pet.setAvatar(avatarUrl);
+
+        // 4. 持久化
+        petRepository.save(pet);
+
+        log.info("宠物头像更新成功: petId={}", petId);
+    }
+
+    /**
+     * 宠物排序
+     * 
+     * @param userId 用户 ID
+     * @param petIds 宠物 ID 列表（按顺序）
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void sortPets(Long userId, List<Long> petIds) {
+        log.info("宠物排序: userId={}, petIds={}", userId, petIds);
+
+        for (int i = 0; i < petIds.size(); i++) {
+            Long petId = petIds.get(i);
+            Pet pet = petRepository.findById(new PetId(petId))
+                    .orElseThrow(() -> new BusinessException("宠物不存在: " + petId));
+
+            // 权限校验
+            if (!pet.getUserId().equals(userId)) {
+                throw new BusinessException("无权修改该宠物");
+            }
+
+            // 更新排序
+            pet.setSortOrder(i);
+            petRepository.save(pet);
+        }
+
+        log.info("宠物排序成功");
+    }
+
+    /**
      * 删除宠物
      * 
      * @param petId 宠物 ID
@@ -122,7 +240,7 @@ public class PetApplicationService {
             throw new BusinessException("无权删除该宠物");
         }
 
-        // 3. 删除
+        // 3. 软删除
         petRepository.deleteById(new PetId(petId));
 
         log.info("宠物删除成功: petId={}", petId);

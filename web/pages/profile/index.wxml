@@ -1,0 +1,47 @@
+<view class="container">
+  <view class="header-section">
+    <view class="user-card">
+      <view class="user-avatar" bindtap="onAvatarTap">
+        <image wx:if="{{userInfo && userInfo.avatar}}" src="{{userInfo.avatar}}" mode="aspectFill" />
+        <text wx:else class="avatar-placeholder">👤</text>
+      </view>
+      <view class="user-info">
+        <text class="user-name">{{userInfo ? userInfo.nickname : '宠物主人'}}</text>
+        <text class="user-id">ID: {{userInfo ? userInfo.id : '未登录'}}</text>
+      </view>
+    </view>
+
+    <view class="stats-row">
+      <view class="stat-item">
+        <text class="stat-value">{{stats.petsCount}}</text>
+        <text class="stat-label">宠物</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.recordsCount}}</text>
+        <text class="stat-label">记录</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.daysCount}}</text>
+        <text class="stat-label">陪伴天数</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="menu-section">
+    <view class="menu-item" wx:for="{{menuItems}}" wx:key="id"
+          data-url="{{item.url}}" bindtap="onMenuTap">
+      <view class="menu-icon">{{item.icon}}</view>
+      <view class="menu-content">
+        <text class="menu-title">{{item.title}}</text>
+        <text class="menu-desc">{{item.desc}}</text>
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <view class="action-section">
+    <button class="btn-logout" bindtap="onLogout">退出登录</button>
+  </view>
+</view>

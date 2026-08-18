@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AI 发现</title>
+  <style id="theme-vars">
+:root, html.light {
+  --fafa-primary-50:#FAF0EB; --fafa-primary-100:#F5E0D5; --fafa-primary-200:#EDC5B0; --fafa-primary-300:#E0A585; --fafa-primary-400:#D38057; --fafa-primary-500:#C4612F; --fafa-primary-600:#A85228; --fafa-primary-700:#8B4221; --fafa-primary-foreground:#FFFFFF;
+  --fafa-neutral-0:#FFFFFF; --fafa-neutral-50:#FBF9F5; --fafa-neutral-100:#F7F4EF; --fafa-neutral-200:#EFEAE1; --fafa-neutral-300:#E7E1D7; --fafa-neutral-400:#D4CDC0; --fafa-neutral-500:#B8B0A3; --fafa-neutral-600:#9A9185; --fafa-neutral-700:#7C7367; --fafa-neutral-800:#5C635D; --fafa-neutral-900:#3D3D3A; --fafa-neutral-950:#1F2421;
+  --state-success:#5B8C5A; --state-warning:#D49B3A; --state-error:#C44A3F; --state-info:#5A8EAD;
+  --fafa-background:var(--fafa-neutral-100); --fafa-foreground:var(--fafa-neutral-950); --fafa-card:#FFFFFF; --fafa-border:var(--fafa-neutral-300);
+  --fafa-radius-sm:4px; --fafa-radius-md:8px; --fafa-radius-lg:16px; --fafa-radius-full:9999px;
+  --fafa-font-sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",-apple-system,sans-serif;
+  --shadow-card:0 2px 8px rgba(31,36,33,0.04);
+}
+body { font-family:var(--fafa-font-sans); background-color:var(--fafa-background); color:var(--fafa-foreground); -webkit-font-smoothing:antialiased; font-size:16px; line-height:1.6; }
+.card-surface { background-color:var(--fafa-card); border-radius:var(--fafa-radius-lg); box-shadow:var(--shadow-card); }
+.ai-element { border:1.5px dashed var(--fafa-primary-200); background-color:var(--fafa-primary-50); border-radius:var(--fafa-radius-lg); }
+.tag-pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:var(--fafa-radius-full); font-size:12px; font-weight:500; }
+.no-scrollbar::-webkit-scrollbar { display:none; }
+.no-scrollbar { scrollbar-width:none; -ms-overflow-style:none; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+</head>
+<body style="background-color:var(--fafa-background); font-family:var(--fafa-font-sans); color:var(--fafa-foreground); max-width:414px; margin:0 auto; min-height:100vh; padding-bottom:56px;">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-20 flex items-center gap-3 px-4 py-3" style="background-color:var(--fafa-card); border-bottom:1px solid var(--fafa-border);">
+    <button data-dom-id="back-ai-home" class="flex items-center justify-center w-9 h-9 rounded-full" style="background-color:var(--fafa-neutral-100);" aria-label="返回">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fafa-neutral-900);"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <h1 class="text-lg font-semibold" style="color:var(--fafa-neutral-900);">AI 发现</h1>
+  </header>
+
+  <!-- Top bar: mark all read + unread count -->
+  <div class="flex items-center justify-between px-4 pt-3">
+    <span data-dom-id="mark-all-read" class="text-sm font-medium cursor-pointer" style="color:var(--fafa-primary-600);">全部标记已读</span>
+    <span class="tag-pill" style="background-color:var(--fafa-primary-50); color:var(--fafa-primary-700);">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+      3条未读
+    </span>
+  </div>
+
+  <!-- Discovery card list -->
+  <div class="flex flex-col gap-3 px-4 pt-3 pb-4">
+
+    <!-- 1. 体重趋势 - 高优先级 - 未读 -->
+    <div data-dom-id="discovery-1" class="card-surface relative overflow-hidden" style="padding:16px;">
+      <!-- Unread red dot -->
+      <div style="position:absolute; top:14px; left:6px; width:8px; height:8px; border-radius:9999px; background-color:var(--state-error);"></div>
+      <div class="flex items-start gap-3" style="padding-left:6px;">
+        <!-- Type icon -->
+        <div class="flex items-center justify-center shrink-0" style="width:40px; height:40px; border-radius:12px; background-color:var(--fafa-primary-50);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fafa-primary-500);"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 2 5-5"/></svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="tag-pill" style="background-color:rgba(196,74,63,0.10); color:var(--state-error);">高优先级</span>
+            <span class="text-xs" style="color:var(--fafa-neutral-500);">2026-08-17</span>
+          </div>
+          <h3 class="text-[15px] font-semibold" style="color:var(--fafa-neutral-950);">体重趋势</h3>
+          <p class="text-sm mt-1" style="color:var(--fafa-neutral-700); line-height:1.5;">最近30天体重从5.3kg降至5.0kg</p>
+          <div class="mt-3">
+            <button data-dom-id="ask-ai-1" class="tag-pill cursor-pointer" style="background-color:var(--fafa-primary-500); color:var(--fafa-primary-foreground); padding:6px 14px; gap:4px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/></svg>
+              问问AI详情
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 饮食规律 - 中优先级 - 未读 -->
+    <div data-dom-id="discovery-2" class="card-surface relative overflow-hidden" style="padding:16px;">
+      <div style="position:absolute; top:14px; left:6px; width:8px; height:8px; border-radius:9999px; background-color:var(--state-error);"></div>
+      <div class="flex items-start gap-3" style="padding-left:6px;">
+        <div class="flex items-center justify-center shrink-0" style="width:40px; height:40px; border-radius:12px; background-color:#FFFBEB;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#D97706;"><path d="M3 2v7c0 1.1.9 2 2 2h0a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="tag-pill" style="background-color:rgba(212,155,58,0.12); color:var(--state-warning);">中优先级</span>
+            <span class="text-xs" style="color:var(--fafa-neutral-500);">2026-08-15</span>
+          </div>
+          <h3 class="text-[15px] font-semibold" style="color:var(--fafa-neutral-950);">饮食规律</h3>
+          <p class="text-sm mt-1" style="color:var(--fafa-neutral-700); line-height:1.5;">最近两周平均每日喂食量比上个月减少约8%</p>
+          <div class="mt-3">
+            <button data-dom-id="ask-ai-2" class="tag-pill cursor-pointer" style="background-color:var(--fafa-primary-500); color:var(--fafa-primary-foreground); padding:6px 14px; gap:4px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/></svg>
+              问问AI详情
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 成长里程碑 - 低优先级 - 未读 -->
+    <div data-dom-id="discovery-3" class="card-surface relative overflow-hidden" style="padding:16px;">
+      <div style="position:absolute; top:14px; left:6px; width:8px; height:8px; border-radius:9999px; background-color:var(--state-error);"></div>
+      <div class="flex items-start gap-3" style="padding-left:6px;">
+        <div class="flex items-center justify-center shrink-0" style="width:40px; height:40px; border-radius:12px; background-color:#F0FDF4;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--state-success);"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9z"/><path d="M8 21h8"/><path d="M12 17v4"/><path d="M5.5 12a6.5 6.5 0 0 1 13 0"/></svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="tag-pill" style="background-color:rgba(90,142,173,0.12); color:var(--state-info);">低优先级</span>
+            <span class="text-xs" style="color:var(--fafa-neutral-500);">2026-08-10</span>
+          </div>
+          <h3 class="text-[15px] font-semibold" style="color:var(--fafa-neutral-950);">成长里程碑</h3>
+          <p class="text-sm mt-1" style="color:var(--fafa-neutral-700); line-height:1.5;">豆包来到你身边已满873天</p>
+          <div class="mt-3">
+            <button data-dom-id="ask-ai-3" class="tag-pill cursor-pointer" style="background-color:var(--fafa-primary-500); color:var(--fafa-primary-foreground); padding:6px 14px; gap:4px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/></svg>
+              问问AI详情
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 健康提醒 - 已读 -->
+    <div data-dom-id="discovery-4" class="card-surface relative overflow-hidden" style="padding:16px; opacity:0.6;">
+      <div class="flex items-start gap-3">
+        <div class="flex items-center justify-center shrink-0" style="width:40px; height:40px; border-radius:12px; background-color:var(--fafa-neutral-100);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--fafa-neutral-500);"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="tag-pill" style="background-color:var(--fafa-neutral-100); color:var(--fafa-neutral-600);">已读</span>
+            <span class="text-xs" style="color:var(--fafa-neutral-500);">2026-08-14</span>
+          </div>
+          <h3 class="text-[15px] font-semibold" style="color:var(--fafa-neutral-800);">健康提醒</h3>
+          <p class="text-sm mt-1" style="color:var(--fafa-neutral-600); line-height:1.5;">8月14日已完成本季度驱虫</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
