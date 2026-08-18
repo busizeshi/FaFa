@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FaFa - 宠物档案</title>
+  <link rel="stylesheet" href="../.design_library/NoteGather/colors_and_type.css">
+  <link rel="stylesheet" href="../.design_library/NoteGather/components.css">
+  <style>
+    body {
+      background: var(--gradient-spring);
+      width: 375px;
+      margin: 0 auto;
+      padding-bottom: 20px;
+    }
+    
+    /* 顶部导航 - 毛玻璃 */
+    .nav-bar {
+      background: var(--color-glass-bg);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--color-glass-border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: var(--z-sticky);
+    }
+    
+    .nav-back {
+      font-size: 18px;
+      color: var(--color-text-primary);
+      cursor: pointer;
+      transition: all var(--duration-fast);
+    }
+    
+    .nav-back:hover {
+      color: var(--notegather-primary-500);
+    }
+    
+    .nav-title {
+      flex: 1;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+    
+    .nav-edit {
+      font-size: 14px;
+      color: var(--notegather-primary-600);
+      cursor: pointer;
+      transition: all var(--duration-fast);
+    }
+    
+    .nav-edit:hover {
+      color: var(--notegather-primary-700);
+    }
+    
+    /* 页面内容 */
+    .page-content {
+      padding: 16px;
+    }
+    
+    /* 宠物信息卡 - 渐变背景 */
+    .pet-info-card {
+      background: var(--gradient-card);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-3d);
+      transition: all var(--duration-normal) var(--ease-bounce);
+    }
+    
+    .pet-info-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-3d), 0 12px 24px rgba(124, 179, 66, 0.25);
+    }
+    
+    .pet-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .pet-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--notegather-primary-500);
+      box-shadow: 0 4px 12px rgba(124, 179, 66, 0.3);
+    }
+    
+    .pet-basic h2 {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .pet-breed {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+    }
+    
+    .pet-details {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    .detail-item {
+      background: var(--color-surface-primary);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      text-align: center;
+    }
+    
+    .detail-label {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+      margin-bottom: 4px;
+    }
+    
+    .detail-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--notegather-primary-600);
+    }
+    
+    /* 功能入口网格 */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .feature-item {
+      background: var(--color-surface-primary);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-bounce);
+      box-shadow: var(--shadow-2);
+    }
+    
+    .feature-item:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--notegather-primary-400);
+    }
+    
+    .feature-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+    
+    .feature-label {
+      font-size: 14px;
+      color: var(--color-text-primary);
+      font-weight: 500;
+    }
+    
+    /* 最近动态 - 毛玻璃 */
+    .recent-card {
+      background: var(--color-glass-bg);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--color-glass-border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-2);
+    }
+    
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .title-icon {
+      font-size: 18px;
+    }
+    
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--color-border-subtle);
+      transition: all var(--duration-fast);
+    }
+    
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+    
+    .activity-item:hover {
+      padding-left: 4px;
+    }
+    
+    .activity-icon {
+      font-size: 20px;
+    }
+    
+    .activity-content {
+      flex: 1;
+    }
+    
+    .activity-text {
+      font-size: 14px;
+      color: var(--color-text-primary);
+      margin-bottom: 2px;
+    }
+    
+    .activity-time {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+    }
+    
+    /* AI发现卡片 - 樱花粉背景 */
+    .ai-discovery {
+      background: linear-gradient(135deg, var(--notegather-secondary-200) 0%, var(--color-surface-primary) 100%);
+      border: 2px dashed var(--notegather-primary-400);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-bounce);
+      box-shadow: var(--shadow-2);
+    }
+    
+    .ai-discovery:hover {
+      border-style: solid;
+      border-color: var(--notegather-primary-500);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-3);
+    }
+    
+    .ai-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .ai-icon {
+      font-size: 18px;
+    }
+    
+    .ai-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--notegather-primary-700);
+    }
+    
+    .ai-content {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航 -->
+  <div class="nav-bar">
+    <span class="nav-back">←</span>
+    <span class="nav-title">宠物档案</span>
+    <span class="nav-edit">编辑</span>
+  </div>
+  
+  <div class="page-content">
+    <!-- 宠物信息卡 -->
+    <div class="pet-info-card">
+      <div class="pet-header">
+        <img class="pet-avatar" src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&h=300&fit=crop" alt="豆包">
+        <div class="pet-basic">
+          <h2>豆包</h2>
+          <div class="pet-breed">英国短毛猫 · 公猫</div>
+        </div>
+      </div>
+      <div class="pet-details">
+        <div class="detail-item">
+          <div class="detail-label">年龄</div>
+          <div class="detail-value">3岁2个月</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">体重</div>
+          <div class="detail-value">5.2kg</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">生日</div>
+          <div class="detail-value">2023-06-15</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">在一起</div>
+          <div class="detail-value">1186天</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 功能入口 -->
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="feature-icon">📈</div>
+        <div class="feature-label">成长曲线</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🌸</div>
+        <div class="feature-label">照片相册</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🍃</div>
+        <div class="feature-label">日记回忆</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🔔</div>
+        <div class="feature-label">健康提醒</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">📊</div>
+        <div class="feature-label">数据报告</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-label">更多功能</div>
+      </div>
+    </div>
+    
+    <!-- 最近动态 -->
+    <div class="recent-card">
+      <div class="card-title">
+        <span class="title-icon">⚡</span>
+        <span>最近动态</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon">🌱</span>
+        <div class="activity-content">
+          <div class="activity-text">早餐 - 皇家猫粮 40g</div>
+          <div class="activity-time">今天 08:15</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon">⚖️</span>
+        <div class="activity-content">
+          <div class="activity-text">体重记录 5.2kg</div>
+          <div class="activity-time">今天 09:30</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon">🌸</span>
+        <div class="activity-content">
+          <div class="activity-text">添加了2张新照片</div>
+          <div class="activity-time">昨天 14:20</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon">💧</span>
+        <div class="activity-content">
+          <div class="activity-text">饮水记录 150ml</div>
+          <div class="activity-time">昨天 11:45</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- AI发现 -->
+    <div class="ai-discovery">
+      <div class="ai-header">
+        <span class="ai-icon">🌿</span>
+        <span class="ai-title">AI 健康发现</span>
+      </div>
+      <div class="ai-content">
+        豆包本周活动量正常，食欲良好，体重稳定增长。建议继续保持现有的喂养计划，每周记录一次体重变化。
+      </div>
+    </div>
+  </div>
+</body>
+</html>

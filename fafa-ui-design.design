@@ -1,0 +1,174 @@
+{
+  "name": "FaFa AI宠物生活助手",
+  "description": "完整的微信小程序UI设计系统 - NoteGather 春日自然主题",
+  "version": "2.0.0",
+  "designSystem": "NoteGather",
+  "theme": "Spring Nature 春日自然",
+  "pages": [
+    {
+      "id": "home",
+      "name": "首页",
+      "path": "pages/home/index.html",
+      "description": "今日概览+快速记录 - 毛玻璃卡片+春日绿主题"
+    },
+    {
+      "id": "record-index",
+      "name": "记录模块入口",
+      "path": "pages/record/index.html",
+      "description": "记录类型入口页 - 3D阴影统计卡片"
+    },
+    {
+      "id": "feeding-list",
+      "name": "喂食记录列表",
+      "path": "pages/record/feeding/list.html",
+      "description": "喂食记录历史 - 森林渐变AI分析"
+    },
+    {
+      "id": "weight-list",
+      "name": "体重记录",
+      "path": "pages/record/weight/list.html",
+      "description": "体重趋势图和列表 - Canvas春日绿折线图"
+    },
+    {
+      "id": "pet-detail",
+      "name": "宠物档案",
+      "path": "pages/pet/detail.html",
+      "description": "宠物详细信息 - 渐变卡片+AI发现"
+    },
+    {
+      "id": "pet-create",
+      "name": "新建宠物",
+      "path": "pages/pet/create.html",
+      "description": "新建宠物表单 - 春日绿焦点态"
+    },
+    {
+      "id": "pet-photos",
+      "name": "照片网格",
+      "path": "pages/pet/photos.html",
+      "description": "宠物照片集 - 3D阴影+悬停缩放"
+    },
+    {
+      "id": "modal-feeding",
+      "name": "喂食记录弹窗",
+      "path": "pages/modals/feeding.html",
+      "description": "快速记录喂食 - 毛玻璃弹窗"
+    },
+    {
+      "id": "modal-ai",
+      "name": "AI对话面板",
+      "path": "pages/modals/ai-chat.html",
+      "description": "AI助手对话 - 樱花粉/天空蓝消息"
+    },
+    {
+      "id": "empty-state",
+      "name": "空状态页面",
+      "path": "pages/components/empty.html",
+      "description": "空状态展示 - 浮动动画"
+    }
+  ],
+  "designSystem": {
+    "name": "NoteGather",
+    "version": "1.0",
+    "theme": "Spring Nature 春日自然",
+    "colors": {
+      "primary": "#7CB342",
+      "primaryLight": "#9CCC65",
+      "primaryDark": "#689F38",
+      "secondary": {
+        "pink": "#FFCDD2",
+        "blue": "#81D4FA",
+        "yellow": "#FFF59D",
+        "purple": "#CE93D8"
+      },
+      "background": "gradient-spring",
+      "surface": "#FFFFFF",
+      "glass": "rgba(255, 255, 255, 0.7)",
+      "text": {
+        "dark": "#212121",
+        "normal": "#616161",
+        "light": "#9E9E9E",
+        "muted": "#BDBDBD"
+      },
+      "border": "#E0E0E0"
+    },
+    "gradients": {
+      "primary": "linear-gradient(135deg, #7CB342 0%, #9CCC65 100%)",
+      "spring": "linear-gradient(135deg, #C8E6C9 0%, #FFF9C4 50%, #FFCDD2 100%)",
+      "forest": "linear-gradient(135deg, #C8E6C9 0%, #A5D6A7 100%)",
+      "card": "linear-gradient(180deg, #FFFFFF 0%, #F1F8E9 100%)"
+    },
+    "effects": {
+      "glass": {
+        "background": "rgba(255, 255, 255, 0.7)",
+        "backdropFilter": "blur(20px) saturate(180%)",
+        "border": "rgba(255, 255, 255, 0.3)"
+      },
+      "shadow3d": "0 8px 16px rgba(124, 179, 66, 0.15), 0 4px 8px rgba(124, 179, 66, 0.1)"
+    },
+    "spacing": {
+      "page": "16px",
+      "card": "16px",
+      "cardGap": "12px"
+    },
+    "radius": {
+      "small": "4px",
+      "medium": "8px",
+      "large": "12px",
+      "xl": "16px",
+      "pill": "999px"
+    },
+    "animation": {
+      "fast": "150ms",
+      "normal": "300ms",
+      "slow": "500ms",
+      "easing": {
+        "smooth": "cubic-bezier(0.25, 0.1, 0.25, 1)",
+        "bounce": "cubic-bezier(0.68, -0.55, 0.265, 1.55)"
+      }
+    }
+  },
+  "icons": {
+    "feeding": "🌱",
+    "water": "💧",
+    "weight": "⚖️",
+    "poop": "🍂",
+    "photo": "🌸",
+    "event": "🍃",
+    "ai": "🌿",
+    "data": "📈",
+    "diary": "🍃",
+    "reminder": "🔔"
+  },
+  "features": [
+    "毛玻璃效果（Glassmorphism）",
+    "3D立体阴影",
+    "春日绿渐变",
+    "Bounce弹性动效",
+    "Canvas图表（春日绿配色）",
+    "真实内容填充",
+    "小程序标准尺寸（375px）",
+    "春天主题图标"
+  ],
+  "changelog": {
+    "2.0.0": {
+      "date": "2026-08-18",
+      "changes": [
+        "完全重新设计为 NoteGather 春日自然主题",
+        "主色从赤陶橙 #C4612F 改为春日绿 #7CB342",
+        "背景改为春日三色渐变（嫩绿→奶黄→樱粉）",
+        "应用毛玻璃效果到关键卡片",
+        "添加3D立体阴影",
+        "更新所有交互动效为bounce弹性缓动",
+        "图标系统更新为春天/自然主题",
+        "Canvas折线图改为春日绿渐变",
+        "统一使用 NoteGather 设计代币"
+      ]
+    },
+    "1.0.0": {
+      "date": "2026-08-18",
+      "changes": [
+        "初始版本 - 温暖大地色系设计"
+      ]
+    }
+  }
+}

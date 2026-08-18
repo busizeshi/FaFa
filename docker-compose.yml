@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # Java 服务
+  fafa-java:
+    build:
+      context: ./fafa-java
+      dockerfile: Dockerfile
+    container_name: fafa-java
+    ports:
+      - "8080:8080"
+    environment:
+      # MySQL 配置
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: ${MYSQL_PORT}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      
+      # Redis 配置
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      
+      # RocketMQ 配置
+      ROCKETMQ_HOST: ${ROCKETMQ_HOST}
+      ROCKETMQ_PORT: ${ROCKETMQ_PORT}
+      
+      # MinIO 配置
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      
+      # AI 服务地址
+      AI_SERVICE_URL: http://fafa-python:8000
+      
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: prod
+    volumes:
+      - ./logs/java:/app/logs
+    networks:
+      - fafa-network
+    restart: unless-stopped
+    depends_on:
+      - fafa-python
+
+  # Python AI 服务
+  fafa-python:
+    build:
+      context: ./fafa-python
+      dockerfile: Dockerfile
+    container_name: fafa-python
+    ports:
+      - "8000:8000"
+    environment:
+      # 通义千问 API Key
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY}
+      
+      # MySQL 配置
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: ${MYSQL_PORT}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      
+      # Redis 配置
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      
+      # Qdrant 配置
+      QDRANT_HOST: ${QDRANT_HOST}
+      QDRANT_PORT: ${QDRANT_PORT}
+      
+      # RocketMQ 配置
+      ROCKETMQ_HOST: ${ROCKETMQ_HOST}
+      ROCKETMQ_PORT: ${ROCKETMQ_PORT}
+      
+      # Java 服务地址
+      JAVA_SERVICE_URL: http://fafa-java:8080
+    volumes:
+      - ./logs/python:/app/logs
+    networks:
+      - fafa-network
+    restart: unless-stopped
+
+networks:
+  fafa-network:
+    driver: bridge

@@ -1,0 +1,16 @@
+$canvas: #F2F2F7;
+$surface: #FFFFFF;
+$surface-secondary: #F7F7FA;
+$separator: #E5E5EA;
+$separator-strong: #D1D1D6;
+$ink: #1C1C1E;
+$secondary: #636366;
+$tertiary: #8E8E93;
+$blue: #007AFF;
+$blue-soft: #EAF2FF;
+$green: #34C759;
+$orange: #FF9500;
+$red: #FF3B30;
+
+@mixin grouped-surface { background: $surface; border-radius: 28rpx; overflow: hidden; }
+@mixin section-title { margin: 40rpx 0 14rpx 24rpx; color: $secondary; font-size: 24rpx; font-weight: 500; }

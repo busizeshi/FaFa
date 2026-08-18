@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FaFa - 空状态</title>
+  <link rel="stylesheet" href="../../.design_library/NoteGather/colors_and_type.css">
+  <link rel="stylesheet" href="../../.design_library/NoteGather/components.css">
+  <style>
+    body {
+      background: var(--gradient-spring);
+      width: 375px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* 顶部导航 - 毛玻璃 */
+    .nav-bar {
+      background: var(--color-glass-bg);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--color-glass-border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .nav-back {
+      font-size: 18px;
+      color: var(--color-text-primary);
+      cursor: pointer;
+      transition: all var(--duration-fast);
+    }
+    
+    .nav-back:hover {
+      color: var(--notegather-primary-500);
+    }
+    
+    .nav-title {
+      flex: 1;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+    
+    /* 空状态容器 */
+    .empty-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    
+    .empty-content {
+      text-align: center;
+      max-width: 300px;
+    }
+    
+    /* 空状态图标 - 春日绿 */
+    .empty-icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 24px;
+      background: var(--gradient-card);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 56px;
+      box-shadow: var(--shadow-3d);
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+    
+    .empty-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      margin-bottom: 12px;
+    }
+    
+    .empty-description {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    
+    /* 操作按钮 - 春日绿渐变 */
+    .empty-action {
+      background: var(--gradient-primary);
+      border: none;
+      border-radius: var(--radius-full);
+      padding: 12px 32px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-text-inverse);
+      cursor: pointer;
+      box-shadow: var(--shadow-2);
+      transition: all var(--duration-normal) var(--ease-bounce);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .empty-action:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-3);
+    }
+    
+    .empty-action:active {
+      transform: translateY(0);
+    }
+    
+    /* 多个状态示例 */
+    .examples-container {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    
+    .example-section {
+      background: var(--color-glass-bg);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--color-glass-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-2);
+    }
+    
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--notegather-primary-600);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .mini-empty {
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .mini-empty-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+    
+    .mini-empty-text {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      margin-bottom: 12px;
+    }
+    
+    .mini-empty-btn {
+      background: var(--color-surface-secondary);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-full);
+      padding: 8px 20px;
+      font-size: 13px;
+      color: var(--color-text-primary);
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-bounce);
+    }
+    
+    .mini-empty-btn:hover {
+      background: var(--notegather-primary-500);
+      color: var(--color-text-inverse);
+      border-color: var(--notegather-primary-500);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-2);
+    }
+  </style>
+</head>
+<body>
+  <!-- 示例1: 完整的空状态页面 -->
+  <div style="display: none;">
+    <div class="nav-bar">
+      <span class="nav-back">←</span>
+      <span class="nav-title">喂食记录</span>
+    </div>
+    
+    <div class="empty-container">
+      <div class="empty-content">
+        <div class="empty-icon">🌱</div>
+        <h3 class="empty-title">还没有喂食记录</h3>
+        <p class="empty-description">
+          开始记录每一次喂食，AI助手将为你分析宠物的饮食习惯，提供个性化的喂养建议。
+        </p>
+        <button class="empty-action">
+          <span>+</span>
+          <span>添加第一条记录</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 示例集合 -->
+  <div class="examples-container">
+    <div class="example-section">
+      <div class="section-label">空状态示例 - 喂食记录</div>
+      <div class="mini-empty">
+        <div class="mini-empty-icon">🌱</div>
+        <div class="mini-empty-text">还没有喂食记录</div>
+        <button class="mini-empty-btn">+ 添加记录</button>
+      </div>
+    </div>
+    
+    <div class="example-section">
+      <div class="section-label">空状态示例 - 体重记录</div>
+      <div class="mini-empty">
+        <div class="mini-empty-icon">⚖️</div>
+        <div class="mini-empty-text">还没有体重记录</div>
+        <button class="mini-empty-btn">+ 记录体重</button>
+      </div>
+    </div>
+    
+    <div class="example-section">
+      <div class="section-label">空状态示例 - 照片相册</div>
+      <div class="mini-empty">
+        <div class="mini-empty-icon">🌸</div>
+        <div class="mini-empty-text">还没有照片</div>
+        <button class="mini-empty-btn">+ 上传照片</button>
+      </div>
+    </div>
+    
+    <div class="example-section">
+      <div class="section-label">空状态示例 - 事件记录</div>
+      <div class="mini-empty">
+        <div class="mini-empty-icon">🍃</div>
+        <div class="mini-empty-text">还没有事件记录</div>
+        <button class="mini-empty-btn">+ 添加事件</button>
+      </div>
+    </div>
+    
+    <div class="example-section">
+      <div class="section-label">空状态示例 - 搜索结果</div>
+      <div class="mini-empty">
+        <div class="mini-empty-icon">🔍</div>
+        <div class="mini-empty-text">没有找到相关内容</div>
+        <button class="mini-empty-btn">清空筛选</button>
+      </div>
+    </div>
+    
+    <div class="example-section">
+      <div class="section-label">空状态示例 - 提醒列表</div>
+      <div class="mini-empty">
+        <div class="mini-empty-icon">🔔</div>
+        <div class="mini-empty-text">暂无提醒事项</div>
+        <button class="mini-empty-btn">+ 新建提醒</button>
+      </div>
+    </div>
+    
+    <div class="example-section">
+      <div class="section-label">空状态示例 - 宠物列表</div>
+      <div class="mini-empty">
+        <div class="mini-empty-icon">🐾</div>
+        <div class="mini-empty-text">还没有添加宠物</div>
+        <button class="mini-empty-btn">+ 添加宠物</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

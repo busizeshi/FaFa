@@ -1,0 +1,1080 @@
+/* ============================================================
+ * NoteGather 公共组件库 — Spring Nature 春日自然主题
+ * Phase 3 · 统一组件规范 + 代币桥接层
+ *
+ * 依赖: colors_and_type.css (设计系统代币)
+ * 引入: 在页面 <head> 中 colors_and_type.css 之后引入
+ *   <link rel="stylesheet" href="../.design_library/NoteGather/colors_and_type.css">
+ *   <link rel="stylesheet" href="../.design_library/NoteGather/components.css">
+ * ============================================================ */
+
+/* ============================================================
+ * 代币桥接层 — 统一页面使用的别名到设计系统代币
+ * ============================================================ */
+:root {
+  /* 品牌色别名 */
+  --color-brand-primary: var(--notegather-primary-500);
+  --color-brand-primary-light: var(--notegather-primary-400);
+  --color-brand-primary-dark: var(--notegather-primary-700);
+  --color-brand-secondary: var(--notegather-primary-400);
+  --color-brand-primary-hover: var(--notegather-primary-600);
+  --color-brand-primary-alpha: rgba(124, 179, 66, 0.1);
+  --color-brand-primary-alpha-strong: rgba(124, 179, 66, 0.2);
+
+  /* 辅助色别名 */
+  --color-accent-pink: var(--notegather-secondary-200);
+  --color-accent-pink-alpha: rgba(255, 205, 210, 0.15);
+  --color-accent-pink-strong: #FF6B9D;
+  --color-accent-blue: var(--notegather-sky-300);
+  --color-accent-blue-alpha: rgba(79, 195, 247, 0.15);
+  --color-accent-yellow: var(--notegather-secondary-500);
+  --color-accent-yellow-alpha: rgba(255, 193, 7, 0.1);
+  --color-accent-purple: var(--notegather-secondary-700);
+
+  /* 表面色别名 */
+  --color-surface-primary: var(--color-bg-surface);
+  --color-surface-secondary: var(--color-bg-subtle);
+  --color-surface-tertiary: var(--color-bg-muted);
+  --color-background-primary: var(--color-bg-canvas);
+
+  /* 文字色别名 */
+  --color-text-primary: var(--color-text-dark);
+  --color-text-secondary: var(--color-text-normal);
+  --color-text-tertiary: var(--color-text-light);
+  --color-text-quaternary: var(--color-text-muted);
+
+  /* 边框色别名 */
+  --color-border-subtle: var(--notegather-neutral-200);
+  --color-border-default: var(--notegather-neutral-300);
+  --color-border-strong: var(--notegather-neutral-400);
+
+  /* 语义色别名 */
+  --color-danger: var(--color-error-500);
+  --color-danger-alpha: rgba(244, 67, 54, 0.1);
+  --color-warning: var(--color-warning-500);
+  --color-warning-alpha: rgba(255, 152, 0, 0.1);
+  --color-success: var(--color-success-500);
+  --color-success-alpha: rgba(76, 175, 80, 0.1);
+  --color-info: var(--color-info-500);
+  --color-info-alpha: rgba(33, 150, 243, 0.1);
+
+  /* 字体别名 */
+  --font-code: var(--font-mono);
+
+  /* 阴影别名 */
+  --shadow-sm: var(--shadow-1);
+  --shadow-md: var(--shadow-2);
+  --shadow-lg: var(--shadow-3);
+  --shadow-xl: var(--shadow-4);
+  --shadow-2xl: var(--shadow-5);
+
+  /* ease 别名 */
+  --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  /* 侧边栏宽度 */
+  --sidebar-width: 240px;
+  --topnav-height: 64px;
+}
+
+/* ============================================================
+ * 全局重置
+ * ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-background-primary);
+  color: var(--color-text-primary);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--color-brand-primary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-smooth);
+}
+
+a:hover {
+  color: var(--color-brand-primary-dark);
+}
+
+/* 滚动条统一样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-default);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong);
+}
+
+/* 焦点样式 */
+:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+ * 按钮 — Button
+ * ============================================================ */
+
+/* 基础按钮 */
+.ng-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: var(--size-button-md);
+  padding: 0 var(--space-5);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-smooth);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.ng-btn:active {
+  transform: translateY(1px);
+}
+
+.ng-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 主要按钮 */
+.ng-btn-primary {
+  background: var(--gradient-primary);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-2);
+}
+
+.ng-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3);
+}
+
+/* 次要按钮 */
+.ng-btn-secondary {
+  background: var(--color-surface-primary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.ng-btn-secondary:hover {
+  background: var(--color-surface-secondary);
+  border-color: var(--color-border-default);
+  color: var(--color-text-primary);
+}
+
+/* 文本按钮 */
+.ng-btn-text {
+  background: transparent;
+  color: var(--color-brand-primary);
+  padding: 0 var(--space-3);
+}
+
+.ng-btn-text:hover {
+  background: var(--color-brand-primary-alpha);
+}
+
+/* 危险按钮 */
+.ng-btn-danger {
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-2);
+}
+
+.ng-btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3);
+  filter: brightness(1.05);
+}
+
+/* 尺寸变体 */
+.ng-btn-sm {
+  height: var(--size-button-sm);
+  padding: 0 var(--space-3);
+  font-size: var(--font-size-xs);
+}
+
+.ng-btn-lg {
+  height: var(--size-button-lg);
+  padding: 0 var(--space-8);
+  font-size: var(--font-size-base);
+}
+
+/* 图标按钮 */
+.ng-icon-btn {
+  width: var(--size-button-md);
+  height: var(--size-button-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-smooth);
+  position: relative;
+  font-size: var(--size-icon-md);
+}
+
+.ng-icon-btn:hover {
+  background: var(--color-surface-secondary);
+  color: var(--color-text-primary);
+}
+
+.ng-icon-btn:active {
+  transform: scale(0.95);
+}
+
+/* ============================================================
+ * 输入框 — Input
+ * ============================================================ */
+.ng-input {
+  width: 100%;
+  height: var(--size-input);
+  padding: 0 var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  background: var(--color-surface-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.ng-input::placeholder {
+  color: var(--color-text-quaternary);
+}
+
+.ng-input:focus {
+  outline: none;
+  border-color: var(--color-brand-primary);
+  background: var(--color-surface-primary);
+  box-shadow: 0 0 0 3px var(--color-brand-primary-alpha);
+}
+
+.ng-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 搜索输入框（圆角胶囊形） */
+.ng-search-input {
+  width: 100%;
+  height: var(--size-input);
+  padding: 0 var(--space-10) 0 var(--space-10);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  background: var(--color-surface-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-full);
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.ng-search-input:focus {
+  outline: none;
+  border-color: var(--color-brand-primary);
+  background: var(--color-surface-primary);
+  box-shadow: 0 0 0 3px var(--color-brand-primary-alpha);
+}
+
+/* 文本域 */
+.ng-textarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  background: var(--color-surface-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  resize: vertical;
+  transition: all var(--duration-fast) var(--ease-smooth);
+  line-height: var(--line-height-normal);
+}
+
+.ng-textarea:focus {
+  outline: none;
+  border-color: var(--color-brand-primary);
+  background: var(--color-surface-primary);
+  box-shadow: 0 0 0 3px var(--color-brand-primary-alpha);
+}
+
+/* ============================================================
+ * 卡片 — Card
+ * ============================================================ */
+.ng-card {
+  background: var(--color-surface-primary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  transition: all var(--duration-normal) var(--ease-smooth);
+}
+
+.ng-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-border-default);
+}
+
+/* 3D 卡片 */
+.ng-card-3d {
+  background: var(--gradient-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-2);
+  transition: all var(--duration-normal) var(--ease-smooth);
+  transform-style: preserve-3d;
+}
+
+.ng-card-3d:hover {
+  transform: translateY(-8px) rotateX(2deg);
+  box-shadow: var(--shadow-3d);
+}
+
+/* 毛玻璃卡片 */
+.ng-glass {
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--color-glass-border);
+}
+
+/* ============================================================
+ * 标签 — Badge / Tag
+ * ============================================================ */
+.ng-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-tertiary);
+  color: var(--color-text-secondary);
+  transition: all var(--duration-fast) var(--ease-smooth);
+  cursor: default;
+}
+
+.ng-tag-green {
+  background: var(--color-brand-primary-alpha);
+  color: var(--color-brand-primary-dark);
+}
+
+.ng-tag-blue {
+  background: var(--color-accent-blue-alpha);
+  color: var(--color-accent-blue);
+}
+
+.ng-tag-pink {
+  background: var(--color-accent-pink-alpha);
+  color: var(--color-accent-pink-strong);
+}
+
+.ng-tag-yellow {
+  background: var(--color-accent-yellow-alpha);
+  color: var(--color-accent-yellow);
+}
+
+.ng-tag-danger {
+  background: var(--color-danger-alpha);
+  color: var(--color-danger);
+}
+
+/* 徽章（带数字） */
+.ng-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-full);
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
+}
+
+/* ============================================================
+ * 头像 — Avatar
+ * ============================================================ */
+.ng-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: var(--color-text-inverse);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-smooth);
+  flex-shrink: 0;
+}
+
+.ng-avatar-sm { width: var(--size-avatar-sm); height: var(--size-avatar-sm); font-size: var(--font-size-xs); }
+.ng-avatar-md { width: var(--size-avatar-md); height: var(--size-avatar-md); font-size: var(--font-size-sm); }
+.ng-avatar-lg { width: var(--size-avatar-lg); height: var(--size-avatar-lg); font-size: var(--font-size-xl); }
+
+.ng-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px var(--color-brand-primary-alpha);
+}
+
+/* ============================================================
+ * 顶部导航栏 — TopNav
+ * ============================================================ */
+.ng-topnav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--topnav-height);
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--color-border-subtle);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-6);
+  z-index: var(--z-sticky);
+}
+
+.ng-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-right: var(--space-10);
+}
+
+.ng-logo-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-inverse);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-lg);
+}
+
+.ng-logo-text {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* ============================================================
+ * 面包屑 — Breadcrumb
+ * ============================================================ */
+.ng-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.ng-breadcrumb a {
+  color: var(--color-text-secondary);
+  transition: color var(--duration-fast);
+}
+
+.ng-breadcrumb a:hover {
+  color: var(--color-brand-primary);
+}
+
+.ng-breadcrumb-current {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.ng-breadcrumb-sep {
+  color: var(--color-text-quaternary);
+}
+
+/* ============================================================
+ * 侧边栏 — Sidebar
+ * ============================================================ */
+.ng-sidebar {
+  position: fixed;
+  left: 0;
+  top: var(--topnav-height);
+  bottom: 0;
+  width: var(--sidebar-width);
+  background: var(--color-surface-primary);
+  border-right: 1px solid var(--color-border-subtle);
+  padding: var(--space-6) var(--space-3);
+  overflow-y: auto;
+  z-index: var(--z-sticky);
+}
+
+.ng-sidebar-section {
+  margin-bottom: var(--space-6);
+}
+
+.ng-sidebar-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-quaternary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 var(--space-3);
+  margin-bottom: var(--space-2);
+  font-weight: var(--font-weight-medium);
+}
+
+.ng-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  transition: all var(--duration-fast) var(--ease-smooth);
+  cursor: pointer;
+}
+
+.ng-nav-item:hover {
+  background: var(--color-surface-secondary);
+  color: var(--color-text-primary);
+}
+
+.ng-nav-item.active {
+  background: var(--color-brand-primary-alpha);
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.ng-nav-icon {
+  font-size: var(--font-size-lg);
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.ng-nav-count {
+  margin-left: auto;
+  background: var(--color-surface-tertiary);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.ng-nav-item.active .ng-nav-count {
+  background: var(--color-brand-primary);
+  color: var(--color-text-inverse);
+}
+
+/* ============================================================
+ * 模态框 — Modal
+ * ============================================================ */
+.ng-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--duration-normal) var(--ease-smooth);
+}
+
+.ng-modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.ng-modal {
+  background: var(--color-surface-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-2xl);
+  max-width: 600px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  transform: scale(0.9) translateY(20px);
+  transition: transform var(--duration-normal) var(--ease-bounce);
+}
+
+.ng-modal-overlay.open .ng-modal {
+  transform: scale(1) translateY(0);
+}
+
+.ng-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-6) var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.ng-modal-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.ng-modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  font-size: var(--font-size-lg);
+  transition: all var(--duration-fast);
+}
+
+.ng-modal-close:hover {
+  background: var(--color-surface-secondary);
+  color: var(--color-text-primary);
+}
+
+.ng-modal-body {
+  padding: var(--space-6);
+}
+
+.ng-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6) var(--space-6);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* ============================================================
+ * Toast 通知
+ * ============================================================ */
+.ng-toast-container {
+  position: fixed;
+  top: calc(var(--topnav-height) + var(--space-4));
+  right: var(--space-6);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  pointer-events: none;
+}
+
+.ng-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  min-width: 300px;
+  max-width: 420px;
+  pointer-events: auto;
+  animation: ng-toast-in var(--duration-normal) var(--ease-bounce);
+}
+
+.ng-toast.removing {
+  animation: ng-toast-out var(--duration-fast) var(--ease-in) forwards;
+}
+
+@keyframes ng-toast-in {
+  from { transform: translateX(120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes ng-toast-out {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(120%); opacity: 0; }
+}
+
+.ng-toast-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  flex-shrink: 0;
+}
+
+.ng-toast-content {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-normal);
+}
+
+.ng-toast-success { border-left: 4px solid var(--color-success); }
+.ng-toast-success .ng-toast-icon { color: var(--color-success); }
+.ng-toast-warning { border-left: 4px solid var(--color-warning); }
+.ng-toast-warning .ng-toast-icon { color: var(--color-warning); }
+.ng-toast-error { border-left: 4px solid var(--color-danger); }
+.ng-toast-error .ng-toast-icon { color: var(--color-danger); }
+.ng-toast-info { border-left: 4px solid var(--color-info); }
+.ng-toast-info .ng-toast-icon { color: var(--color-info); }
+
+/* ============================================================
+ * 下拉菜单 — Dropdown
+ * ============================================================ */
+.ng-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: var(--space-1);
+  background: var(--color-surface-primary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  min-width: 200px;
+  padding: var(--space-2);
+  z-index: var(--z-dropdown);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.ng-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.ng-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.ng-dropdown-item:hover {
+  background: var(--color-surface-secondary);
+  color: var(--color-text-primary);
+}
+
+.ng-dropdown-item.danger {
+  color: var(--color-danger);
+}
+
+.ng-dropdown-item.danger:hover {
+  background: var(--color-danger-alpha);
+}
+
+.ng-dropdown-divider {
+  height: 1px;
+  background: var(--color-border-subtle);
+  margin: var(--space-1) 0;
+}
+
+/* ============================================================
+ * 开关 — Toggle Switch
+ * ============================================================ */
+.ng-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.ng-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.ng-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--color-border-default);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--duration-normal) var(--ease-smooth);
+}
+
+.ng-toggle-slider::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 18px;
+  height: 18px;
+  background: var(--color-surface-primary);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-normal) var(--ease-bounce);
+}
+
+.ng-toggle input:checked + .ng-toggle-slider {
+  background: var(--color-brand-primary);
+}
+
+.ng-toggle input:checked + .ng-toggle-slider::before {
+  transform: translateX(20px);
+}
+
+/* ============================================================
+ * 进度条 — Progress
+ * ============================================================ */
+.ng-progress {
+  width: 100%;
+  height: 8px;
+  background: var(--color-surface-tertiary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.ng-progress-bar {
+  height: 100%;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-smooth);
+}
+
+/* ============================================================
+ * 表单 — Form
+ * ============================================================ */
+.ng-form-group {
+  margin-bottom: var(--space-5);
+}
+
+.ng-form-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.ng-form-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-1);
+}
+
+.ng-form-error {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+  margin-top: var(--space-1);
+}
+
+/* ============================================================
+ * 分隔线
+ * ============================================================ */
+.ng-divider {
+  height: 1px;
+  background: var(--color-border-subtle);
+  border: none;
+  margin: var(--space-5) 0;
+}
+
+.ng-divider-vertical {
+  width: 1px;
+  height: 20px;
+  background: var(--color-border-subtle);
+  margin: 0 var(--space-1);
+}
+
+/* ============================================================
+ * 空状态
+ * ============================================================ */
+.ng-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16) var(--space-6);
+  text-align: center;
+}
+
+.ng-empty-icon {
+  font-size: 64px;
+  margin-bottom: var(--space-4);
+  opacity: 0.5;
+}
+
+.ng-empty-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.ng-empty-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* ============================================================
+ * 工具类
+ * ============================================================ */
+.ng-text-primary { color: var(--color-text-primary); }
+.ng-text-secondary { color: var(--color-text-secondary); }
+.ng-text-tertiary { color: var(--color-text-tertiary); }
+.ng-text-brand { color: var(--color-brand-primary); }
+.ng-text-danger { color: var(--color-danger); }
+.ng-text-success { color: var(--color-success); }
+
+.ng-bg-surface { background: var(--color-surface-primary); }
+.ng-bg-subtle { background: var(--color-surface-secondary); }
+
+.ng-rounded-sm { border-radius: var(--radius-sm); }
+.ng-rounded-md { border-radius: var(--radius-md); }
+.ng-rounded-lg { border-radius: var(--radius-lg); }
+.ng-rounded-full { border-radius: var(--radius-full); }
+
+.ng-shadow-sm { box-shadow: var(--shadow-sm); }
+.ng-shadow-md { box-shadow: var(--shadow-md); }
+.ng-shadow-lg { box-shadow: var(--shadow-lg); }
+
+.ng-flex { display: flex; }
+.ng-flex-center { display: flex; align-items: center; justify-content: center; }
+.ng-flex-between { display: flex; align-items: center; justify-content: space-between; }
+.ng-gap-1 { gap: var(--space-1); }
+.ng-gap-2 { gap: var(--space-2); }
+.ng-gap-3 { gap: var(--space-3); }
+.ng-gap-4 { gap: var(--space-4); }
+
+.ng-mt-2 { margin-top: var(--space-2); }
+.ng-mt-4 { margin-top: var(--space-4); }
+.ng-mt-6 { margin-top: var(--space-6); }
+.ng-mb-2 { margin-bottom: var(--space-2); }
+.ng-mb-4 { margin-bottom: var(--space-4); }
+.ng-mb-6 { margin-bottom: var(--space-6); }
+
+.ng-hidden { display: none !important; }
+
+/* ============================================================
+ * 页面切换动画
+ * ============================================================ */
+.ng-page-enter {
+  animation: ng-page-enter var(--duration-slow) var(--ease-smooth);
+}
+
+@keyframes ng-page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 淡入 */
+.ng-fade-in {
+  animation: ng-fade-in var(--duration-normal) var(--ease-smooth);
+}
+
+@keyframes ng-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 从下滑入 */
+.ng-slide-up {
+  animation: ng-slide-up var(--duration-normal) var(--ease-smooth);
+}
+
+@keyframes ng-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 缩放弹出 */
+.ng-scale-in {
+  animation: ng-scale-in var(--duration-normal) var(--ease-bounce);
+}
+
+@keyframes ng-scale-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 脉冲加载 */
+.ng-pulse {
+  animation: ng-pulse 1.5s var(--ease-in-out) infinite;
+}
+
+@keyframes ng-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* 打字机光标 */
+.ng-cursor::after {
+  content: '|';
+  color: var(--color-brand-primary);
+  animation: ng-blink 1s step-end infinite;
+}
+
+@keyframes ng-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* ============================================================
+ * 响应式
+ * ============================================================ */
+@media (max-width: 1024px) {
+  .ng-sidebar {
+    width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ng-sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--duration-normal) var(--ease-smooth);
+  }
+
+  .ng-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .ng-toast-container {
+    left: var(--space-4);
+    right: var(--space-4);
+  }
+
+  .ng-toast {
+    min-width: auto;
+    max-width: none;
+  }
+}

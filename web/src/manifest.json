@@ -1,0 +1,10 @@
+{
+  "name": "FaFa AI 宠物生活助手",
+  "appid": "",
+  "description": "记录宠物一生的 AI 生活助手",
+  "versionName": "0.2.0",
+  "versionCode": "200",
+  "transformPx": false,
+  "mp-weixin": { "appid": "", "setting": { "urlCheck": false, "es6": true, "postcss": true, "minified": true }, "usingComponents": true },
+  "h5": { "title": "FaFa · AI 宠物生活助手" }
+}

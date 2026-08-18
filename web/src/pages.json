@@ -1,0 +1,22 @@
+{
+  "pages": [
+    { "path": "pages/home/index", "style": { "navigationStyle": "custom", "enablePullDownRefresh": false } },
+    { "path": "pages/record/index", "style": { "navigationStyle": "custom" } },
+    { "path": "pages/record/list", "style": { "navigationBarTitleText": "记录" } },
+    { "path": "pages/pet/index", "style": { "navigationStyle": "custom" } },
+    { "path": "pages/pet/detail", "style": { "navigationBarTitleText": "豆包" } },
+    { "path": "pages/growth/index", "style": { "navigationBarTitleText": "成长档案" } },
+    { "path": "pages/reminder/index", "style": { "navigationBarTitleText": "提醒" } },
+    { "path": "pages/ai/index", "style": { "navigationStyle": "custom" } },
+    { "path": "pages/report/index", "style": { "navigationBarTitleText": "报告中心" } },
+    { "path": "pages/mine/index", "style": { "navigationStyle": "custom" } },
+    { "path": "pages/settings/index", "style": { "navigationBarTitleText": "设置" } }
+  ],
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
+    }
+  },
+  "globalStyle": { "navigationBarTextStyle": "black", "navigationBarBackgroundColor": "#F2F2F7", "backgroundColor": "#F2F2F7", "backgroundTextStyle": "light" }
+}
