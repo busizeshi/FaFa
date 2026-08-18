@@ -161,3 +161,24 @@ MIT License
 ## 联系方式
 
 如有问题或建议，欢迎提交 Issue 或 Pull Request。
+
+## FaFa V1 uni-app 实现
+
+本次设计稿落地版本位于 `src/`，按 `docs/技术架构与实现方案.md` 使用 uni-app Vue3 实现。现有原生小程序骨架保留在项目根目录中，便于后续迁移对照。
+
+```bash
+npm install
+npm run dev:mp-weixin
+```
+
+将微信开发者工具的项目目录指向 `web/dist/dev/mp-weixin`；发布构建使用 `npm run build:mp-weixin`，输出在 `web/dist/build/mp-weixin`。当前 `src/utils/config.js` 默认开启演示数据模式，首页、记录、照片、提醒和 AI 对话均可直接体验。
+
+接入 Java 服务时，在 `src/utils/config.js` 填写 HTTPS 地址并关闭 mock：
+
+```js
+apiBaseUrl: 'https://你的域名',
+mock: false
+```
+
+接口层已按现有 Java Controller 路径封装，认证 token 使用 `satoken` 请求头。真机调试前请配置微信公众平台的 request/upload 合法域名。
+发布前请把 `src/manifest.json` 和微信开发者工具项目配置中的 `appid` 替换为你的小程序 AppID。
