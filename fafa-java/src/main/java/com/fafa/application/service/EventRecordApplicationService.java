@@ -3,6 +3,7 @@ package com.fafa.application.service;
 import com.fafa.application.dto.event.*;
 import com.fafa.common.exception.BusinessException;
 import com.fafa.domain.model.pet.Pet;
+import com.fafa.domain.model.pet.PetId;
 import com.fafa.domain.model.record.EventRecord;
 import com.fafa.domain.repository.EventRecordRepository;
 import com.fafa.domain.repository.PetRepository;
@@ -30,7 +31,7 @@ public class EventRecordApplicationService {
     @Transactional
     public Long createEventRecord(Long userId, CreateEventRecordRequest request) {
         // 验证宠物归属
-        Pet pet = petRepository.findById(request.getPetId())
+        Pet pet = petRepository.findById(new PetId(request.getPetId()))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
@@ -59,8 +60,8 @@ public class EventRecordApplicationService {
      */
     public List<EventRecordResponse> listEventRecords(Long userId, Long petId, String eventType, 
                                                       LocalDate startDate, LocalDate endDate) {
-        // 验证宠物归属
-        Pet pet = petRepository.findById(petId)
+        // 2. 验证宠物归属
+        Pet pet = petRepository.findById(new PetId(petId))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {

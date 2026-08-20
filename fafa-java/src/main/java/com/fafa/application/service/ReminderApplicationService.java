@@ -13,7 +13,7 @@ import com.fafa.domain.model.reminder.Reminder;
 import com.fafa.domain.model.reminder.ReminderId;
 import com.fafa.domain.repository.PetRepository;
 import com.fafa.domain.repository.ReminderRepository;
-import com.fafa.infrastructure.exception.BusinessException;
+import com.fafa.common.exception.BusinessException;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -270,24 +270,27 @@ public class ReminderApplicationService {
     }
     
     /**
-     * 统计提醒数量
+     * 统计提醒数量（按宠物）
      */
-    public int countReminders(Long userId, Long petId, String status) {
-        if (petId != null) {
-            // 验证宠物归属
-            Optional<Pet> petOpt = petRepository.findById(PetId.of(petId));
-            if (petOpt.isEmpty()) {
-                throw new BusinessException("宠物不存在");
-            }
-            Pet pet = petOpt.get();
-            if (!pet.getUserId().equals(userId)) {
-                throw new BusinessException("无权访问该宠物");
-            }
-            
-            return reminderRepository.countByPetId(petId, status);
-        } else {
-            return reminderRepository.countByUserId(userId, status);
+    public int countRemindersByPet(Long userId, Long petId, String status) {
+        // 验证宠物归属
+        Optional<Pet> petOpt = petRepository.findById(PetId.of(petId));
+        if (petOpt.isEmpty()) {
+            throw new BusinessException("宠物不存在");
         }
+        Pet pet = petOpt.get();
+        if (!pet.getUserId().equals(userId)) {
+            throw new BusinessException("无权访问该宠物");
+        }
+        
+        return reminderRepository.countByPetId(petId, status);
+    }
+    
+    /**
+     * 统计提醒数量（按用户）
+     */
+    public int countRemindersByUser(Long userId, String status) {
+        return reminderRepository.countByUserId(userId, status);
     }
     
     /**

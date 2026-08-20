@@ -3,6 +3,7 @@ package com.fafa.application.service;
 import com.fafa.application.dto.water.*;
 import com.fafa.common.exception.BusinessException;
 import com.fafa.domain.model.pet.Pet;
+import com.fafa.domain.model.pet.PetId;
 import com.fafa.domain.model.record.WaterRecord;
 import com.fafa.domain.repository.PetRepository;
 import com.fafa.domain.repository.WaterRecordRepository;
@@ -29,12 +30,12 @@ public class WaterRecordApplicationService {
      */
     @Transactional
     public Long createWaterRecord(Long userId, CreateWaterRecordRequest request) {
-        // 验证宠物归属
-        Pet pet = petRepository.findById(request.getPetId())
+        // 1. 验证宠物归属
+        Pet pet = petRepository.findById(new PetId(request.getPetId()))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
-            throw new BusinessException("无权操作该宠物"));
+            throw new BusinessException("无权操作该宠物");
         }
         
         // 创建记录
@@ -56,11 +57,11 @@ public class WaterRecordApplicationService {
      */
     public List<WaterRecordResponse> listWaterRecords(Long userId, Long petId, LocalDate startDate, LocalDate endDate) {
         // 验证宠物归属
-        Pet pet = petRepository.findById(petId)
+        Pet pet = petRepository.findById(new PetId(petId))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
-            throw new BusinessException("无权查看该宠物的记录"));
+            throw new BusinessException("无权查看该宠物的记录");
         }
         
         List<WaterRecord> records = waterRecordRepository.findByPetId(petId, startDate, endDate);
@@ -78,7 +79,7 @@ public class WaterRecordApplicationService {
                 .orElseThrow(() -> new BusinessException("记录不存在"));
         
         if (!record.getUserId().equals(userId)) {
-            throw new BusinessException("无权查看该记录"));
+            throw new BusinessException("无权查看该记录");
         }
         
         return convertToResponse(record);
@@ -93,7 +94,7 @@ public class WaterRecordApplicationService {
                 .orElseThrow(() -> new BusinessException("记录不存在"));
         
         if (!record.getUserId().equals(userId)) {
-            throw new BusinessException("无权操作该记录"));
+            throw new BusinessException("无权操作该记录");
         }
         
         waterRecordRepository.deleteById(id);
@@ -104,11 +105,11 @@ public class WaterRecordApplicationService {
      */
     public WaterStatisticsResponse getWaterStatistics(Long userId, Long petId, LocalDate startDate, LocalDate endDate) {
         // 验证宠物归属
-        Pet pet = petRepository.findById(petId)
+        Pet pet = petRepository.findById(new PetId(petId))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
-            throw new BusinessException("无权查看该宠物的记录"));
+            throw new BusinessException("无权查看该宠物的记录");
         }
         
         // 统计总量

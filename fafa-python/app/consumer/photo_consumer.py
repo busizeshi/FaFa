@@ -1,5 +1,10 @@
 """
 RocketMQ 消费者服务
+
+注意：
+1. rocketmq-client-python 不支持 Windows 系统
+2. 仅在 Linux/Mac 环境下可用
+3. 开发环境（Windows）可以使用 HTTP 回调接口代替
 """
 import json
 import asyncio

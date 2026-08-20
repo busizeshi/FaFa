@@ -49,6 +49,11 @@ public interface PhotoRepository {
      * 删除照片
      */
     void deleteById(PhotoId photoId);
+    
+    /**
+     * 根据宠物 ID 删除所有照片
+     */
+    void deleteByPetId(Long petId);
 
     /**
      * 取消宠物的所有封面照片

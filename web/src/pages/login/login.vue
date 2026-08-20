@@ -12,7 +12,14 @@
         <view class="login-eyebrow"><FaIcon name="spark" tone="primary" filled :size="28" /><text>把被爱的小日子，认真收藏</text></view>
         <view class="login-title"><text>和 Ta 一起，</text><text class="login-title-accent">把日子过得柔软</text></view>
         <text class="login-copy">从今天开始，记录每一个值得回看的小瞬间。</text>
-        <button class="wechat-button" open-type="getUserInfo" @click="login"><FaIcon name="weixin" tone="default" :size="34" /><text>微信一键登录</text></button>
+        <view class="wechat-button debug-button" style="margin-top: 28rpx;" @click="getCodeOnly">
+          <FaIcon name="weixin" tone="default" :size="34" />
+          <text>获取微信 Code（调试用）</text>
+        </view>
+        <view class="wechat-button" style="margin-top: 20rpx;" @click="login">
+          <FaIcon name="weixin" tone="default" :size="34" />
+          <text>微信一键登录</text>
+        </view>
         <text class="agreement">登录即表示同意《用户协议》和《隐私政策》</text>
       </view>
     </view>
@@ -27,14 +34,128 @@ import { config } from '../../utils/config'
 export default {
   components: { FaIcon },
   methods: {
-    login() {
-      const complete = (code) => api.auth.login(code).then(result => {
-        if (result?.token) uni.setStorageSync('fafa-token', result.token)
-        uni.showToast({ title: '登录成功', icon: 'success' })
-        setTimeout(() => uni.reLaunch({ url: result?.isNewUser ? '/pages/pet/create' : '/pages/home/home' }), 500)
+    // 仅获取 Code，不进行登录（调试用）
+    getCodeOnly() {
+      console.log('=== 获取微信 Code（调试模式）===')
+      
+      uni.login({
+        provider: 'weixin',
+        success: (res) => {
+          console.log('uni.login success:', res)
+          
+          if (res.code) {
+            console.log('✅ 获取到微信 code:', res.code)
+            
+            // 显示 code
+            uni.showModal({
+              title: '微信登录 Code',
+              content: res.code,
+              showCancel: true,
+              confirmText: '关闭',
+              cancelText: '复制',
+              success: (modalRes) => {
+                if (modalRes.cancel) {
+                  // 复制 code
+                  uni.setClipboardData({
+                    data: res.code,
+                    success: () => {
+                      uni.showToast({ title: 'Code 已复制', icon: 'success' })
+                      console.log('Code 已复制:', res.code)
+                    }
+                  })
+                }
+              }
+            })
+          } else {
+            console.error('❌ 没有获取到 code')
+            uni.showToast({ title: '获取 Code 失败', icon: 'none' })
+          }
+        },
+        fail: (err) => {
+          console.error('uni.login fail:', err)
+          uni.showToast({ title: '调用失败', icon: 'none' })
+        }
       })
-      if (config.mock) return complete('mock-code')
-      uni.login({ provider: 'weixin', success: ({ code }) => complete(code), fail: () => uni.showToast({ title: '微信登录失败', icon: 'none' }) })
+    },
+
+    login() {
+      console.log('=== 点击登录按钮 ===')
+      console.log('config.mock =', config.mock)
+      
+      // mock 模式直接使用测试 code
+      if (config.mock) {
+        console.log('使用 mock 模式登录')
+        return this.handleLogin('mock-code')
+      }
+
+      // 调用微信登录获取 code
+      console.log('准备调用 uni.login')
+      uni.login({
+        provider: 'weixin',
+        success: (res) => {
+          console.log('=== uni.login success 回调 ===')
+          console.log('完整响应:', JSON.stringify(res))
+          
+          if (res.code) {
+            console.log('✅ 获取到微信 code:', res.code)
+            
+            // 显示 code 便于调试
+            uni.showModal({
+              title: '微信登录 Code',
+              content: `Code: ${res.code}\n\n点击复制后可在 Postman 中测试接口`,
+              showCancel: true,
+              confirmText: '继续登录',
+              cancelText: '复制 Code',
+              success: (modalRes) => {
+                console.log('showModal 回调:', modalRes)
+                if (modalRes.cancel) {
+                  // 点击"复制 Code"按钮
+                  uni.setClipboardData({
+                    data: res.code,
+                    success: () => {
+                      uni.showToast({ title: 'Code 已复制', icon: 'success' })
+                      console.log('Code 已复制到剪贴板')
+                    }
+                  })
+                } else if (modalRes.confirm) {
+                  // 点击"继续登录"按钮
+                  this.handleLogin(res.code)
+                }
+              }
+            })
+          } else {
+            console.error('❌ wx.login 成功但没有返回 code')
+            uni.showToast({ title: '获取登录凭证失败', icon: 'none' })
+          }
+        },
+        fail: (err) => {
+          console.error('=== uni.login fail 回调 ===')
+          console.error('错误信息:', err)
+          uni.showToast({ title: '微信登录失败', icon: 'none' })
+        }
+      })
+    },
+
+    handleLogin(code) {
+      api.auth.login(code)
+        .then(result => {
+          uni.hideLoading()
+          if (result?.token) {
+            uni.setStorageSync('fafa-token', result.token)
+            uni.showToast({ title: '登录成功', icon: 'success' })
+            setTimeout(() => {
+              const targetUrl = result?.isNewUser ? '/pages/pet/create' : '/pages/home/home'
+              uni.reLaunch({ url: targetUrl })
+            }, 500)
+          } else {
+            uni.showToast({ title: '登录失败，请重试', icon: 'none' })
+          }
+        })
+        .catch(err => {
+          uni.hideLoading()
+          uni.showToast({ title: err.message || '登录失败', icon: 'none' })
+          console.error('登录接口调用失败', err)
+        })
     }
   }
 }
@@ -57,7 +178,8 @@ export default {
 .login-title { display: block; margin-top: 22rpx; color: #3B271C; font-size: 42rpx; line-height: 1.34; font-weight: 700; letter-spacing: -1rpx; }
 .login-title-accent { color: #A85228; }
 .login-copy { display: block; margin-top: 14rpx; color: #6E5A4B; font-size: 26rpx; line-height: 1.6; }
-.wechat-button { height: 92rpx; display: flex; align-items: center; justify-content: center; gap: 12rpx; margin-top: 28rpx; border-radius: 999rpx; background: #fff; color: #8B4221; font-size: 30rpx; font-weight: 700; box-shadow: 0 10rpx 24rpx rgba(82,48,27,.14); }
+.wechat-button { width: 100%; height: 92rpx; display: flex; align-items: center; justify-content: center; gap: 12rpx; border-radius: 999rpx; background: #fff; color: #8B4221; font-size: 30rpx; font-weight: 700; box-shadow: 0 10rpx 24rpx rgba(82,48,27,.14); border: none; padding: 0; }
 .wechat-button:active { transform: scale(.985); background: #FFF8F0; }
+.debug-button { background: #07C160 !important; color: #fff !important; }
 .agreement { display: block; margin-top: 18rpx; text-align: center; color: #806C5C; font-size: 21rpx; }
 </style>

@@ -268,4 +268,8 @@ public class Pet {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public void setSortOrder(Integer sortOrder) {
+        // 用于排序功能
+    }
 }

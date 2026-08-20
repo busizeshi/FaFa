@@ -6,6 +6,7 @@
         SELECT COUNT(*)
         FROM feed_record
         WHERE pet_id = #{petId}
+        AND is_deleted = 0
         <if test="startDate != null">
             AND DATE(feed_time) >= #{startDate}
         </if>

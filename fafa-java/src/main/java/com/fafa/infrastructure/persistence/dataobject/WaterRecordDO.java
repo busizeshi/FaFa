@@ -36,4 +36,6 @@ public class WaterRecordDO {
     private LocalDateTime createdAt;
     
     private LocalDateTime updatedAt;
+
+    private Integer isDeleted;
 }

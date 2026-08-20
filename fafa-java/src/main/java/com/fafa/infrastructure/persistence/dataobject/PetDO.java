@@ -105,4 +105,10 @@ public class PetDO {
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
+
+    /**
+     * 逻辑删除标记
+     */
+    @TableLogic
+    private Integer isDeleted;
 }

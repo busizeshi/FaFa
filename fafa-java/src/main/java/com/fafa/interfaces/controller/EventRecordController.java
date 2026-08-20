@@ -3,7 +3,7 @@ package com.fafa.interfaces.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import com.fafa.application.dto.event.*;
 import com.fafa.application.service.EventRecordApplicationService;
-import com.fafa.common.response.Result;
+import com.fafa.common.result.Result;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;

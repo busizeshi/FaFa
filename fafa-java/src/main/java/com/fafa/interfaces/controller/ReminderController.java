@@ -27,7 +27,8 @@ public class ReminderController {
     @PostMapping
     public Result<ReminderResponse> createReminder(@Validated @RequestBody CreateReminderRequest request) {
         Long userId = StpUtil.getLoginIdAsLong();
-        ReminderResponse response = reminderApplicationService.createReminder(userId, request);
+        Long reminderId = reminderApplicationService.createReminder(userId, request);
+        ReminderResponse response = reminderApplicationService.getReminderDetail(userId, reminderId);
         return Result.success(response);
     }
 
@@ -42,8 +43,12 @@ public class ReminderController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "20") Integer pageSize) {
         Long userId = StpUtil.getLoginIdAsLong();
-        List<ReminderResponse> reminders = reminderApplicationService.listReminders(
-                userId, petId, status, pageNum, pageSize);
+        List<ReminderResponse> reminders;
+        if (petId != null) {
+            reminders = reminderApplicationService.listRemindersByPet(userId, petId, status, pageNum, pageSize);
+        } else {
+            reminders = reminderApplicationService.listRemindersByUser(userId, status, pageNum, pageSize);
+        }
         return Result.success(reminders);
     }
 
@@ -65,7 +70,8 @@ public class ReminderController {
             @PathVariable Long id,
             @Validated @RequestBody UpdateReminderRequest request) {
         Long userId = StpUtil.getLoginIdAsLong();
-        ReminderResponse response = reminderApplicationService.updateReminder(userId, id, request);
+        reminderApplicationService.updateReminder(userId, id, request);
+        ReminderResponse response = reminderApplicationService.getReminderDetail(userId, id);
         return Result.success(response);
     }
 
@@ -109,7 +115,12 @@ public class ReminderController {
             @RequestParam(required = false) Long petId,
             @RequestParam(required = false) String status) {
         Long userId = StpUtil.getLoginIdAsLong();
-        Map<String, Integer> count = reminderApplicationService.countReminders(userId, petId, status);
-        return Result.success(count);
+        int count;
+        if (petId != null) {
+            count = reminderApplicationService.countRemindersByPet(userId, petId, status);
+        } else {
+            count = reminderApplicationService.countRemindersByUser(userId, status);
+        }
+        return Result.success(Map.of("count", count));
     }
 }

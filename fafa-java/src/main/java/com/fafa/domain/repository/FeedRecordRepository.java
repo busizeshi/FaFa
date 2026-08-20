@@ -41,6 +41,11 @@ public interface FeedRecordRepository {
     void deleteById(RecordId recordId);
     
     /**
+     * 根据宠物 ID 删除所有记录
+     */
+    void deleteByPetId(Long petId);
+    
+    /**
      * 统计喂食次数
      */
     int countByPetId(Long petId, LocalDate startDate, LocalDate endDate);

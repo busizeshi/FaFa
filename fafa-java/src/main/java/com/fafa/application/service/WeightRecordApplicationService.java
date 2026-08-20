@@ -3,6 +3,7 @@ package com.fafa.application.service;
 import com.fafa.application.dto.weight.*;
 import com.fafa.common.exception.BusinessException;
 import com.fafa.domain.model.pet.Pet;
+import com.fafa.domain.model.pet.PetId;
 import com.fafa.domain.model.record.WeightRecord;
 import com.fafa.domain.repository.PetRepository;
 import com.fafa.domain.repository.WeightRecordRepository;
@@ -32,7 +33,7 @@ public class WeightRecordApplicationService {
     @Transactional
     public Long createWeightRecord(Long userId, CreateWeightRecordRequest request) {
         // 1. 验证宠物归属
-        Pet pet = petRepository.findById(request.getPetId())
+        Pet pet = petRepository.findById(new PetId(request.getPetId()))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
@@ -70,11 +71,11 @@ public class WeightRecordApplicationService {
      */
     public List<WeightRecordResponse> listWeightRecords(Long userId, Long petId, LocalDate startDate, LocalDate endDate) {
         // 验证宠物归属
-        Pet pet = petRepository.findById(petId)
+        Pet pet = petRepository.findById(new PetId(petId))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
-            throw new BusinessException("无权查看该宠物的记录"));
+            throw new BusinessException("无权查看该宠物的记录");
         }
         
         List<WeightRecord> records = weightRecordRepository.findByPetId(petId, startDate, endDate);
@@ -92,7 +93,7 @@ public class WeightRecordApplicationService {
                 .orElseThrow(() -> new BusinessException("记录不存在"));
         
         if (!record.getUserId().equals(userId)) {
-            throw new BusinessException("无权查看该记录"));
+            throw new BusinessException("无权查看该记录");
         }
         
         return convertToResponse(record);
@@ -108,7 +109,7 @@ public class WeightRecordApplicationService {
                 .orElseThrow(() -> new BusinessException("记录不存在"));
         
         if (!record.getUserId().equals(userId)) {
-            throw new BusinessException("无权操作该记录"));
+            throw new BusinessException("无权操作该记录");
         }
         
         // 2. 如果修改了日期，检查新日期是否已有记录
@@ -118,7 +119,7 @@ public class WeightRecordApplicationService {
                     request.getRecordDate()
             );
             if (existingOpt.isPresent() && !existingOpt.get().getRecordId().getValue().equals(id)) {
-                throw new BusinessException("目标日期已有体重记录"));
+                throw new BusinessException("目标日期已有体重记录");
             }
         }
         
@@ -131,7 +132,7 @@ public class WeightRecordApplicationService {
         // 4. 如果是最新记录，更新宠物当前体重
         Optional<WeightRecord> latestOpt = weightRecordRepository.findLatestByPetId(record.getPetId());
         if (latestOpt.isPresent() && latestOpt.get().getRecordId().getValue().equals(id)) {
-            Pet pet = petRepository.findById(record.getPetId())
+            Pet pet = petRepository.findById(new PetId(record.getPetId()))
                     .orElseThrow(() -> new BusinessException("宠物不存在"));
             pet.updateWeight(request.getWeight().doubleValue());
             petRepository.save(pet);
@@ -147,7 +148,7 @@ public class WeightRecordApplicationService {
                 .orElseThrow(() -> new BusinessException("记录不存在"));
         
         if (!record.getUserId().equals(userId)) {
-            throw new BusinessException("无权操作该记录"));
+            throw new BusinessException("无权操作该记录");
         }
         
         weightRecordRepository.deleteById(id);
@@ -158,11 +159,11 @@ public class WeightRecordApplicationService {
      */
     public WeightTrendResponse getWeightTrend(Long userId, Long petId, LocalDate startDate, LocalDate endDate) {
         // 验证宠物归属
-        Pet pet = petRepository.findById(petId)
+        Pet pet = petRepository.findById(new PetId(petId))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
-            throw new BusinessException("无权查看该宠物的记录"));
+            throw new BusinessException("无权查看该宠物的记录");
         }
         
         // 查询记录

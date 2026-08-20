@@ -3,15 +3,20 @@ package com.fafa.application.service;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fafa.common.exception.BusinessException;
+import com.fafa.domain.model.pet.Pet;
+import com.fafa.domain.model.pet.PetId;
+import com.fafa.domain.model.photo.Photo;
 import com.fafa.domain.model.user.User;
 import com.fafa.domain.model.user.UserId;
-import com.fafa.domain.repository.UserRepository;
+import com.fafa.domain.repository.*;
 import com.fafa.infrastructure.oss.OssService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 /**
  * 用户应用服务
@@ -25,6 +30,14 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserApplicationService {
     
     private final UserRepository userRepository;
+    private final PetRepository petRepository;
+    private final PhotoRepository photoRepository;
+    private final FeedRecordRepository feedRecordRepository;
+    private final WaterRecordRepository waterRecordRepository;
+    private final ExcretionRecordRepository excretionRecordRepository;
+    private final WeightRecordRepository weightRecordRepository;
+    private final EventRecordRepository eventRecordRepository;
+    private final ReminderRepository reminderRepository;
     private final OssService ossService;
     
     /**
@@ -134,5 +147,51 @@ public class UserApplicationService {
             log.warn("提取文件名失败，url={}, error={}", url, e.getMessage());
             return null;
         }
+    }
+    
+    /**
+     * 注销用户（进入冷静期）
+     * 用户进入待注销状态，7天后才真正删除
+     * 在此期间用户可以随时恢复账号
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteUser() {
+        long userId = StpUtil.getLoginIdAsLong();
+        User user = userRepository.findById(UserId.of(userId))
+                .orElseThrow(() -> new BusinessException("用户不存在"));
+        
+        log.info("用户请求注销账号，进入冷静期，userId={}", userId);
+        
+        // 设置为待注销状态
+        user.requestDeletion();
+        userRepository.update(user);
+        
+        // 登出
+        StpUtil.logout(userId);
+        
+        log.info("用户已进入注销冷静期（7天），userId={}", userId);
+    }
+    
+    /**
+     * 取消注销（恢复账号）
+     * 用户在冷静期内可以随时恢复账号
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelDeletion() {
+        long userId = StpUtil.getLoginIdAsLong();
+        User user = userRepository.findById(UserId.of(userId))
+                .orElseThrow(() -> new BusinessException("用户不存在"));
+        
+        if (!user.isPendingDeletion()) {
+            throw new BusinessException("账号未处于待注销状态");
+        }
+        
+        log.info("用户取消注销，恢复账号，userId={}", userId);
+        
+        // 恢复为正常状态
+        user.cancelDeletion();
+        userRepository.update(user);
+        
+        log.info("账号已恢复正常，userId={}", userId);
     }
 }

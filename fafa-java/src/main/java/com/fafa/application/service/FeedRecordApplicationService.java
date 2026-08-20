@@ -119,7 +119,7 @@ public class FeedRecordApplicationService {
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
-            throw new BusinessException("无权查看该宠物记录"));
+            throw new BusinessException("无权查看该宠物记录");
         }
         
         return feedRecordRepository.findByPetId(petId, startDate, endDate, page, size);
@@ -216,7 +216,7 @@ public class FeedRecordApplicationService {
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
-            throw new BusinessException("无权查看该宠物记录"));
+            throw new BusinessException("无权查看该宠物记录");
         }
         
         return feedRecordRepository.countByPetId(petId, startDate, endDate);

@@ -89,6 +89,13 @@ public class FeedRecordRepositoryImpl implements FeedRecordRepository {
     }
     
     @Override
+    public void deleteByPetId(Long petId) {
+        LambdaQueryWrapper<FeedRecordDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(FeedRecordDO::getPetId, petId);
+        feedRecordMapper.delete(wrapper);
+    }
+    
+    @Override
     public int countByPetId(Long petId, LocalDate startDate, LocalDate endDate) {
         return feedRecordMapper.countByPetIdAndDateRange(petId, startDate, endDate);
     }

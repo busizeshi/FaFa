@@ -60,6 +60,10 @@ async def get_db():
             await session.close()
 
 
+# 别名，保持向后兼容
+get_async_session = get_db
+
+
 async def init_db():
     """初始化数据库"""
     async with async_engine.begin() as conn:

@@ -37,6 +37,11 @@ public interface WeightRecordRepository {
     void deleteById(Long id);
     
     /**
+     * 根据宠物 ID 删除所有记录
+     */
+    void deleteByPetId(Long petId);
+    
+    /**
      * 根据宠物ID和日期查询（用于防止重复）
      */
     Optional<WeightRecord> findByPetIdAndDate(Long petId, LocalDate recordDate);

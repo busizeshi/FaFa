@@ -30,4 +30,9 @@ public interface EventRecordRepository {
      * 删除记录
      */
     void deleteById(Long id);
+    
+    /**
+     * 根据宠物 ID 删除所有记录
+     */
+    void deleteByPetId(Long petId);
 }

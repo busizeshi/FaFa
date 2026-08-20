@@ -40,4 +40,6 @@ public class WeightRecordDO {
     private LocalDateTime createdAt;
     
     private LocalDateTime updatedAt;
+
+    private Integer isDeleted;
 }

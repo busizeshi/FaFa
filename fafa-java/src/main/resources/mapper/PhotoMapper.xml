@@ -6,6 +6,7 @@
         SELECT *
         FROM photo
         WHERE pet_id = #{petId}
+        AND is_deleted = 0
         <if test="startDate != null">
             AND DATE(taken_at) >= #{startDate}
         </if>
@@ -18,7 +19,7 @@
     <update id="unsetAllCoversByPetId">
         UPDATE photo
         SET is_cover = 0
-        WHERE pet_id = #{petId} AND is_cover = 1
+        WHERE pet_id = #{petId} AND is_cover = 1 AND is_deleted = 0
     </update>
 
 </mapper>

@@ -69,6 +69,13 @@ public class ExcretionRecordRepositoryImpl implements ExcretionRecordRepository 
     }
     
     @Override
+    public void deleteByPetId(Long petId) {
+        LambdaQueryWrapper<ExcretionRecordDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ExcretionRecordDO::getPetId, petId);
+        excretionRecordMapper.delete(wrapper);
+    }
+    
+    @Override
     public int countByPetIdAndTypeAndDateRange(Long petId, String type, LocalDate startDate, LocalDate endDate) {
         return excretionRecordMapper.countByPetIdAndTypeAndDateRange(petId, type, startDate, endDate);
     }

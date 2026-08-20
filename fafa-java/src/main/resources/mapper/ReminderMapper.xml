@@ -7,6 +7,7 @@
         FROM reminder
         WHERE status = 'pending'
           AND is_notified = 0
+          AND is_deleted = 0
           AND remind_time BETWEEN #{startTime} AND #{endTime}
         ORDER BY remind_time ASC
     </select>
@@ -15,6 +16,7 @@
         SELECT COUNT(*)
         FROM reminder
         WHERE pet_id = #{petId}
+        AND is_deleted = 0
         <if test="status != null and status != ''">
             AND status = #{status}
         </if>
@@ -24,6 +26,7 @@
         SELECT COUNT(*)
         FROM reminder
         WHERE user_id = #{userId}
+        AND is_deleted = 0
         <if test="status != null and status != ''">
             AND status = #{status}
         </if>

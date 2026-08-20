@@ -27,6 +27,13 @@ public class PetId {
         this.value = value;
     }
 
+    /**
+     * 工厂方法
+     */
+    public static PetId of(Long value) {
+        return new PetId(value);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

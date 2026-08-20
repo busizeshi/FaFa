@@ -1,37 +1,86 @@
 # 生产环境配置
 spring:
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/fafa?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=true
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=true&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
     hikari:
       maximum-pool-size: 20
       minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
 
   data:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
+      database: 0
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: 5000ms
+      timeout: 3000ms
+      redisson:
+        config: |
+          singleServerConfig:
+            address: "redis://${REDIS_HOST}:${REDIS_PORT}"
+            password: ${REDIS_PASSWORD}
+            database: 1
+            connectionPoolSize: 20
+            connectionMinimumIdleSize: 10
 
-# 日志级别
+# 日志级别 (生产环境)
 logging:
   level:
     root: INFO
     com.fafa: INFO
     com.baomidou.mybatisplus: WARN
+    org.springframework.web: WARN
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n'
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n'
+  file:
+    name: logs/fafa-java-prod.log
+    max-size: 100MB
+    max-history: 30
+    total-size-cap: 10GB
 
 # RocketMQ
 rocketmq:
   name-server: ${ROCKETMQ_HOST}:${ROCKETMQ_PORT}
+  producer:
+    group: fafa-producer-group
+    send-message-timeout: 5000
+    retry-times-when-send-failed: 3
+    max-message-size: 4194304
+  consumer:
+    group: fafa-consumer-group
 
 # MinIO
 minio:
   endpoint: ${MINIO_ENDPOINT}
   access-key: ${MINIO_ACCESS_KEY}
   secret-key: ${MINIO_SECRET_KEY}
+  bucket-name: ${MINIO_BUCKET:fafa}
+
+# Knife4j 配置 (生产环境关闭)
+knife4j:
+  enable: false
+
+# 微信小程序配置 (生产环境)
+wechat:
+  miniapp:
+    appid: ${WECHAT_APPID}
+    secret: ${WECHAT_SECRET}
+    code2-session-url: https://api.weixin.qq.com/sns/jscode2session?appid={appid}&secret={secret}&js_code={code}&grant_type=authorization_code
 
 # AI 服务
 fafa:
   ai-service:
     base-url: ${AI_SERVICE_URL}
+    timeout: 60000

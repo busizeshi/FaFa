@@ -71,6 +71,11 @@ public class User {
     private LocalDateTime lastLoginAt;
     
     /**
+     * 注销请求时间
+     */
+    private LocalDateTime deletionRequestedAt;
+    
+    /**
      * 创建时间
      */
     private LocalDateTime createdAt;
@@ -85,6 +90,29 @@ public class User {
      */
     public boolean isNormal() {
         return UserStatus.NORMAL.equals(this.status);
+    }
+    
+    /**
+     * 是否待注销状态
+     */
+    public boolean isPendingDeletion() {
+        return UserStatus.PENDING_DELETION.equals(this.status);
+    }
+    
+    /**
+     * 请求注销账号（进入冷静期）
+     */
+    public void requestDeletion() {
+        this.status = UserStatus.PENDING_DELETION;
+        this.deletionRequestedAt = LocalDateTime.now();
+    }
+    
+    /**
+     * 取消注销（恢复账号）
+     */
+    public void cancelDeletion() {
+        this.status = UserStatus.NORMAL;
+        this.deletionRequestedAt = null;
     }
     
     /**

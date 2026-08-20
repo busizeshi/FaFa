@@ -16,7 +16,12 @@ public enum UserStatus {
     /**
      * 正常
      */
-    NORMAL(1, "正常");
+    NORMAL(1, "正常"),
+    
+    /**
+     * 待注销（冷静期）
+     */
+    PENDING_DELETION(2, "待注销");
     
     private final Integer code;
     private final String description;

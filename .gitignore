@@ -44,9 +44,12 @@ ENV/
 logs/
 *.log
 
-# Environment
+# Environment Variables (敏感信息)
 .env
 .env.local
+.env.*.local
+fafa-python/.env
+fafa-java/src/main/resources/application-local.yml
 
 # IDE
 .idea/

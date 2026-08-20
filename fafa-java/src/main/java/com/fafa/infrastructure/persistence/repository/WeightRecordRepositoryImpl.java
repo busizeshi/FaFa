@@ -78,6 +78,13 @@ public class WeightRecordRepositoryImpl implements WeightRecordRepository {
     }
     
     @Override
+    public void deleteByPetId(Long petId) {
+        LambdaQueryWrapper<WeightRecordDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(WeightRecordDO::getPetId, petId);
+        weightRecordMapper.delete(wrapper);
+    }
+    
+    @Override
     public Optional<WeightRecord> findByPetIdAndDate(Long petId, LocalDate recordDate) {
         LambdaQueryWrapper<WeightRecordDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(WeightRecordDO::getPetId, petId)

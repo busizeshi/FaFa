@@ -71,4 +71,11 @@ public class EventRecordRepositoryImpl implements EventRecordRepository {
     public void deleteById(Long id) {
         eventRecordMapper.deleteById(id);
     }
+    
+    @Override
+    public void deleteByPetId(Long petId) {
+        LambdaQueryWrapper<EventRecordDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(EventRecordDO::getPetId, petId);
+        eventRecordMapper.delete(wrapper);
+    }
 }

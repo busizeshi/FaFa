@@ -45,7 +45,11 @@ public class UserDO {
     
     private LocalDateTime lastLoginAt;
     
+    private LocalDateTime deletionRequestedAt;
+    
     private LocalDateTime createdAt;
     
     private LocalDateTime updatedAt;
+    
+    private Integer isDeleted;
 }

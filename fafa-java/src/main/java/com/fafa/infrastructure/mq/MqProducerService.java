@@ -7,7 +7,7 @@ import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * MQ 生产者服务
@@ -35,12 +35,12 @@ public class MqProducerService {
     public void sendPhotoAnalysisMessage(PhotoAnalysisMessage message) {
         try {
             String jsonMessage = objectMapper.writeValueAsString(message);
-            
+
             rocketMQTemplate.syncSend(
-                PHOTO_ANALYSIS_TOPIC,
-                MessageBuilder.withPayload(jsonMessage).build()
+                    PHOTO_ANALYSIS_TOPIC,
+                    MessageBuilder.withPayload(jsonMessage).build()
             );
-            
+
             log.info("发送照片分析消息成功，photoId={}, petId={}", message.getPhotoId(), message.getPetId());
         } catch (JsonProcessingException e) {
             log.error("序列化照片分析消息失败", e);

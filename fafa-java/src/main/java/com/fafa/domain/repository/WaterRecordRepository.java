@@ -32,6 +32,11 @@ public interface WaterRecordRepository {
     void deleteById(Long id);
     
     /**
+     * 根据宠物 ID 删除所有记录
+     */
+    void deleteByPetId(Long petId);
+    
+    /**
      * 统计日期范围内的饮水总量
      */
     int sumAmountByPetIdAndDateRange(Long petId, LocalDate startDate, LocalDate endDate);

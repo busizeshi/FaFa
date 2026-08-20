@@ -44,4 +44,18 @@ public class UserController {
         String avatarUrl = userApplicationService.uploadAvatar(file);
         return Result.success(avatarUrl);
     }
+    
+    @Operation(summary = "注销用户", description = "申请注销账号，进入7天冷静期，期间可恢复")
+    @DeleteMapping("/account")
+    public Result<Void> deleteUser() {
+        userApplicationService.deleteUser();
+        return Result.success();
+    }
+    
+    @Operation(summary = "取消注销", description = "取消注销申请，恢复账号")
+    @PostMapping("/account/restore")
+    public Result<Void> cancelDeletion() {
+        userApplicationService.cancelDeletion();
+        return Result.success();
+    }
 }

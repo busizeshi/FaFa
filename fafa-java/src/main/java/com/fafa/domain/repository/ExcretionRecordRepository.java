@@ -32,6 +32,11 @@ public interface ExcretionRecordRepository {
     void deleteById(Long id);
     
     /**
+     * 根据宠物 ID 删除所有记录
+     */
+    void deleteByPetId(Long petId);
+    
+    /**
      * 统计日期范围内的排便次数
      */
     int countByPetIdAndTypeAndDateRange(Long petId, String type, LocalDate startDate, LocalDate endDate);

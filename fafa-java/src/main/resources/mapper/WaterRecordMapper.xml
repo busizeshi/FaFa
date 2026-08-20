@@ -6,6 +6,7 @@
         SELECT COALESCE(SUM(amount), 0)
         FROM water_record
         WHERE pet_id = #{petId}
+        AND is_deleted = 0
         <if test="startDate != null">
             AND DATE(water_time) >= #{startDate}
         </if>

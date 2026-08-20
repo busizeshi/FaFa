@@ -69,6 +69,13 @@ public class WaterRecordRepositoryImpl implements WaterRecordRepository {
     }
     
     @Override
+    public void deleteByPetId(Long petId) {
+        LambdaQueryWrapper<WaterRecordDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(WaterRecordDO::getPetId, petId);
+        waterRecordMapper.delete(wrapper);
+    }
+    
+    @Override
     public int sumAmountByPetIdAndDateRange(Long petId, LocalDate startDate, LocalDate endDate) {
         return waterRecordMapper.sumAmountByPetIdAndDateRange(petId, startDate, endDate);
     }

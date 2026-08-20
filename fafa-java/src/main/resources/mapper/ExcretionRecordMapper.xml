@@ -6,6 +6,7 @@
         SELECT COUNT(*)
         FROM excretion_record
         WHERE pet_id = #{petId}
+        AND is_deleted = 0
         <if test="type != null and type != ''">
             AND type = #{type}
         </if>

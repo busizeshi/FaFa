@@ -10,7 +10,7 @@ import com.fafa.infrastructure.persistence.dataobject.PhotoDO;
 import com.fafa.infrastructure.persistence.mapper.PhotoMapper;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -90,6 +90,13 @@ public class PhotoRepositoryImpl implements PhotoRepository {
     @Override
     public void deleteById(PhotoId photoId) {
         photoMapper.deleteById(photoId.getValue());
+    }
+
+    @Override
+    public void deleteByPetId(Long petId) {
+        LambdaQueryWrapper<PhotoDO> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PhotoDO::getPetId, petId);
+        photoMapper.delete(queryWrapper);
     }
 
     @Override

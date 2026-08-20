@@ -11,8 +11,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
-import javax.validation.Valid;
+import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -59,8 +59,8 @@ public class PhotoController {
         }
         
         // 文件大小校验（限制 10MB）
-        if (file.getSize() > 10 * 1024 * 1024) {
-            return Result.error("图片大小不能超过 10MB");
+        if (file.getSize() > 15 * 1024 * 1024) {
+            return Result.error("图片大小不能超过 15MB");
         }
         
         Long photoId = photoApplicationService.uploadPhoto(userId, petId, file, takenAt, description);

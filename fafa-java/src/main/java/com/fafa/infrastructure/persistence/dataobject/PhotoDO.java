@@ -57,4 +57,7 @@ public class PhotoDO {
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
+
+    @TableLogic
+    private Integer isDeleted;
 }

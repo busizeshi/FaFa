@@ -37,8 +37,8 @@ public class UpdatePetRequest {
     @Schema(description = "体重(kg)")
     private BigDecimal weight;
     
-    @Schema(description = "是否绝育: 0-否, 1-是")
-    private Integer isNeutered;
+    @Schema(description = "是否绝育")
+    private Boolean isNeutered;
     
     @Schema(description = "毛色")
     private String coatColor;

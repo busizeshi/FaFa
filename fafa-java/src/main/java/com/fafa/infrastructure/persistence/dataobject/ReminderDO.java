@@ -51,4 +51,7 @@ public class ReminderDO {
     
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
+
+    @TableLogic
+    private Integer isDeleted;
 }

@@ -21,8 +21,6 @@ public class WechatMiniAppService {
     
     private final WechatMiniAppConfig config;
     
-    private static final String CODE2SESSION_URL = "https://api.weixin.qq.com/sns/jscode2session?appid={appid}&secret={secret}&js_code={code}&grant_type=authorization_code";
-    
     /**
      * 通过 code 换取 openid 和 session_key
      * 
@@ -31,7 +29,7 @@ public class WechatMiniAppService {
      */
     public Code2SessionResult code2Session(String code) {
         try {
-            String url = CODE2SESSION_URL
+            String url = config.getCode2SessionUrl()
                     .replace("{appid}", config.getAppid())
                     .replace("{secret}", config.getSecret())
                     .replace("{code}", code);

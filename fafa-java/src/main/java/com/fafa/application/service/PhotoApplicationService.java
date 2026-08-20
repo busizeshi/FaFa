@@ -3,6 +3,7 @@ package com.fafa.application.service;
 import cn.dev33.satoken.stp.StpUtil;
 import com.fafa.common.exception.BusinessException;
 import com.fafa.domain.model.pet.Pet;
+import com.fafa.domain.model.pet.PetId;
 import com.fafa.domain.model.photo.Photo;
 import com.fafa.domain.model.photo.PhotoId;
 import com.fafa.domain.repository.PetRepository;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class PhotoApplicationService {
     public Long uploadPhoto(Long userId, Long petId, MultipartFile file, 
                            LocalDateTime takenAt, String description) {
         // 1. 验证宠物归属
-        Pet pet = petRepository.findById(petId)
+        Pet pet = petRepository.findById(new PetId(petId))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
@@ -115,7 +116,7 @@ public class PhotoApplicationService {
      */
     public List<Photo> listPhotos(Long userId, Long petId, Integer pageNum, Integer pageSize) {
         // 验证宠物归属
-        Pet pet = petRepository.findById(petId)
+        Pet pet = petRepository.findById(new PetId(petId))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
@@ -131,7 +132,7 @@ public class PhotoApplicationService {
     public List<Photo> listPhotosByDateRange(Long userId, Long petId, 
                                              LocalDate startDate, LocalDate endDate) {
         // 验证宠物归属
-        Pet pet = petRepository.findById(petId)
+        Pet pet = petRepository.findById(new PetId(petId))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
@@ -149,11 +150,11 @@ public class PhotoApplicationService {
                 .orElseThrow(() -> new BusinessException("照片不存在"));
         
         // 验证归属
-        Pet pet = petRepository.findById(photo.getPetId())
+        Pet pet = petRepository.findById(new PetId(photo.getPetId()))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
-            throw new BusinessException("无权查看该照片"));
+            throw new BusinessException("无权查看该照片");
         }
 
         return photo;
@@ -168,11 +169,11 @@ public class PhotoApplicationService {
                 .orElseThrow(() -> new BusinessException("照片不存在"));
         
         // 验证归属
-        Pet pet = petRepository.findById(photo.getPetId())
+        Pet pet = petRepository.findById(new PetId(photo.getPetId()))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
-            throw new BusinessException("无权操作该照片"));
+            throw new BusinessException("无权操作该照片");
         }
 
         photo.updateDescription(description);
@@ -190,11 +191,11 @@ public class PhotoApplicationService {
                 .orElseThrow(() -> new BusinessException("照片不存在"));
         
         // 验证归属
-        Pet pet = petRepository.findById(photo.getPetId())
+        Pet pet = petRepository.findById(new PetId(photo.getPetId()))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
-            throw new BusinessException("无权操作该照片"));
+            throw new BusinessException("无权操作该照片");
         }
 
         // 取消该宠物的所有封面
@@ -216,11 +217,11 @@ public class PhotoApplicationService {
                 .orElseThrow(() -> new BusinessException("照片不存在"));
         
         // 验证归属
-        Pet pet = petRepository.findById(photo.getPetId())
+        Pet pet = petRepository.findById(new PetId(photo.getPetId()))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
-            throw new BusinessException("无权删除该照片"));
+            throw new BusinessException("无权删除该照片");
         }
 
         // 删除数据库记录
@@ -242,11 +243,11 @@ public class PhotoApplicationService {
      */
     public int countPhotos(Long userId, Long petId) {
         // 验证宠物归属
-        Pet pet = petRepository.findById(petId)
+        Pet pet = petRepository.findById(new PetId(petId))
                 .orElseThrow(() -> new BusinessException("宠物不存在"));
         
         if (!pet.getUserId().equals(userId)) {
-            throw new BusinessException("无权操作该宠物"));
+            throw new BusinessException("无权操作该宠物");
         }
 
         return photoRepository.countByPetId(petId);

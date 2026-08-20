@@ -24,4 +24,9 @@ public class WechatMiniAppConfig {
      * 小程序 AppSecret
      */
     private String secret;
+    
+    /**
+     * code2Session 接口地址
+     */
+    private String code2SessionUrl;
 }

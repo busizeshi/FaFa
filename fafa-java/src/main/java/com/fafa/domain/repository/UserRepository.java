@@ -32,4 +32,9 @@ public interface UserRepository {
      * 更新用户
      */
     void update(User user);
+    
+    /**
+     * 删除用户（软删除）
+     */
+    void delete(Long userId);
 }

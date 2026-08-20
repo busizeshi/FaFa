@@ -54,4 +54,9 @@ public interface ReminderRepository {
      * 删除提醒
      */
     void deleteById(ReminderId reminderId);
+    
+    /**
+     * 根据宠物 ID 删除所有提醒
+     */
+    void deleteByPetId(Long petId);
 }

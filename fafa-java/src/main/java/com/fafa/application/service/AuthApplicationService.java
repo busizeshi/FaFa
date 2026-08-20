@@ -54,6 +54,13 @@ public class AuthApplicationService {
         if (userOpt.isPresent()) {
             // 已存在，更新最后登录时间
             user = userOpt.get();
+            
+            // 检查是否在注销冷静期，如果是则自动恢复账号
+            if (user.isPendingDeletion()) {
+                log.info("用户在注销冷静期内重新登录，自动恢复账号: userId={}", user.getUserId().getValue());
+                user.cancelDeletion();
+            }
+            
             user.updateLastLogin();
             userRepository.update(user);
             isNewUser = false;

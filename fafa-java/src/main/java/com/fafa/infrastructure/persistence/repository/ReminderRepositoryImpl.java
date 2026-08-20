@@ -124,4 +124,11 @@ public class ReminderRepositoryImpl implements ReminderRepository {
     public void deleteById(ReminderId reminderId) {
         reminderMapper.deleteById(reminderId.getValue());
     }
+    
+    @Override
+    public void deleteByPetId(Long petId) {
+        LambdaQueryWrapper<ReminderDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ReminderDO::getPetId, petId);
+        reminderMapper.delete(wrapper);
+    }
 }

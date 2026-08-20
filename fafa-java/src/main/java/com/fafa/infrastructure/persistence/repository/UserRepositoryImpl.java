@@ -51,4 +51,9 @@ public class UserRepositoryImpl implements UserRepository {
         UserDO userDO = userConverter.toDO(user);
         userMapper.updateById(userDO);
     }
+    
+    @Override
+    public void delete(Long userId) {
+        userMapper.deleteById(userId);
+    }
 }

@@ -1,6 +1,6 @@
 <template>
   <view class="page mine-page">
-    <view class="profile-banner"><view class="user-avatar"><text>F</text><view class="avatar-glow"></view></view><view class="user-info"><text class="user-kicker">FAFA MEMBER</text><text class="user-name">{{ user.nickname }}</text><text class="user-sub">已陪伴 {{ pet.name }} {{ companionDays }} 天</text></view><view class="settings-btn" @click="go('/pages/settings/settings')"><FaIcon name="settings" tone="default" :size="30" /></view></view>
+    <view class="profile-banner"><view class="avatar-frame"><image class="user-avatar" :src="user.avatar || '/static/assets/fafa-avatar.png'" mode="aspectFill" /><view class="avatar-glow"></view></view><view class="user-info"><text class="user-kicker">FAFA MEMBER</text><text class="user-name">{{ user.nickname }}</text><text class="user-sub">已陪伴 {{ pet.name }} {{ companionDays }} 天</text></view><view class="settings-btn" @click="go('/pages/settings/settings')"><FaIcon name="settings" tone="default" :size="30" /></view></view>
     <view class="card stat-card"><view v-for="item in stats" :key="item.label" class="stat-item"><text class="stat-value" :class="item.tone">{{ item.value }}</text><text class="caption">{{ item.label }}</text></view></view>
     <view class="section"><text class="section-label">我的空间</text><view class="card entry-list"><view v-for="item in entries" :key="item.key" class="entry" @click="go(item.path)"><view class="entry-icon" :style="{ background: item.bg }"><FaIcon :name="item.icon" :tone="item.tone" :filled="item.key === 'pets'" :size="32" /></view><text class="entry-name">{{ item.label }}</text><text v-if="item.badge" class="entry-badge">{{ item.badge }}</text><FaIcon name="next" tone="muted" :size="30" /></view></view></view>
     <BottomNav current="mine" />
@@ -17,7 +17,8 @@ export default { components: { BottomNav, FaIcon }, data() { const store = getSt
 <style scoped>
 .profile-banner { position: relative; display: flex; align-items: center; gap: 20rpx; padding: 30rpx 28rpx; overflow: hidden; border-radius: 34rpx; background: linear-gradient(135deg, #FFF9F4, #F4E6D8); border: 1rpx solid rgba(255,255,255,.82); box-shadow: 0 12rpx 30rpx rgba(82,65,47,.08); }
 .profile-banner::after { content: ''; position: absolute; right: -42rpx; top: -56rpx; width: 190rpx; height: 190rpx; border-radius: 999rpx; background: rgba(196,97,47,.1); }
-.user-avatar { position: relative; z-index: 1; width: 96rpx; height: 96rpx; display: flex; align-items: center; justify-content: center; border-radius: 999rpx; background: #F5E0D5; color: #A85228; font-size: 36rpx; font-weight: 700; }
+.avatar-frame { position: relative; z-index: 1; width: 96rpx; height: 96rpx; flex-shrink: 0; }
+.user-avatar { position: relative; z-index: 1; width: 96rpx; height: 96rpx; display: block; border-radius: 999rpx; background: #F5E0D5; box-shadow: 0 8rpx 18rpx rgba(82,65,47,.12); }
 .avatar-glow { position: absolute; inset: -8rpx; z-index: -1; border-radius: 999rpx; border: 1rpx solid rgba(196,97,47,.22); }
 .user-info { flex: 1; }
 .user-kicker { display: block; color: #C4612F; font-size: 18rpx; font-weight: 700; letter-spacing: 2rpx; }

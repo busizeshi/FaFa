@@ -5,12 +5,14 @@
     <select id="selectByUserId" resultType="com.fafa.infrastructure.persistence.dataobject.PetDO">
         SELECT * FROM pet
         WHERE user_id = #{userId}
+        AND is_deleted = 0
         ORDER BY sort_order ASC, created_at ASC
     </select>
 
     <select id="countByUserId" resultType="int">
         SELECT COUNT(*) FROM pet
         WHERE user_id = #{userId}
+        AND is_deleted = 0
     </select>
 
 </mapper>

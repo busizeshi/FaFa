@@ -7,32 +7,19 @@ spring:
   application:
     name: fafa-java-service
   
+  # 激活的配置文件
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  
   # 数据源配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:fafa}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: ${MYSQL_USERNAME:root}
-    password: ${MYSQL_PASSWORD:password}
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
   
-  # Redis 配置
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-      database: 0
-      lettuce:
-        pool:
-          max-active: 8
-          max-idle: 8
-          min-idle: 2
-          max-wait: -1ms
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
 
 # MyBatis Plus 配置
 mybatis-plus:
@@ -63,63 +50,3 @@ sa-token:
   token-style: uuid
   # 是否输出操作日志
   is-log: false
-
-# Redisson 配置
-spring.data.redis:
-  redisson:
-    config: |
-      singleServerConfig:
-        address: "redis://${REDIS_HOST:localhost}:${REDIS_PORT:6379}"
-        password: ${REDIS_PASSWORD:}
-        database: 1
-        connectionPoolSize: 10
-        connectionMinimumIdleSize: 5
-
-# RocketMQ 配置
-rocketmq:
-  name-server: ${ROCKETMQ_HOST:localhost}:${ROCKETMQ_PORT:9876}
-  producer:
-    group: fafa-producer-group
-    send-message-timeout: 3000
-    retry-times-when-send-failed: 2
-
-# MinIO 配置
-minio:
-  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
-  access-key: ${MINIO_ACCESS_KEY:minioadmin}
-  secret-key: ${MINIO_SECRET_KEY:minioadmin}
-  bucket-name: ${MINIO_BUCKET:fafa}
-
-# Knife4j 配置
-knife4j:
-  enable: true
-  setting:
-    language: zh_cn
-
-# 日志配置
-logging:
-  level:
-    root: INFO
-    com.fafa: DEBUG
-    com.baomidou.mybatisplus: DEBUG
-  pattern:
-    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n'
-    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n'
-  file:
-    name: logs/fafa-java.log
-    max-size: 100MB
-    max-history: 30
-    total-size-cap: 10GB
-
-# 微信小程序配置
-wechat:
-  miniapp:
-    appid: ${WECHAT_APPID:your_appid}
-    secret: ${WECHAT_SECRET:your_secret}
-
-# 应用配置
-fafa:
-  # Python AI 服务地址
-  ai-service:
-    base-url: ${AI_SERVICE_URL:http://localhost:8000}
-    timeout: 30000

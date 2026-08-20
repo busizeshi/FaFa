@@ -122,6 +122,12 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Jakarta Annotation API (for @Resource) -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+
         <!-- Spring Boot Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
