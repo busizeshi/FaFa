@@ -20,8 +20,10 @@ import jakarta.annotation.Resource;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,68 +49,120 @@ public class PhotoApplicationService {
     @Resource
     private MqProducerService mqProducerService;
 
+    @Resource
+    private UserTagApplicationService userTagApplicationService;
+
     /**
-     * 上传照片
+     * 上传照片/视频（支持批量上传，支持标签，petId可选）
      */
     @Transactional(rollbackFor = Exception.class)
-    public Long uploadPhoto(Long userId, Long petId, MultipartFile file, 
-                           LocalDateTime takenAt, String description) {
-        // 1. 验证宠物归属
-        Pet pet = petRepository.findById(new PetId(petId))
-                .orElseThrow(() -> new BusinessException("宠物不存在"));
-        
-        if (!pet.getUserId().equals(userId)) {
-            throw new BusinessException("无权操作该宠物");
+    public List<Long> uploadMedia(Long userId, Long petId, List<MultipartFile> files,
+                                   LocalDateTime takenAt, String description, List<String> tags) {
+        if (files == null || files.isEmpty()) {
+            throw new BusinessException("请选择要上传的文件");
         }
 
-        // 2. 读取图片元数据
-        Integer width = null;
-        Integer height = null;
-        try {
-            BufferedImage image = ImageIO.read(file.getInputStream());
-            if (image != null) {
-                width = image.getWidth();
-                height = image.getHeight();
-            }
-        } catch (IOException e) {
-            log.warn("读取图片尺寸失败: {}", e.getMessage());
+        if (files.size() > 20) {
+            throw new BusinessException("单次最多上传20个文件");
         }
 
-        // 3. 上传原图到 OSS
-        String originalUrl = ossService.uploadFile(file, "photos");
-        
-        // 4. 生成缩略图并上传（这里简化处理，实际应该压缩）
-        String thumbnailUrl = originalUrl; // 实际应该生成缩略图
-        
-        // 5. 创建照片记录
-        Photo photo = Photo.create(petId, userId, originalUrl, thumbnailUrl, 
-                                   takenAt != null ? takenAt : LocalDateTime.now(), 
-                                   description);
-        photo.updateMetadata(width, height, file.getSize(), originalUrl);
-        
-        Photo savedPhoto = photoRepository.save(photo);
-        
-        // 6. 发送 MQ 消息触发 AI 分析
-        try {
-            PhotoAnalysisMessage message = PhotoAnalysisMessage.builder()
-                    .photoId(savedPhoto.getPhotoId().getValue())
-                    .petId(petId)
-                    .userId(userId)
-                    .url(originalUrl)
-                    .thumbnailUrl(thumbnailUrl)
-                    .takenAt(savedPhoto.getTakenAt().toString())
-                    .build();
+        List<Long> photoIds = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+            String contentType = file.getContentType();
+            String mediaType;
             
-            mqProducerService.sendPhotoAnalysisMessage(message);
-        } catch (Exception e) {
-            log.error("发送照片分析消息失败，photoId={}", savedPhoto.getPhotoId().getValue(), e);
-            // 不影响主流程，继续返回
+            if (contentType != null && contentType.startsWith("video/")) {
+                mediaType = "video";
+                if (file.getSize() > 50 * 1024 * 1024) {
+                    throw new BusinessException("视频大小不能超过50MB");
+                }
+            } else if (contentType != null && contentType.startsWith("image/")) {
+                mediaType = "image";
+                if (file.getSize() > 10 * 1024 * 1024) {
+                    throw new BusinessException("图片大小不能超过10MB");
+                }
+            } else {
+                throw new BusinessException("不支持的文件类型");
+            }
+
+            Integer width = null;
+            Integer height = null;
+            if ("image".equals(mediaType)) {
+                try {
+                    BufferedImage image = ImageIO.read(file.getInputStream());
+                    if (image != null) {
+                        width = image.getWidth();
+                        height = image.getHeight();
+                    }
+                } catch (IOException e) {
+                    log.warn("读取图片尺寸失败: {}", e.getMessage());
+                }
+            }
+
+            String originalUrl = ossService.uploadFile(file, mediaType.equals("video") ? "videos" : "photos");
+            String thumbnailUrl = originalUrl;
+
+            Photo photo = Photo.create(petId, userId, originalUrl, thumbnailUrl,
+                    takenAt != null ? takenAt : LocalDateTime.now(),
+                    description, mediaType);
+            photo.updateMetadata(width, height, file.getSize(), originalUrl);
+
+            if (tags != null && !tags.isEmpty()) {
+                photo.setTags(tags);
+                userTagApplicationService.getOrCreateTags(userId, tags, "photo");
+                userTagApplicationService.incrementTagUsage(userId, tags);
+            }
+
+            Photo savedPhoto = photoRepository.save(photo);
+            photoIds.add(savedPhoto.getPhotoId().getValue());
+
+            try {
+                PhotoAnalysisMessage message = PhotoAnalysisMessage.builder()
+                        .photoId(savedPhoto.getPhotoId().getValue())
+                        .petId(petId)
+                        .userId(userId)
+                        .url(originalUrl)
+                        .thumbnailUrl(thumbnailUrl)
+                        .mediaType(mediaType)
+                        .takenAt(savedPhoto.getTakenAt().toString())
+                        .build();
+
+                mqProducerService.sendPhotoAnalysisMessage(message);
+            } catch (Exception e) {
+                log.error("发送照片分析消息失败，photoId={}", savedPhoto.getPhotoId().getValue(), e);
+            }
+
+            log.info("{}上传成功，photoId={}, petId={}, userId={}",
+                    mediaType.equals("video") ? "视频" : "照片",
+                    savedPhoto.getPhotoId().getValue(), petId, userId);
         }
-        
-        log.info("照片上传成功，photoId={}, petId={}, userId={}", 
-                savedPhoto.getPhotoId().getValue(), petId, userId);
-        
-        return savedPhoto.getPhotoId().getValue();
+
+        return photoIds;
+    }
+
+    /**
+     * 上传照片（旧版本，保持兼容）
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Long uploadPhoto(Long userId, Long petId, MultipartFile file,
+                           LocalDateTime takenAt, String description) {
+        List<Long> photoIds = uploadMedia(userId, petId, List.of(file), takenAt, description, null);
+        return photoIds.get(0);
+    }
+
+    /**
+     * 更新照片的宠物关联和置信度
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updatePhotoRecognition(Long photoId, Long petId, BigDecimal confidence) {
+        Photo photo = photoRepository.findById(PhotoId.of(photoId))
+                .orElseThrow(() -> new BusinessException("照片不存在"));
+
+        photo.markAsAutoRecognized(petId, confidence);
+        photoRepository.save(photo);
+
+        log.info("更新照片识别结果，photoId={}, petId={}, confidence={}", photoId, petId, confidence);
     }
 
     /**

@@ -130,13 +130,51 @@ public class PetController {
         
         Long userId = StpUtil.getLoginIdAsLong();
         
-        // 上传文件到 OSS
         String avatarUrl = ossService.uploadFile(file, "pets/avatars");
-        
-        // 更新宠物头像
         petApplicationService.updatePetAvatar(id, userId, avatarUrl);
         
         return Result.success(avatarUrl);
+    }
+    
+    /**
+     * 上传宠物三视图 (用于AI识别)
+     */
+    @PostMapping("/{id}/profile-photos")
+    @Operation(summary = "上传宠物三视图", description = "上传宠物正面、侧面、顶部照片，用于AI自动识别")
+    public Result<Void> uploadProfilePhotos(
+            @Parameter(description = "宠物 ID", required = true)
+            @PathVariable Long id,
+            @Parameter(description = "正面照片")
+            @RequestParam(value = "frontView", required = false) MultipartFile frontView,
+            @Parameter(description = "侧面照片")
+            @RequestParam(value = "sideView", required = false) MultipartFile sideView,
+            @Parameter(description = "顶部照片")
+            @RequestParam(value = "topView", required = false) MultipartFile topView) {
+        
+        Long userId = StpUtil.getLoginIdAsLong();
+        
+        String frontViewUrl = null;
+        String sideViewUrl = null;
+        String topViewUrl = null;
+        
+        if (frontView != null && !frontView.isEmpty()) {
+            frontViewUrl = ossService.uploadFile(frontView, "pets/profiles");
+        }
+        if (sideView != null && !sideView.isEmpty()) {
+            sideViewUrl = ossService.uploadFile(sideView, "pets/profiles");
+        }
+        if (topView != null && !topView.isEmpty()) {
+            topViewUrl = ossService.uploadFile(topView, "pets/profiles");
+        }
+        
+        UpdatePetRequest request = new UpdatePetRequest();
+        request.setFrontViewUrl(frontViewUrl);
+        request.setSideViewUrl(sideViewUrl);
+        request.setTopViewUrl(topViewUrl);
+        
+        petApplicationService.updatePet(id, userId, request);
+        
+        return Result.success();
     }
     
     /**

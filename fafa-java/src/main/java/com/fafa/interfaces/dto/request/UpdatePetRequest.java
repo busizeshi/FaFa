@@ -45,4 +45,13 @@ public class UpdatePetRequest {
     
     @Schema(description = "备注")
     private String remarks;
+    
+    @Schema(description = "正面照片URL")
+    private String frontViewUrl;
+    
+    @Schema(description = "侧面照片URL")
+    private String sideViewUrl;
+    
+    @Schema(description = "顶部照片URL")
+    private String topViewUrl;
 }

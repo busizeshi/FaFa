@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
- * 照片分析消息
+ * 照片/视频分析消息
  *
  * @author FaFa
  * @since 2026-08-18
@@ -20,12 +20,12 @@ import java.io.Serializable;
 public class PhotoAnalysisMessage implements Serializable {
 
     /**
-     * 照片ID
+     * 照片/视频ID
      */
     private Long photoId;
 
     /**
-     * 宠物ID
+     * 宠物ID (可选)
      */
     private Long petId;
 
@@ -35,7 +35,7 @@ public class PhotoAnalysisMessage implements Serializable {
     private Long userId;
 
     /**
-     * 照片URL
+     * 照片/视频URL
      */
     private String url;
 
@@ -43,6 +43,11 @@ public class PhotoAnalysisMessage implements Serializable {
      * 缩略图URL
      */
     private String thumbnailUrl;
+
+    /**
+     * 媒体类型: image 或 video
+     */
+    private String mediaType;
 
     /**
      * 拍摄时间

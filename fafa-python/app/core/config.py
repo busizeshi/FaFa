@@ -19,8 +19,13 @@ class Settings(BaseSettings):
     # ==================== 通义千问 API 配置 ====================
     DASHSCOPE_API_KEY: str = ""
     AI_MODEL: str = "qwen-plus"  # 对话模型
-    AI_VISION_MODEL: str = "qwen-vl-plus"  # 视觉理解模型
-    AI_EMBEDDING_MODEL: str = "text-embedding-v2"  # 向量化模型
+    AI_MULTIMODAL_EMBEDDING_MODEL: str = "qwen3-vl-embedding"  # 多模态向量化模型 (统一处理图片、视频、文本)
+    AI_TEXT_EMBEDDING_MODEL: str = "text-embedding-v3"  # 纯文本向量化模型 (备用)
+    
+    # qwen3-vl-embedding 配置
+    QWEN3_VL_EMBEDDING_DIM: int = 1024  # 默认向量维度
+    QWEN3_VL_EMBEDDING_DIM_OPTIONS: list = [256, 512, 1024]  # 支持的维度选项 (Matryoshka)
+    QWEN3_VL_MAX_VIDEO_SIZE: int = 50 * 1024 * 1024  # 最大视频大小 50MB
     
     # ==================== MySQL 配置 ====================
     MYSQL_HOST: str = "192.168.1.14"
@@ -57,8 +62,15 @@ class Settings(BaseSettings):
     QDRANT_HOST: str = "192.168.1.14"
     QDRANT_PORT: int = 6333
     QDRANT_GRPC_PORT: int = 6334
-    QDRANT_COLLECTION_NAME: str = "fafa_photos"
-    QDRANT_VECTOR_SIZE: int = 1536  # text-embedding-v2 的维度
+    
+    # Collection 配置
+    QDRANT_COLLECTION_MEDIA: str = "fafa_media"  # 照片/视频向量集合 (qwen3-vl-embedding)
+    QDRANT_COLLECTION_PET_PROFILES: str = "fafa_pet_profiles"  # 宠物三视图向量集合
+    QDRANT_VECTOR_SIZE: int = 1024  # qwen3-vl-embedding 默认维度
+    
+    # 搜索配置
+    QDRANT_PET_RECOGNITION_THRESHOLD: float = 0.75  # 宠物识别相似度阈值
+    QDRANT_SEMANTIC_SEARCH_THRESHOLD: float = 0.65  # 语义搜索相似度阈值
     
     @property
     def qdrant_url(self) -> str:
@@ -93,13 +105,19 @@ class Settings(BaseSettings):
     LOG_RETENTION: str = "30 days"  # 日志保留时间
     
     # ==================== 业务配置 ====================
-    # 照片分析
-    PHOTO_ANALYSIS_MAX_RETRIES: int = 3  # 照片分析失败重试次数
-    PHOTO_ANALYSIS_TIMEOUT: int = 60  # 照片分析超时时间（秒）
+    # 照片/视频分析
+    PHOTO_ANALYSIS_MAX_RETRIES: int = 3
+    PHOTO_ANALYSIS_TIMEOUT: int = 60
+    VIDEO_ANALYSIS_TIMEOUT: int = 120  # 视频分析超时时间（秒）
+    
+    # 宠物识别
+    PET_RECOGNITION_ENABLED: bool = True  # 是否启用宠物自动识别
+    PET_RECOGNITION_MIN_CONFIDENCE: float = 0.75  # 最低识别置信度
+    PET_RECOGNITION_TOP_K: int = 3  # 返回 Top-K 个最相似的宠物
     
     # 向量搜索
-    VECTOR_SEARCH_LIMIT: int = 20  # 向量搜索默认返回数量
-    VECTOR_SEARCH_SCORE_THRESHOLD: float = 0.7  # 向量搜索相似度阈值
+    VECTOR_SEARCH_LIMIT: int = 20
+    VECTOR_SEARCH_SCORE_THRESHOLD: float = 0.65  # 降低阈值以支持跨模态搜索
     
     # AI 对话
     AI_CONVERSATION_MAX_HISTORY: int = 20  # 对话历史最大条数

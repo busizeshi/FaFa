@@ -1,165 +1,120 @@
 """
-照片搜索 API
+照片/视频搜索 API (基于 qwen3-vl-embedding)
 """
 from typing import List, Optional
 from fastapi import APIRouter, Query, HTTPException
 from pydantic import BaseModel
 from loguru import logger
 
-from app.service.photo_service import PhotoAnalysisService
-from app.core.qdrant import qdrant_client
-from app.repository.photo_repository import PhotoRepository
-from dashscope import TextEmbedding
-import dashscope
+from app.service.photo_service import photo_analysis_service
 from app.core.config import settings
 
 router = APIRouter(prefix="/photos", tags=["照片"])
 
-dashscope.api_key = settings.DASHSCOPE_API_KEY
+
+class MediaAnalysisRequest(BaseModel):
+    """媒体分析请求"""
+    photo_id: int
+    user_id: int
+    pet_id: Optional[int] = None
+    url: str
+    media_type: str  # 'image' 或 'video'
+    tags: Optional[List[str]] = None
 
 
-class PhotoSearchRequest(BaseModel):
-    """照片搜索请求"""
-    pet_id: int
+class SemanticSearchRequest(BaseModel):
+    """语义搜索请求"""
+    user_id: int
     query: str
+    pet_id: Optional[int] = None
+    media_type: Optional[str] = None  # 'image' 或 'video'
     limit: int = 20
 
 
-class PhotoSearchResult(BaseModel):
-    """照片搜索结果"""
+class SearchResult(BaseModel):
+    """搜索结果"""
     photo_id: int
-    pet_id: int
+    pet_id: Optional[int]
     url: str
-    thumbnail_url: Optional[str]
-    description: Optional[str]
-    ai_description: Optional[str]
+    media_type: str
+    tags: List[str]
     score: float
 
 
-class PhotoSearchResponse(BaseModel):
-    """照片搜索响应"""
+class SearchResponse(BaseModel):
+    """搜索响应"""
     total: int
-    results: List[PhotoSearchResult]
-    insight: Optional[str] = None
+    results: List[SearchResult]
 
 
-@router.post("/search", response_model=PhotoSearchResponse)
-async def search_photos(request: PhotoSearchRequest):
+@router.post("/analyze")
+async def analyze_media(request: MediaAnalysisRequest):
     """
-    语义搜索照片
+    分析照片或视频
+    使用 qwen3-vl-embedding 生成向量并自动识别宠物
+    """
+    try:
+        logger.info(f"接收媒体分析请求: photoId={request.photo_id}, mediaType={request.media_type}")
+        
+        await photo_analysis_service.analyze_media(
+            photo_id=request.photo_id,
+            user_id=request.user_id,
+            pet_id=request.pet_id,
+            url=request.url,
+            media_type=request.media_type,
+            tags=request.tags
+        )
+        
+        return {
+            "message": "媒体分析成功",
+            "photo_id": request.photo_id
+        }
+        
+    except Exception as e:
+        logger.error(f"媒体分析失败: photoId={request.photo_id}, error={e}")
+        raise HTTPException(status_code=500, detail=f"分析失败: {str(e)}")
+
+
+@router.post("/search", response_model=SearchResponse)
+async def semantic_search(request: SemanticSearchRequest):
+    """
+    语义搜索照片/视频（跨模态）
     
-    通过自然语言描述搜索照片，例如：
-    - "去年夏天在阳台的照片"
+    支持自然语言查询，例如：
+    - "搜索去年12月阿酷在阳台趴着的照片和视频"
     - "正在睡觉的照片"
     - "有玩具的照片"
     """
     try:
-        # 1. 生成查询文本的 Embedding
-        query_embedding = await generate_query_embedding(request.query)
+        logger.info(f"语义搜索: userId={request.user_id}, query={request.query}")
         
-        if not query_embedding:
-            raise HTTPException(status_code=500, detail="生成查询向量失败")
-        
-        # 2. 在 Qdrant 中搜索
-        from qdrant_client.models import Filter, FieldCondition, MatchValue
-        
-        search_results = await qdrant_client.search(
-            collection_name='pet_photos',
-            query_vector=query_embedding,
-            query_filter=Filter(
-                must=[
-                    FieldCondition(
-                        key='pet_id',
-                        match=MatchValue(value=request.pet_id)
-                    )
-                ]
-            ),
-            limit=request.limit,
-            score_threshold=0.6  # 相似度阈值
+        results = await photo_analysis_service.semantic_search(
+            user_id=request.user_id,
+            query=request.query,
+            pet_id=request.pet_id,
+            media_type=request.media_type,
+            limit=request.limit
         )
         
-        # 3. 获取照片详细信息
-        photo_repo = PhotoRepository()
-        results = []
+        search_results = [
+            SearchResult(
+                photo_id=r['photo_id'],
+                pet_id=r['pet_id'],
+                url=r['url'],
+                media_type=r['media_type'],
+                tags=r['tags'],
+                score=r['score']
+            )
+            for r in results
+        ]
         
-        for hit in search_results:
-            payload = hit.payload
-            results.append(PhotoSearchResult(
-                photo_id=payload['photo_id'],
-                pet_id=payload['pet_id'],
-                url=payload['url'],
-                thumbnail_url=payload.get('url'),  # 使用原图作为缩略图
-                description=payload.get('description'),
-                ai_description=payload.get('description'),
-                score=hit.score
-            ))
+        logger.info(f"语义搜索完成: 找到 {len(search_results)} 条结果")
         
-        # 4. 生成搜索洞察（可选）
-        insight = None
-        if results:
-            insight = f"找到 {len(results)} 张相关照片"
-        
-        logger.info(f"照片搜索完成: petId={request.pet_id}, query='{request.query}', results={len(results)}")
-        
-        return PhotoSearchResponse(
-            total=len(results),
-            results=results,
-            insight=insight
+        return SearchResponse(
+            total=len(search_results),
+            results=search_results
         )
         
     except Exception as e:
-        logger.error(f"照片搜索失败: {e}", exc_info=True)
+        logger.error(f"语义搜索失败: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"搜索失败: {str(e)}")
-
-
-async def generate_query_embedding(query: str) -> Optional[List[float]]:
-    """
-    生成查询文本的 Embedding
-    
-    Args:
-        query: 查询文本
-        
-    Returns:
-        向量列表
-    """
-    try:
-        response = TextEmbedding.call(
-            model=TextEmbedding.Models.text_embedding_v2,
-            input=query
-        )
-        
-        if response.status_code == 200:
-            embedding = response.output['embeddings'][0]['embedding']
-            logger.info(f"生成查询 Embedding 成功: query='{query}'")
-            return embedding
-        else:
-            logger.error(f"生成查询 Embedding 失败: {response.code}, {response.message}")
-            return None
-            
-    except Exception as e:
-        logger.error(f"生成查询 Embedding 失败: {e}", exc_info=True)
-        return None
-
-
-@router.get("/list")
-async def list_photos(pet_id: int = Query(..., description="宠物ID"), 
-                     limit: int = Query(20, description="返回数量")):
-    """
-    查询照片列表
-    
-    Args:
-        pet_id: 宠物ID
-        limit: 返回数量，默认20
-    """
-    try:
-        photo_repo = PhotoRepository()
-        photos = await photo_repo.list_photos_by_pet(pet_id, limit)
-        
-        return {
-            'total': len(photos),
-            'photos': photos
-        }
-        
-    except Exception as e:
-        logger.error(f"查询照片列表失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"查询失败: {str(e)}")

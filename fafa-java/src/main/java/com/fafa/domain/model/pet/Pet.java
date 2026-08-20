@@ -41,6 +41,26 @@ public class Pet {
     private String avatar;
 
     /**
+     * 正面照URL
+     */
+    private String frontViewUrl;
+
+    /**
+     * 侧面照URL
+     */
+    private String sideViewUrl;
+
+    /**
+     * 俯视照URL
+     */
+    private String topViewUrl;
+
+    /**
+     * 三视图向量ID数组
+     */
+    private String profileEmbeddingIds;
+
+    /**
      * 种类
      */
     private PetSpecies species;
@@ -186,6 +206,24 @@ public class Pet {
     }
 
     /**
+     * 更新宠物三视图
+     */
+    public void updateProfilePhotos(String frontViewUrl, String sideViewUrl, String topViewUrl) {
+        this.frontViewUrl = frontViewUrl;
+        this.sideViewUrl = sideViewUrl;
+        this.topViewUrl = topViewUrl;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 更新三视图向量ID
+     */
+    public void updateProfileEmbeddingIds(String embeddingIds) {
+        this.profileEmbeddingIds = embeddingIds;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
      * 计算年龄（月）
      */
     public Integer getAgeInMonths() {
@@ -219,6 +257,22 @@ public class Pet {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public void setFrontViewUrl(String frontViewUrl) {
+        this.frontViewUrl = frontViewUrl;
+    }
+
+    public void setSideViewUrl(String sideViewUrl) {
+        this.sideViewUrl = sideViewUrl;
+    }
+
+    public void setTopViewUrl(String topViewUrl) {
+        this.topViewUrl = topViewUrl;
+    }
+
+    public void setProfileEmbeddingIds(String profileEmbeddingIds) {
+        this.profileEmbeddingIds = profileEmbeddingIds;
     }
 
     public void setSpecies(PetSpecies species) {

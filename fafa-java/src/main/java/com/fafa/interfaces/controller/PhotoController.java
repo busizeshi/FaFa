@@ -36,9 +36,31 @@ public class PhotoController {
     private PythonAiClient pythonAiClient;
 
     /**
-     * 上传照片
+     * 上传照片/视频 (支持批量上传、标签、petId可选)
      */
     @PostMapping("/upload")
+    public Result<List<Long>> uploadMedia(
+            @RequestParam("files") List<MultipartFile> files,
+            @RequestParam(value = "petId", required = false) Long petId,
+            @RequestParam(value = "tags", required = false) List<String> tags,
+            @RequestParam(value = "takenAt", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime takenAt,
+            @RequestParam(value = "description", required = false) String description) {
+        
+        Long userId = StpUtil.getLoginIdAsLong();
+        
+        if (files == null || files.isEmpty()) {
+            return Result.error("请选择要上传的文件");
+        }
+        
+        List<Long> photoIds = photoApplicationService.uploadMedia(userId, petId, files, takenAt, description, tags);
+        
+        return Result.success(photoIds);
+    }
+    
+    /**
+     * 上传单张照片 (兼容旧版本)
+     */
+    @PostMapping("/upload-single")
     public Result<PhotoResponse> uploadPhoto(
             @RequestParam("file") MultipartFile file,
             @RequestParam("petId") Long petId,
@@ -47,18 +69,15 @@ public class PhotoController {
         
         Long userId = StpUtil.getLoginIdAsLong();
         
-        // 文件校验
         if (file.isEmpty()) {
             return Result.error("文件不能为空");
         }
         
-        // 文件类型校验
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
             return Result.error("只能上传图片文件");
         }
         
-        // 文件大小校验（限制 10MB）
         if (file.getSize() > 15 * 1024 * 1024) {
             return Result.error("图片大小不能超过 15MB");
         }

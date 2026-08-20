@@ -157,6 +157,16 @@ public class PetApplicationService {
         if (request.getRemarks() != null) {
             pet.setRemarks(request.getRemarks());
         }
+        
+        if (StrUtil.isNotBlank(request.getFrontViewUrl())) {
+            pet.setFrontViewUrl(request.getFrontViewUrl());
+        }
+        if (StrUtil.isNotBlank(request.getSideViewUrl())) {
+            pet.setSideViewUrl(request.getSideViewUrl());
+        }
+        if (StrUtil.isNotBlank(request.getTopViewUrl())) {
+            pet.setTopViewUrl(request.getTopViewUrl());
+        }
 
         // 4. 持久化
         petRepository.save(pet);

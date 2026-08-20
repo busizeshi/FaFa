@@ -31,8 +31,13 @@ public class PhotoConverter {
                 .photoId(PhotoId.of(photoDO.getId()))
                 .petId(photoDO.getPetId())
                 .userId(photoDO.getUserId())
+                .mediaType(photoDO.getMediaType())
+                .autoRecognized(photoDO.getAutoRecognized() != null && photoDO.getAutoRecognized())
+                .recognitionConfidence(photoDO.getRecognitionConfidence())
+                .recognizedPetIds(parseJsonArray(photoDO.getRecognizedPetIds()))
                 .url(photoDO.getUrl())
                 .thumbnailUrl(photoDO.getThumbnailUrl())
+                .videoCoverUrl(photoDO.getVideoCoverUrl())
                 .originalUrl(photoDO.getOriginalUrl())
                 .takenAt(photoDO.getTakenAt())
                 .uploadAt(photoDO.getUploadAt())
@@ -44,6 +49,7 @@ public class PhotoConverter {
                 .width(photoDO.getWidth())
                 .height(photoDO.getHeight())
                 .fileSize(photoDO.getFileSize())
+                .duration(photoDO.getDuration())
                 .isCover(photoDO.getIsCover() != null && photoDO.getIsCover() == 1)
                 .createdAt(photoDO.getCreatedAt())
                 .updatedAt(photoDO.getUpdatedAt())
@@ -64,8 +70,13 @@ public class PhotoConverter {
         }
         photoDO.setPetId(photo.getPetId());
         photoDO.setUserId(photo.getUserId());
+        photoDO.setMediaType(photo.getMediaType());
+        photoDO.setAutoRecognized(photo.getAutoRecognized() != null && photo.getAutoRecognized());
+        photoDO.setRecognitionConfidence(photo.getRecognitionConfidence());
+        photoDO.setRecognizedPetIds(toJsonString(photo.getRecognizedPetIds()));
         photoDO.setUrl(photo.getUrl());
         photoDO.setThumbnailUrl(photo.getThumbnailUrl());
+        photoDO.setVideoCoverUrl(photo.getVideoCoverUrl());
         photoDO.setOriginalUrl(photo.getOriginalUrl());
         photoDO.setTakenAt(photo.getTakenAt());
         photoDO.setUploadAt(photo.getUploadAt());
@@ -77,6 +88,7 @@ public class PhotoConverter {
         photoDO.setWidth(photo.getWidth());
         photoDO.setHeight(photo.getHeight());
         photoDO.setFileSize(photo.getFileSize());
+        photoDO.setDuration(photo.getDuration());
         photoDO.setIsCover(photo.getIsCover() != null && photo.getIsCover() ? 1 : 0);
         photoDO.setCreatedAt(photo.getCreatedAt());
         photoDO.setUpdatedAt(photo.getUpdatedAt());
