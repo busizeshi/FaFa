@@ -1,0 +1,58 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: fafa-java
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  # Java 21 虚拟线程：Tomcat 请求处理走虚拟线程
+  threads:
+    virtual:
+      enabled: true
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      id-type: assign_id
+      logic-delete-field: isDeleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+sa-token:
+  token-name: Authorization
+  token-prefix: Bearer
+  # 30 天有效
+  timeout: 2592000
+  active-timeout: -1
+  is-concurrent: true
+  is-share: false
+  token-style: uuid
+  is-log: false
+  is-read-header: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+
+fafa:
+  # 服务间内部令牌（Java 调 Python、Python 回调 Java 共用，勿入代码库）
+  internal-token: ${FAFA_INTERNAL_TOKEN:dev-internal-token}
+  python:
+    base-url: ${FAFA_PYTHON_BASE_URL:http://127.0.0.1:8000}
+  wechat:
+    appid: ${WECHAT_APPID:your-appid}
+    secret: ${WECHAT_SECRET:your-secret}

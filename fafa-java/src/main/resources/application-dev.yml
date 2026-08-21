@@ -1,0 +1,60 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/fafa?useUnicode=true&characterEncoding=utf8mb4&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:root}
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      # 监控页仅开发/测试环境开启
+      stat-view-servlet:
+        enabled: true
+        login-username: admin
+        login-password: admin
+      filter:
+        stat:
+          enabled: true
+          log-slow-sql: true
+          slow-sql-millis: 1000
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+# Windows 开发环境不启用 RocketMQ（Python 客户端不支持 Windows），
+# 照片分析走 HTTP 直推链路；Linux 部署时取消注释
+# rocketmq:
+#   name-server: ${ROCKETMQ_NAMESRV:127.0.0.1:9876}
+#   producer:
+#     group: fafa_java_producer
+#     send-message-timeout: 5000
+
+fafa:
+  storage:
+    type: minio
+    minio:
+      endpoint: ${MINIO_ENDPOINT:http://127.0.0.1:9000}
+      access-key: ${MINIO_ACCESS_KEY:minioadmin}
+      secret-key: ${MINIO_SECRET_KEY:minioadmin}
+      bucket: ${MINIO_BUCKET:fafa-media}
+
+knife4j:
+  enable: true
+  production: false
+
+springdoc:
+  api-docs:
+    enabled: true
+
+logging:
+  level:
+    com.fafa: debug
+    com.baomidou.mybatisplus: debug

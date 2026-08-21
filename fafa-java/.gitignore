@@ -1,0 +1,7 @@
+target/
+logs/
+*.log
+# 本地敏感配置（appid/secret/密钥），不入库
+application-local.yml
+.idea/
+*.iml
