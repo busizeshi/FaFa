@@ -7,7 +7,7 @@ from loguru import logger
 
 from app.core.config import settings
 from app.core.database import get_async_session
-from app.core.qdrant import qdrant_client
+from app.core.qdrant import qdrant_client, point_id_from_embedding_id
 from app.core.dashscope_client import (
     generate_image_embedding,
     generate_video_embedding,
@@ -24,17 +24,18 @@ class PhotoAnalysisService:
         self.photo_repo = PhotoRepository()
     
     async def analyze_media(
-        self, 
-        photo_id: int, 
+        self,
+        photo_id: int,
         user_id: int,
-        pet_id: Optional[int], 
+        pet_id: Optional[int],
         url: str,
         media_type: str,
-        tags: Optional[List[str]] = None
+        tags: Optional[List[str]] = None,
+        taken_at: Optional[str] = None
     ):
         """
         分析照片或视频 (使用 qwen3-vl-embedding 直接生成向量)
-        
+
         Args:
             photo_id: 照片/视频ID
             user_id: 用户ID
@@ -42,6 +43,7 @@ class PhotoAnalysisService:
             url: 照片/视频URL
             media_type: 媒体类型 (image 或 video)
             tags: 用户标签
+            taken_at: 拍摄时间 (可选，用于时间范围过滤搜索)
         """
         try:
             logger.info(f"开始分析媒体: photoId={photo_id}, mediaType={media_type}, petId={pet_id}")
@@ -83,6 +85,7 @@ class PhotoAnalysisService:
                     'pet_id': pet_id,
                     'url': url,
                     'media_type': media_type,
+                    'taken_at': taken_at,
                     'tags': tags or [],
                     'auto_recognized': auto_recognized,
                     'recognized_pet_ids': recognized_pet_ids
@@ -233,7 +236,7 @@ class PhotoAnalysisService:
             qdrant_client.upsert(
                 collection_name=settings.QDRANT_COLLECTION_MEDIA,
                 points=[{
-                    'id': embedding_id,
+                    'id': point_id_from_embedding_id(embedding_id),
                     'vector': vector,
                     'payload': payload
                 }]

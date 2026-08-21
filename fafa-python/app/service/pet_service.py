@@ -11,7 +11,7 @@ from loguru import logger
 
 from app.core.config import settings
 from app.core.database import get_async_session
-from app.core.qdrant import qdrant_client
+from app.core.qdrant import qdrant_client, point_id_from_embedding_id
 from app.core.dashscope_client import generate_image_embedding, batch_generate_embeddings
 
 
@@ -71,7 +71,7 @@ class PetService:
             for i, (view_type, embedding) in enumerate(zip(view_types, embeddings)):
                 embedding_id = f"pet_{pet_id}_{view_type}"
                 points.append({
-                    'id': embedding_id,
+                    'id': point_id_from_embedding_id(embedding_id),
                     'vector': embedding,
                     'payload': {
                         'pet_id': pet_id,
@@ -152,10 +152,11 @@ class PetService:
                 f"pet_{pet_id}_side",
                 f"pet_{pet_id}_top"
             ]
-            
+            point_ids = [point_id_from_embedding_id(eid) for eid in embedding_ids]
+
             qdrant_client.delete(
                 collection_name=settings.QDRANT_COLLECTION_PET_PROFILES,
-                points_selector=embedding_ids
+                points_selector=point_ids
             )
             
             logger.info(f"宠物三视图向量已删除: petId={pet_id}")

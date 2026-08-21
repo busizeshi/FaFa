@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.fafa.application.service.PetApplicationService;
 import com.fafa.common.result.Result;
 import com.fafa.domain.model.pet.Pet;
+import com.fafa.infrastructure.client.PythonAiClient;
 import com.fafa.infrastructure.oss.OssService;
 import com.fafa.interfaces.dto.request.CreatePetRequest;
 import com.fafa.interfaces.dto.request.SortPetsRequest;
@@ -36,6 +37,7 @@ public class PetController {
 
     private final PetApplicationService petApplicationService;
     private final OssService ossService;
+    private final PythonAiClient pythonAiClient;
 
     /**
      * 创建宠物
@@ -113,7 +115,10 @@ public class PetController {
         
         Long userId = StpUtil.getLoginIdAsLong();
         petApplicationService.deletePet(id, userId);
-        
+
+        // 同步清理 AI 服务中的三视图向量（尽力而为，失败不影响删除结果）
+        pythonAiClient.deletePetProfileVectors(id);
+
         return Result.success();
     }
     
@@ -171,9 +176,14 @@ public class PetController {
         request.setFrontViewUrl(frontViewUrl);
         request.setSideViewUrl(sideViewUrl);
         request.setTopViewUrl(topViewUrl);
-        
+
         petApplicationService.updatePet(id, userId, request);
-        
+
+        // 通知 AI 服务生成三视图向量（用于照片自动识别宠物），失败不影响主流程
+        if (frontViewUrl != null || sideViewUrl != null || topViewUrl != null) {
+            pythonAiClient.uploadPetProfilePhotos(id, userId, frontViewUrl, sideViewUrl, topViewUrl);
+        }
+
         return Result.success();
     }
     

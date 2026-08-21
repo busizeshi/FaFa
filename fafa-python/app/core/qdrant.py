@@ -1,6 +1,8 @@
 """
 Qdrant 向量数据库客户端 (基于 qwen3-vl-embedding)
 """
+import uuid
+
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
 from loguru import logger
@@ -62,3 +64,14 @@ async def init_qdrant():
 def get_qdrant_client() -> QdrantClient:
     """获取 Qdrant 客户端"""
     return qdrant_client
+
+
+def point_id_from_embedding_id(embedding_id: str) -> str:
+    """
+    将业务向量 ID 转换为 Qdrant 合法的点 ID
+
+    Qdrant 点 ID 只接受无符号整数或 UUID，
+    "media_123"/"pet_1_front" 这类字符串会被服务端拒绝，
+    因此用 uuid5 生成确定性 UUID，保证同一业务 ID 始终映射到同一个点。
+    """
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, embedding_id))

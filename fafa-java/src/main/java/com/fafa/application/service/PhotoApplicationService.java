@@ -8,6 +8,7 @@ import com.fafa.domain.model.photo.Photo;
 import com.fafa.domain.model.photo.PhotoId;
 import com.fafa.domain.repository.PetRepository;
 import com.fafa.domain.repository.PhotoRepository;
+import com.fafa.infrastructure.client.PythonAiClient;
 import com.fafa.infrastructure.mq.MqProducerService;
 import com.fafa.infrastructure.mq.PhotoAnalysisMessage;
 import com.fafa.infrastructure.oss.OssService;
@@ -48,6 +49,9 @@ public class PhotoApplicationService {
 
     @Resource
     private MqProducerService mqProducerService;
+
+    @Resource
+    private PythonAiClient pythonAiClient;
 
     @Resource
     private UserTagApplicationService userTagApplicationService;
@@ -126,6 +130,7 @@ public class PhotoApplicationService {
                         .thumbnailUrl(thumbnailUrl)
                         .mediaType(mediaType)
                         .takenAt(savedPhoto.getTakenAt().toString())
+                        .tags(tags)
                         .build();
 
                 mqProducerService.sendPhotoAnalysisMessage(message);
@@ -280,14 +285,12 @@ public class PhotoApplicationService {
 
         // 删除数据库记录
         photoRepository.deleteById(PhotoId.of(photoId));
-        
+
         // 删除 OSS 文件（可选，根据业务需求）
         // ossService.deleteFile(photo.getUrl());
-        
-        // 删除 Qdrant 向量（后续实现）
-        // if (photo.getEmbeddingId() != null) {
-        //     deletePhotoEmbedding(photo.getEmbeddingId());
-        // }
+
+        // 同步删除 Qdrant 向量（尽力而为，失败不影响删除结果）
+        pythonAiClient.deleteMediaVector(photo.getEmbeddingId());
         
         log.info("删除照片成功，photoId={}, userId={}", photoId, userId);
     }

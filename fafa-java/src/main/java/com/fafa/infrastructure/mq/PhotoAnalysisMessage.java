@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 照片/视频分析消息
@@ -53,4 +54,9 @@ public class PhotoAnalysisMessage implements Serializable {
      * 拍摄时间
      */
     private String takenAt;
+
+    /**
+     * 用户标签
+     */
+    private List<String> tags;
 }

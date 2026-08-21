@@ -40,6 +40,21 @@ public class PetDO {
     private String avatar;
 
     /**
+     * 正面照URL
+     */
+    private String frontViewUrl;
+
+    /**
+     * 侧面照URL
+     */
+    private String sideViewUrl;
+
+    /**
+     * 俯视照URL
+     */
+    private String topViewUrl;
+
+    /**
      * 种类
      */
     private String species;

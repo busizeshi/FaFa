@@ -26,6 +26,9 @@ public class PetConverter {
         
         pet.setId(new PetId(petDO.getId()));
         pet.setAvatar(petDO.getAvatar());
+        pet.setFrontViewUrl(petDO.getFrontViewUrl());
+        pet.setSideViewUrl(petDO.getSideViewUrl());
+        pet.setTopViewUrl(petDO.getTopViewUrl());
         pet.setBreed(petDO.getBreed());
         
         if (petDO.getGender() != null) {
@@ -39,6 +42,7 @@ public class PetConverter {
         pet.setCoatColor(petDO.getCoatColor());
         pet.setRemarks(petDO.getRemarks());
         pet.setStatus(PetStatus.fromCode(petDO.getStatus()));
+        pet.setSortOrder(petDO.getSortOrder());
         pet.setCreatedAt(petDO.getCreatedAt());
         pet.setUpdatedAt(petDO.getUpdatedAt());
 
@@ -62,6 +66,9 @@ public class PetConverter {
         petDO.setUserId(pet.getUserId());
         petDO.setName(pet.getName());
         petDO.setAvatar(pet.getAvatar());
+        petDO.setFrontViewUrl(pet.getFrontViewUrl());
+        petDO.setSideViewUrl(pet.getSideViewUrl());
+        petDO.setTopViewUrl(pet.getTopViewUrl());
         petDO.setSpecies(pet.getSpecies().getCode());
         petDO.setBreed(pet.getBreed());
         
@@ -76,6 +83,7 @@ public class PetConverter {
         petDO.setCoatColor(pet.getCoatColor());
         petDO.setRemarks(pet.getRemarks());
         petDO.setStatus(pet.getStatus().getCode());
+        petDO.setSortOrder(pet.getSortOrder());
         petDO.setCreatedAt(pet.getCreatedAt());
         petDO.setUpdatedAt(pet.getUpdatedAt());
 

@@ -1,5 +1,7 @@
 package com.fafa.application.service;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.StrUtil;
 import com.fafa.common.exception.BusinessException;
 import com.fafa.domain.model.pet.Pet;
@@ -126,46 +128,17 @@ public class PetApplicationService {
             throw new BusinessException("无权修改该宠物");
         }
 
-        // 3. 更新属性
-        if (StrUtil.isNotBlank(request.getName())) {
-            pet.setName(request.getName());
-        }
-        if (StrUtil.isNotBlank(request.getAvatar())) {
-            pet.setAvatar(request.getAvatar());
-        }
-        if (StrUtil.isNotBlank(request.getBreed())) {
-            pet.setBreed(request.getBreed());
-        }
+        // 3. 更新属性：同类型字段由 BeanUtil 统一合并（忽略 null）；
+        //    gender（code 转枚举）和 weight（走领域校验 updateWeight）单独处理
+        BeanUtil.copyProperties(request, pet, CopyOptions.create()
+                .setIgnoreNullValue(true)
+                .setIgnoreProperties("gender", "weight"));
+
         if (StrUtil.isNotBlank(request.getGender())) {
             pet.setGender(PetGender.fromCode(request.getGender()));
         }
-        if (request.getBirthDate() != null) {
-            pet.setBirthDate(request.getBirthDate());
-        }
-        if (request.getAdoptDate() != null) {
-            pet.setAdoptDate(request.getAdoptDate());
-        }
         if (request.getWeight() != null) {
             pet.updateWeight(request.getWeight().doubleValue());
-        }
-        if (request.getIsNeutered() != null) {
-            pet.setIsNeutered(request.getIsNeutered());
-        }
-        if (StrUtil.isNotBlank(request.getCoatColor())) {
-            pet.setCoatColor(request.getCoatColor());
-        }
-        if (request.getRemarks() != null) {
-            pet.setRemarks(request.getRemarks());
-        }
-        
-        if (StrUtil.isNotBlank(request.getFrontViewUrl())) {
-            pet.setFrontViewUrl(request.getFrontViewUrl());
-        }
-        if (StrUtil.isNotBlank(request.getSideViewUrl())) {
-            pet.setSideViewUrl(request.getSideViewUrl());
-        }
-        if (StrUtil.isNotBlank(request.getTopViewUrl())) {
-            pet.setTopViewUrl(request.getTopViewUrl());
         }
 
         // 4. 持久化

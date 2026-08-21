@@ -20,6 +20,7 @@ class MediaAnalysisRequest(BaseModel):
     url: str
     media_type: str  # 'image' 或 'video'
     tags: Optional[List[str]] = None
+    taken_at: Optional[str] = None
 
 
 class SemanticSearchRequest(BaseModel):
@@ -62,7 +63,8 @@ async def analyze_media(request: MediaAnalysisRequest):
             pet_id=request.pet_id,
             url=request.url,
             media_type=request.media_type,
-            tags=request.tags
+            tags=request.tags,
+            taken_at=request.taken_at
         )
         
         return {

@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-from app.api import chat, image, pet, photo, record, reminder, vector, callback
+from app.api import chat, pet, photo, record, reminder, vector, callback
 
 # 注意：RocketMQ Python 客户端不支持 Windows
 # 在 Linux 环境下取消下面的注释
@@ -53,13 +53,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 路径规范: 统一挂载到 /api 下，消灭双重前缀 (如 /api/photo/photos/...)
 app.include_router(chat.router, prefix="/api/chat", tags=["对话"])
-app.include_router(image.router, prefix="/api/image", tags=["图像"])
-app.include_router(pet.router, prefix="/api/pet", tags=["宠物"])
-app.include_router(photo.router, prefix="/api/photo", tags=["照片"])
-app.include_router(record.router, prefix="/api/record", tags=["记录"])
-app.include_router(reminder.router, prefix="/api/reminder", tags=["提醒"])
-app.include_router(vector.router, prefix="/api/vector", tags=["向量"])
+app.include_router(pet.router, prefix="/api", tags=["宠物"])
+app.include_router(photo.router, prefix="/api", tags=["照片"])
+app.include_router(record.router, prefix="/api", tags=["记录"])
+app.include_router(reminder.router, prefix="/api", tags=["提醒"])
+app.include_router(vector.router, prefix="/api", tags=["向量"])
 app.include_router(callback.router, prefix="/api/callback", tags=["回调"])
 
 

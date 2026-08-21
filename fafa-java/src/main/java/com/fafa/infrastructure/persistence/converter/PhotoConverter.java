@@ -34,7 +34,7 @@ public class PhotoConverter {
                 .mediaType(photoDO.getMediaType())
                 .autoRecognized(photoDO.getAutoRecognized() != null && photoDO.getAutoRecognized())
                 .recognitionConfidence(photoDO.getRecognitionConfidence())
-                .recognizedPetIds(parseJsonArray(photoDO.getRecognizedPetIds()))
+                .recognizedPetIds(parseJsonArray(photoDO.getRecognizedPetIds(), new TypeReference<List<Long>>() {}))
                 .url(photoDO.getUrl())
                 .thumbnailUrl(photoDO.getThumbnailUrl())
                 .videoCoverUrl(photoDO.getVideoCoverUrl())
@@ -42,8 +42,8 @@ public class PhotoConverter {
                 .takenAt(photoDO.getTakenAt())
                 .uploadAt(photoDO.getUploadAt())
                 .description(photoDO.getDescription())
-                .tags(parseJsonArray(photoDO.getTags()))
-                .aiTags(parseJsonArray(photoDO.getAiTags()))
+                .tags(parseJsonArray(photoDO.getTags(), new TypeReference<List<String>>() {}))
+                .aiTags(parseJsonArray(photoDO.getAiTags(), new TypeReference<List<String>>() {}))
                 .aiDescription(photoDO.getAiDescription())
                 .embeddingId(photoDO.getEmbeddingId())
                 .width(photoDO.getWidth())
@@ -99,12 +99,12 @@ public class PhotoConverter {
     /**
      * 解析 JSON 数组字符串
      */
-    private static List<String> parseJsonArray(String jsonStr) {
+    private static <T> List<T> parseJsonArray(String jsonStr, TypeReference<List<T>> typeRef) {
         if (jsonStr == null || jsonStr.isEmpty()) {
             return Collections.emptyList();
         }
         try {
-            return objectMapper.readValue(jsonStr, new TypeReference<List<String>>() {});
+            return objectMapper.readValue(jsonStr, typeRef);
         } catch (Exception e) {
             return Collections.emptyList();
         }
@@ -113,7 +113,7 @@ public class PhotoConverter {
     /**
      * 列表转 JSON 字符串
      */
-    private static String toJsonString(List<String> list) {
+    private static String toJsonString(List<?> list) {
         if (list == null || list.isEmpty()) {
             return null;
         }

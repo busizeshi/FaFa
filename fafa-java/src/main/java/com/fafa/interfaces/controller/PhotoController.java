@@ -185,21 +185,23 @@ public class PhotoController {
     }
 
     /**
-     * 照片语义搜索
+     * 照片/视频语义搜索
      */
     @PostMapping("/search")
     public Result<List<PhotoSearchResult>> searchPhotos(@RequestBody @Valid SearchPhotoRequest request) {
         Long userId = StpUtil.getLoginIdAsLong();
-        
-        // 验证宠物归属
-        photoApplicationService.countPhotos(userId, request.getPetId());
-        
+
+        // 验证宠物归属（petId 可选：不传则搜索该用户的所有照片/视频）
+        if (request.getPetId() != null) {
+            photoApplicationService.countPhotos(userId, request.getPetId());
+        }
+
         // 调用 Python AI 服务进行语义搜索
-        List<PhotoSearchResult> results = pythonAiClient.searchPhotos(request);
-        
-        log.info("照片语义搜索完成: userId={}, petId={}, query='{}', results={}", 
+        List<PhotoSearchResult> results = pythonAiClient.searchPhotos(userId, request);
+
+        log.info("照片语义搜索完成: userId={}, petId={}, query='{}', results={}",
                 userId, request.getPetId(), request.getQuery(), results.size());
-        
+
         return Result.success(results);
     }
 

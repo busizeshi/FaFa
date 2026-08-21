@@ -54,27 +54,33 @@ class PhotoAnalysisConsumer:
             return ConsumeStatus.RECONSUME_LATER
     
     async def _process_photo_analysis(self, message_data: dict):
-        """处理照片分析"""
+        """处理媒体分析消息"""
         try:
             photo_id = message_data.get('photoId')
-            pet_id = message_data.get('petId')
+            pet_id = message_data.get('petId')  # 可为空，由 AI 自动识别
+            user_id = message_data.get('userId')
             url = message_data.get('url')
-            
-            if not all([photo_id, pet_id, url]):
-                logger.error(f"照片分析消息缺少必要字段: {message_data}")
+            media_type = message_data.get('mediaType', 'image')
+            tags = message_data.get('tags') or []
+
+            if not all([photo_id, user_id, url]):
+                logger.error(f"媒体分析消息缺少必要字段: {message_data}")
                 return
-            
-            # 调用照片分析服务
-            await self.photo_service.analyze_photo(
+
+            # 调用媒体分析服务
+            await self.photo_service.analyze_media(
                 photo_id=photo_id,
+                user_id=user_id,
                 pet_id=pet_id,
-                url=url
+                url=url,
+                media_type=media_type,
+                tags=tags
             )
-            
-            logger.info(f"照片分析完成: photoId={photo_id}")
-            
+
+            logger.info(f"媒体分析完成: photoId={photo_id}")
+
         except Exception as e:
-            logger.error(f"照片分析处理失败: photoId={message_data.get('photoId')}, error={e}", exc_info=True)
+            logger.error(f"媒体分析处理失败: photoId={message_data.get('photoId')}, error={e}", exc_info=True)
     
     def shutdown(self):
         """关闭消费者"""

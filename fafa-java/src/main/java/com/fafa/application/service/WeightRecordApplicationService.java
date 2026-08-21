@@ -201,7 +201,7 @@ public class WeightRecordApplicationService {
                 .min(BigDecimal::compareTo)
                 .orElse(BigDecimal.ZERO);
         
-        BigDecimal currentWeight = records.get(0).getWeight(); // 已按日期倒序
+        BigDecimal currentWeight = records.getFirst().getWeight(); // 已按日期倒序
         
         return WeightTrendResponse.builder()
                 .trend(trend)

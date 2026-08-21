@@ -1,7 +1,9 @@
 package com.fafa.domain.model.pet;
 
 import com.fafa.domain.event.PetCreatedEvent;
+import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,7 +19,7 @@ import java.time.LocalDateTime;
  * @author FaFa Team
  * @since 1.0
  */
-@Getter
+@Data
 public class Pet {
 
     /**
@@ -109,6 +111,11 @@ public class Pet {
      * 状态
      */
     private PetStatus status;
+
+    /**
+     * 排序值（越小越靠前，用于宠物列表拖拽排序）
+     */
+    private Integer sortOrder;
 
     /**
      * 创建时间
@@ -240,90 +247,5 @@ public class Pet {
     public boolean isPuppy() {
         Integer age = getAgeInMonths();
         return age != null && age < 12;
-    }
-
-    // Setter 方法用于持久化层重建对象
-    public void setId(PetId id) {
-        this.id = id;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
-    }
-
-    public void setFrontViewUrl(String frontViewUrl) {
-        this.frontViewUrl = frontViewUrl;
-    }
-
-    public void setSideViewUrl(String sideViewUrl) {
-        this.sideViewUrl = sideViewUrl;
-    }
-
-    public void setTopViewUrl(String topViewUrl) {
-        this.topViewUrl = topViewUrl;
-    }
-
-    public void setProfileEmbeddingIds(String profileEmbeddingIds) {
-        this.profileEmbeddingIds = profileEmbeddingIds;
-    }
-
-    public void setSpecies(PetSpecies species) {
-        this.species = species;
-    }
-
-    public void setBreed(String breed) {
-        this.breed = breed;
-    }
-
-    public void setGender(PetGender gender) {
-        this.gender = gender;
-    }
-
-    public void setBirthDate(LocalDate birthDate) {
-        this.birthDate = birthDate;
-    }
-
-    public void setAdoptDate(LocalDate adoptDate) {
-        this.adoptDate = adoptDate;
-    }
-
-    public void setWeight(Double weight) {
-        this.weight = weight;
-    }
-
-    public void setIsNeutered(Boolean isNeutered) {
-        this.isNeutered = isNeutered;
-    }
-
-    public void setCoatColor(String coatColor) {
-        this.coatColor = coatColor;
-    }
-
-    public void setRemarks(String remarks) {
-        this.remarks = remarks;
-    }
-
-    public void setStatus(PetStatus status) {
-        this.status = status;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public void setSortOrder(Integer sortOrder) {
-        // 用于排序功能
     }
 }

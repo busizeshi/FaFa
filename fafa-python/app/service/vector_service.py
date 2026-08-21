@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Optional
 from loguru import logger
 
 from app.core.config import settings
-from app.core.qdrant import qdrant_client
+from app.core.qdrant import qdrant_client, point_id_from_embedding_id
 from app.core.dashscope_client import (
     generate_text_embedding,
     generate_image_embedding,
@@ -166,7 +166,7 @@ class VectorService:
             qdrant_client.upsert(
                 collection_name=collection,
                 points=[{
-                    'id': embedding_id,
+                    'id': point_id_from_embedding_id(embedding_id),
                     'vector': vector,
                     'payload': payload
                 }]
@@ -195,7 +195,7 @@ class VectorService:
             
             qdrant_client.delete(
                 collection_name=collection,
-                points_selector=[embedding_id]
+                points_selector=[point_id_from_embedding_id(embedding_id)]
             )
             
             logger.info(f"向量已删除: id={embedding_id}, collection={collection}")
@@ -221,7 +221,10 @@ class VectorService:
             
             qdrant_client.upsert(
                 collection_name=collection,
-                points=points
+                points=[
+                    {**p, 'id': point_id_from_embedding_id(p['id'])}
+                    for p in points
+                ]
             )
             
             logger.info(f"批量保存向量完成: count={len(points)}, collection={collection}")
