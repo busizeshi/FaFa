@@ -48,4 +48,10 @@ public interface PetRepository {
      * 获取用户宠物的最大排序号
      */
     int getMaxSortOrder(Long userId);
+
+    /**
+     * 批量更新宠物排序号
+     * @param pets 需要更新排序的宠物列表
+     */
+    void batchUpdateSortOrder(List<Pet> pets);
 }

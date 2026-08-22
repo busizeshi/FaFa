@@ -10,6 +10,7 @@ langchain>=0.3.0
 langchain-openai>=0.2.0
 langgraph>=0.2.0
 prometheus-fastapi-instrumentator>=7.0.0
+dashscope>=1.20.0
 
 # RocketMQ 消费者仅 Linux 环境可用（Windows 开发环境走 HTTP 直推链路）
 # rocketmq-client-python 在 Linux 部署时另行安装

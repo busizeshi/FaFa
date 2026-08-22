@@ -11,7 +11,7 @@ import org.springframework.web.client.RestClient;
 /**
  * 微信小程序服务端接口客户端
  *
- * 文档：https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/user-login/code2Session.html
+ * 文档：<a href="https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/user-login/code2Session.html">...</a>
  *
  * @author FaFa Team
  * @since 1.0

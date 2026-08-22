@@ -1,7 +1,5 @@
 package com.fafa.infrastructure.ai;
 
-import org.springframework.web.multipart.MultipartFile;
-
 /**
  * AI 任务分发策略接口
  *
@@ -14,15 +12,17 @@ import org.springframework.web.multipart.MultipartFile;
 public interface AiTaskDispatcher {
 
     /**
-     * 分发三视图向量化任务
+     * 分发宠物照片向量化任务
      *
-     * @param petId      宠物ID
-     * @param frontPhoto 正面照
-     * @param sidePhoto  侧面照
-     * @param frontUrl   正面照URL
-     * @param sideUrl    侧面照URL
+     * 照片已上传到对象存储，此处只传 URL，由 Python 调用 qwen3-vl-embedding 生成向量存入 Qdrant。
+     * 三张照片（头像/正面/侧面）可全部或部分提供，Python 端按 view 分别 upsert，幂等。
+     *
+     * @param petId          宠物ID
+     * @param userId         用户ID
+     * @param avatarUrl      头像URL（可为null，表示本次不更新头像）
+     * @param frontPhotoUrl  正面照URL（可为null）
+     * @param sidePhotoUrl   侧面照URL（可为null）
      */
-    void dispatchProfilePhotoVectorization(Long petId, MultipartFile frontPhoto, 
-                                          MultipartFile sidePhoto, String frontUrl, 
-                                          String sideUrl);
+    void dispatchPetPhotoVectorization(Long petId, Long userId,
+                                       String avatarUrl, String frontPhotoUrl, String sidePhotoUrl);
 }

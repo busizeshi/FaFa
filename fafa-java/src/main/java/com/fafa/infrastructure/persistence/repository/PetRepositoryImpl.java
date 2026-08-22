@@ -89,6 +89,16 @@ public class PetRepositoryImpl implements PetRepository {
         return pet != null && pet.getSortOrder() != null ? pet.getSortOrder() : 0;
     }
 
+    @Override
+    public void batchUpdateSortOrder(List<Pet> pets) {
+        for (Pet pet : pets) {
+            PetPO po = new PetPO();
+            po.setId(pet.getId());
+            po.setSortOrder(pet.getSortOrder());
+            petMapper.updateById(po);
+        }
+    }
+
     /**
      * 持久化对象转领域对象
      */
