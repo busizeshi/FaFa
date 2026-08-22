@@ -1,136 +1,72 @@
 package com.fafa.infrastructure.client;
 
-import com.fafa.infrastructure.web.TraceIdFilter;
+import com.fafa.common.BusinessException;
+import com.fafa.common.ErrorCode;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import java.util.Map;
-
 /**
- * Python AI 服务客户端
+ * fafa-python AI 服务客户端（仅限 Java 侧内网调用）
  *
- * 服务间契约（与 fafa-python 路由逐字节对齐，变更须双侧同步）：
- * - POST /api/photos/analyze        媒体理解与向量化（Windows 开发链路直推）
- * - POST /api/photos/search         语义检索
- * - POST /api/pets/profile-photos   三视图向量化
- * - DELETE /api/pets/{petId}/profile-vectors  清理宠物向量
- * - POST /api/chat/send             AI 对话
+ * 同步轻量链路（语义检索、对话、健康检查）走本客户端；
+ * 重 AI 负载（照片理解、向量化）走 RocketMQ 异步链路，
+ * Windows 开发环境无 MQ 消费能力时降级为直接调用 analyze 接口。
+ *
+ * @author FaFa Team
+ * @since 1.0
  */
 @Slf4j
-@Service
+@Component
+@RequiredArgsConstructor
 public class PythonAiClient {
 
-    private final RestClient restClient;
-    private final String internalToken;
-
-    public PythonAiClient(RestClient.Builder builder,
-                          @Value("${fafa.python.base-url}") String baseUrl,
-                          @Value("${fafa.internal-token}") String internalToken) {
-        this.restClient = builder.baseUrl(baseUrl).build();
-        this.internalToken = internalToken;
-    }
+    private final RestClient pythonRestClient;
 
     /**
-     * 触发媒体分析（Windows 开发环境无 MQ 时的直推链路）
+     * 健康检查：Python 服务是否可用
+     *
+     * @return true 可用；false 不可用（不抛异常，供健康探针与降级判断）
      */
-    public void analyzeMedia(Map<String, Object> requestBody) {
-        post("/api/photos/analyze", requestBody);
-    }
-
-    /**
-     * 语义检索照片（同步，供搜索接口转发）
-     */
-    public Map<String, Object> searchPhotos(Map<String, Object> requestBody) {
-        return postForBody("/api/photos/search", requestBody);
-    }
-
-    /**
-     * 三视图向量化（宠物创建/更新后触发）
-     */
-    public void uploadPetProfilePhotos(Map<String, Object> requestBody) {
-        post("/api/pets/profile-photos", requestBody);
-    }
-
-    /**
-     * 删除宠物的三视图向量（宠物删除时尽力清理）
-     */
-    public void deletePetProfileVectors(Long petId) {
+    public boolean health() {
         try {
-            restClient.delete()
-                    .uri("/api/pets/{petId}/profile-vectors", petId)
-                    .headers(this::applyInternalHeaders)
+            pythonRestClient.get().uri("/health").retrieve().toBodilessEntity();
+            return true;
+        } catch (Exception ex) {
+            log.warn("fafa-python 健康检查失败: {}", ex.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 触发照片分析（Windows 开发环境的 MQ 替代链路）
+     *
+     * @throws BusinessException Python 服务不可用或调用失败
+     */
+    public void analyzePhoto(PhotoAnalyzeRequest request) {
+        try {
+            pythonRestClient.post()
+                    .uri("/api/photos/analyze")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("X-Trace-Id", currentTraceId())
+                    .body(request)
                     .retrieve()
                     .toBodilessEntity();
-            log.info("宠物向量清理请求已发送: petId={}", petId);
-        } catch (Exception e) {
-            log.warn("宠物向量清理失败（尽力而为，不阻断）: petId={}", petId, e);
+            log.info("照片分析任务已提交: photoId={}, messageId={}", request.getPhotoId(), request.getMessageId());
+        } catch (BusinessException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            log.error("调用 Python 照片分析失败: photoId={}", request.getPhotoId(), ex);
+            throw new BusinessException(ErrorCode.AI_SERVICE_UNAVAILABLE);
         }
     }
 
-    /**
-     * AI 对话转发（流式场景由控制器直连，此处供非流式调用）
-     */
-    public Map<String, Object> sendChat(Map<String, Object> requestBody) {
-        return postForBody("/api/chat/send", requestBody);
-    }
-
-    // ------------------------------------------------------------------
-
-    private void post(String path, Map<String, Object> body) {
-        try {
-            restClient.post()
-                    .uri(path)
-                    .headers(this::applyInternalHeaders)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(body)
-                    .retrieve()
-                    .toBodilessEntity();
-        } catch (Exception e) {
-            log.error("调用 Python 服务失败: path={}", path, e);
-            throw new com.fafa.domain.exception.BusinessException(
-                    com.fafa.domain.common.ErrorCode.AI_SERVICE_UNAVAILABLE);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> postForBody(String path, Map<String, Object> body) {
-        try {
-            return restClient.post()
-                    .uri(path)
-                    .headers(this::applyInternalHeaders)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(body)
-                    .retrieve()
-                    .body(Map.class);
-        } catch (Exception e) {
-            log.error("调用 Python 服务失败: path={}", path, e);
-            throw new com.fafa.domain.exception.BusinessException(
-                    com.fafa.domain.common.ErrorCode.AI_SERVICE_UNAVAILABLE);
-        }
-    }
-
-    /**
-     * 内部令牌 + traceId 透传，Python 侧日志可串联同一链路
-     */
-    private void applyInternalHeaders(HttpHeaders headers) {
-        headers.set("X-Internal-Token", internalToken);
-        String traceId = MDC.get(TraceIdFilter.TRACE_ID_MDC_KEY);
-        if (traceId != null) {
-            headers.set(TraceIdFilter.TRACE_ID_HEADER, traceId);
-        }
-    }
-
-    /** 预留：供需要原始 entity 的场景使用 */
-    private HttpEntity<Map<String, Object>> buildEntity(Map<String, Object> body) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        applyInternalHeaders(headers);
-        return new HttpEntity<>(body, headers);
+    /** 优先取当前链路 traceId（Micrometer Tracing 写入 MDC），无则生成 */
+    private String currentTraceId() {
+        String traceId = MDC.get("traceId");
+        return (traceId == null || traceId.isBlank()) ? "no-trace" : traceId;
     }
 }

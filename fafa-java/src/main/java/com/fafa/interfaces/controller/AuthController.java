@@ -1,23 +1,26 @@
 package com.fafa.interfaces.controller;
 
-import cn.dev33.satoken.stp.StpUtil;
-import com.fafa.application.service.AuthApplicationService;
-import com.fafa.interfaces.common.Result;
+import com.fafa.application.dto.LoginCommand;
+import com.fafa.application.dto.LoginResult;
+import com.fafa.application.service.AuthAppService;
+import com.fafa.common.Result;
+import com.fafa.interfaces.assembler.AuthAssembler;
+import com.fafa.interfaces.dto.auth.LoginRequest;
 import com.fafa.interfaces.dto.auth.LoginResponse;
-import com.fafa.interfaces.dto.auth.UserInfoResponse;
-import com.fafa.interfaces.dto.auth.WechatLoginRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 认证接口
+ * 认证控制器
+ *
+ * @author FaFa Team
+ * @since 1.0
  */
 @Tag(name = "认证")
 @RestController
@@ -25,30 +28,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthApplicationService authApplicationService;
+    private final AuthAppService authAppService;
 
-    @Operation(summary = "微信登录（自动注册）")
+    @Operation(summary = "微信一键登录", description = "小程序 wx.login() 获取 code 后调用，首次登录自动注册")
     @PostMapping("/wechat/login")
-    public Result<LoginResponse> wechatLogin(@RequestBody @Valid WechatLoginRequest request) {
-        return Result.ok(authApplicationService.wechatLogin(request.getCode()));
-    }
-
-    @Operation(summary = "当前用户信息")
-    @GetMapping("/user/info")
-    public Result<UserInfoResponse> userInfo() {
-        return Result.ok(authApplicationService.getCurrentUserInfo());
+    public Result<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
+        LoginResult result = authAppService.login(new LoginCommand(request.getCode()));
+        return Result.ok(AuthAssembler.toResponse(result));
     }
 
     @Operation(summary = "登出")
     @PostMapping("/logout")
     public Result<Void> logout() {
-        authApplicationService.logout();
+        authAppService.logout();
         return Result.ok();
-    }
-
-    @Operation(summary = "登录状态检查")
-    @GetMapping("/check")
-    public Result<Boolean> checkLogin() {
-        return Result.ok(StpUtil.isLogin());
     }
 }

@@ -1,60 +1,62 @@
 package com.fafa.infrastructure.wechat;
 
-import com.fafa.domain.common.ErrorCode;
-import com.fafa.domain.exception.BusinessException;
+import com.fafa.common.BusinessException;
+import com.fafa.common.ErrorCode;
+import com.fafa.infrastructure.config.FaFaProperties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 /**
- * 微信 API 客户端
+ * 微信小程序服务端接口客户端
  *
- * code2Session：小程序 wx.login 的 code 换取 openid
+ * 文档：https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/user-login/code2Session.html
+ *
+ * @author FaFa Team
+ * @since 1.0
  */
 @Slf4j
 @Component
 public class WeChatClient {
 
-    private static final String JSCODE2SESSION_URL =
-            "https://api.weixin.qq.com/sns/jscode2session?appid={appid}&secret={secret}&js_code={code}&grant_type=authorization_code";
+    private static final String CODE2SESSION_URL = "https://api.weixin.qq.com/sns/jscode2session";
 
-    private final RestClient restClient;
-    private final String appid;
-    private final String secret;
+    private final FaFaProperties properties;
+    private final RestClient wechatRestClient;
 
-    public WeChatClient(RestClient.Builder builder,
-                        @Value("${fafa.wechat.appid}") String appid,
-                        @Value("${fafa.wechat.secret}") String secret) {
-        this.restClient = builder.build();
-        this.appid = appid;
-        this.secret = secret;
+    public WeChatClient(FaFaProperties properties, RestClient wechatRestClient) {
+        this.properties = properties;
+        this.wechatRestClient = wechatRestClient;
     }
 
     /**
-     * 用小程序登录 code 换取 openid
+     * 以 wx.login() 的 code 换取 openid / session_key
      *
-     * @param code wx.login 获取的临时凭证
-     * @return openid（用户在当前小程序下的唯一标识）
+     * @throws BusinessException code 无效或微信接口异常
      */
-    public String code2Session(String code) {
-        WeChatSessionResponse response;
+    public WeChatSession code2Session(String code) {
+        WeChatSession session;
         try {
-            response = restClient.get()
-                    .uri(JSCODE2SESSION_URL, appid, secret, code)
+            session = wechatRestClient.get()
+                    .uri(CODE2SESSION_URL + "?appid={appid}&secret={secret}&js_code={code}&grant_type=authorization_code",
+                            properties.getWechat().getAppid(),
+                            properties.getWechat().getSecret(),
+                            code)
                     .retrieve()
-                    .body(WeChatSessionResponse.class);
-        } catch (Exception e) {
-            log.error("微信 code2Session 请求失败: code={}", code, e);
-            throw new BusinessException(ErrorCode.WECHAT_LOGIN_FAILED);
+                    .body(WeChatSession.class);
+        } catch (Exception ex) {
+            // 微信 code 不落日志，避免敏感信息泄露
+            log.error("调用微信 code2Session 失败", ex);
+            throw new BusinessException(ErrorCode.USER_LOGIN_FAILED);
         }
-        if (response == null || response.getOpenid() == null) {
-            int errcode = response == null || response.getErrcode() == null ? -1 : response.getErrcode();
-            String errmsg = response == null ? "empty response" : response.getErrmsg();
-            log.warn("微信 code2Session 失败: errcode={}, errmsg={}", errcode, errmsg);
-            throw new BusinessException(ErrorCode.WECHAT_LOGIN_FAILED);
+
+        if (session == null || session.openid() == null || session.errcode() != null && session.errcode() != 0) {
+            log.warn("微信 code2Session 返回异常: errcode={}, errmsg={}",
+                    session == null ? null : session.errcode(),
+                    session == null ? null : session.errmsg());
+            throw new BusinessException(ErrorCode.WECHAT_CODE_INVALID);
         }
-        log.info("微信 code2Session 成功");
-        return response.getOpenid();
+        return session;
     }
 }

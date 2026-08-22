@@ -1,14 +1,16 @@
+# 生产环境：使用阿里云服务
 spring:
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT:3306}/fafa?useUnicode=true&characterEncoding=utf8mb4&serverTimezone=Asia/Shanghai&useSSL=true
-    username: ${MYSQL_USERNAME}
-    password: ${MYSQL_PASSWORD}
     type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:3306/fafa?useUnicode=true&characterEncoding=UTF-8&useSSL=true&serverTimezone=Asia/Shanghai
+    username: ${DB_USERNAME:fafa}
+    password: ${DB_PASSWORD}
     druid:
-      initial-size: 5
-      min-idle: 5
-      max-active: 20
+      initial-size: 10
+      min-idle: 10
+      max-active: 100
+      validation-query: SELECT 1
       stat-view-servlet:
         enabled: false
   data:
@@ -16,35 +18,43 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD}
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
+      database: 0
 
 rocketmq:
-  name-server: ${ROCKETMQ_NAMESRV}
+  name-server: ${ROCKETMQ_NAMESERVER}
   producer:
     group: fafa_java_producer
     send-message-timeout: 5000
 
 fafa:
+  wechat:
+    appid: ${WECHAT_APPID}
+    secret: ${WECHAT_SECRET}
+  python:
+    base-url: ${PYTHON_BASE_URL}
+  internal-token: ${INTERNAL_TOKEN}
   storage:
-    # 生产切换为阿里云 OSS（需引入 OSS SDK 并实现 OssStorageService）
-    type: minio
-    minio:
-      endpoint: ${MINIO_ENDPOINT}
-      access-key: ${MINIO_ACCESS_KEY}
-      secret-key: ${MINIO_SECRET_KEY}
-      bucket: ${MINIO_BUCKET:fafa-media}
-
-knife4j:
-  enable: false
-  production: true
+    type: oss
+  ai:
+    dispatcher: rocketmq
+  pet:
+    limit:
+      normal: 2
+      vip: 999
+  oss:
+    endpoint: ${OSS_ENDPOINT:oss-cn-hangzhou.aliyuncs.com}
+    access-key-id: ${OSS_ACCESS_KEY_ID}
+    access-key-secret: ${OSS_ACCESS_KEY_SECRET}
+    bucket-name: ${OSS_BUCKET_NAME:fafa-prod}
 
 springdoc:
   api-docs:
     enabled: false
 
+knife4j:
+  enable: false
+  production: true
+
 logging:
   level:
     com.fafa: info
-    root: warn

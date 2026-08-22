@@ -1,12 +1,15 @@
 package com.fafa.infrastructure.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.fafa.infrastructure.persistence.dataobject.UserDO;
+import com.fafa.infrastructure.persistence.po.UserPO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 用户 Mapper（MP 自动生成 CRUD，逻辑删除自动拦截）
+ * 用户 Mapper
+ *
+ * @author FaFa Team
+ * @since 1.0
  */
 @Mapper
-public interface UserMapper extends BaseMapper<UserDO> {
+public interface UserMapper extends BaseMapper<UserPO> {
 }

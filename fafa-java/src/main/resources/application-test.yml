@@ -1,0 +1,48 @@
+# 测试环境：与开发同套中间件，按需替换地址
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.1.14:3306/fafa?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: fafa
+    password: fafa_123456
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      validation-query: SELECT 1
+      stat-view-servlet:
+        enabled: false
+  data:
+    redis:
+      host: 192.168.1.14
+      port: 6379
+      database: 0
+
+rocketmq:
+  name-server: 192.168.1.14:9876
+  producer:
+    group: fafa_java_producer
+    send-message-timeout: 5000
+
+fafa:
+  wechat:
+    appid: ${WECHAT_APPID:}
+    secret: ${WECHAT_SECRET:}
+  python:
+    base-url: ${FAFA_PYTHON_URL:http://localhost:8000}
+  internal-token: ${INTERNAL_TOKEN:}
+  storage:
+    type: minio
+  minio:
+    endpoint: ${FAFA_MINIO_ENDPOINT:http://192.168.1.14:9000}
+    access-key: ${FAFA_MINIO_AK:minioadmin}
+    secret-key: ${FAFA_MINIO_SK:minioadmin123}
+
+springdoc:
+  api-docs:
+    enabled: true
+
+knife4j:
+  enable: true
+  production: false

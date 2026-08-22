@@ -1,47 +1,70 @@
-"""Qdrant 封装：集合管理 + 确定性 point id
+"""
+Qdrant 向量库管理
 
-两个集合统一使用 qwen3-vl-embedding（1024 维），point id 由 embedding_id
-经 uuid5 确定性生成，保证同一素材重复处理时幂等 upsert。
+集合规划（见技术文档 5.5）：
+- fafa_media        照片/视频素材向量（qwen3-vl-embedding，1024 维）
+- fafa_pet_profiles 宠物三视图向量（同上）
+
+Point ID 由 embedding_id 经 uuid5 确定性生成，保证幂等 upsert，
+禁止随机 UUID。
 """
 
 import uuid
+from functools import lru_cache
 
 from loguru import logger
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 
-from app.core.config import settings
+from app.core.config import get_settings
 
-MEDIA_COLLECTION = "fafa_media"          # 照片/视频素材向量
-PET_PROFILES_COLLECTION = "fafa_pet_profiles"  # 宠物三视图向量
+# 集合常量
+COLLECTION_MEDIA = "fafa_media"
+COLLECTION_PET_PROFILES = "fafa_pet_profiles"
 
-# uuid5 命名空间（固定值，勿改动：改动会导致新旧 point id 不一致）
-_NAMESPACE = uuid.UUID("6f617069-0000-4000-8000-666166610001")
+# 统一向量维度（qwen3-vl-embedding）
+VECTOR_DIM = 1024
 
-_client: QdrantClient | None = None
+# uuid5 命名空间（固定值，保证同一 embedding_id 生成同一 point id）
+_NAMESPACE = uuid.UUID("6f1f2a3c-0000-4000-8000-fafa00000001")
 
 
+@lru_cache
 def get_client() -> QdrantClient:
-    """获取 Qdrant 客户端（懒加载单例）"""
-    global _client
-    if _client is None:
-        _client = QdrantClient(url=settings.qdrant_url)
-    return _client
+    """获取 Qdrant 客户端单例"""
+    settings = get_settings()
+    logger.info("连接 Qdrant: {}", settings.qdrant_url)
+    return QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key or None)
 
 
-def point_id_from_embedding_id(embedding_id: str) -> str:
-    """embedding_id -> 确定性 uuid5 point id（幂等 upsert 的关键）"""
+def point_id(embedding_id: str) -> str:
+    """
+    由业务 embedding_id 确定性生成 Qdrant point ID
+
+    同一 embedding_id 永远得到同一 point id，删除与 upsert 天然幂等。
+    """
     return str(uuid.uuid5(_NAMESPACE, embedding_id))
 
 
 def ensure_collections() -> None:
-    """确保两个向量集合存在（维度以 settings.embedding_dim 为准）"""
+    """启动时确保两个业务集合存在，不存在则创建"""
     client = get_client()
-    dim = settings.embedding_dim
-    for name in (MEDIA_COLLECTION, PET_PROFILES_COLLECTION):
-        if not client.collection_exists(name):
-            client.create_collection(
-                collection_name=name,
-                vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
-            )
-            logger.info(f"Qdrant 集合已创建: {name} (dim={dim})")
+    for collection in (COLLECTION_MEDIA, COLLECTION_PET_PROFILES):
+        try:
+            if not client.collection_exists(collection):
+                client.create_collection(
+                    collection_name=collection,
+                    vectors_config=VectorParams(size=VECTOR_DIM, distance=Distance.COSINE),
+                )
+                logger.info("创建 Qdrant 集合: {}, dim={}", collection, VECTOR_DIM)
+            else:
+                logger.info("Qdrant 集合已存在: {}", collection)
+        except Exception as e:
+            # 集合初始化失败不阻断启动，记日志人工处理
+            logger.error("Qdrant 集合初始化失败: collection={}, error={}", collection, e)
+
+
+def drop_collection(collection: str) -> None:
+    """删除集合（运维操作慎用）"""
+    get_client().delete_collection(collection_name=collection)
+    logger.warning("已删除 Qdrant 集合: {}", collection)

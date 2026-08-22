@@ -1,102 +1,113 @@
 package com.fafa.infrastructure.oss;
 
-import com.fafa.domain.common.ErrorCode;
-import com.fafa.domain.exception.BusinessException;
-import io.minio.BucketExistsArgs;
+import cn.hutool.core.util.IdUtil;
+import com.fafa.infrastructure.config.FaFaProperties;
 import io.minio.GetPresignedObjectUrlArgs;
-import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
-import io.minio.http.Method;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 /**
- * MinIO 对象存储实现（开发/测试环境）
+ * MinIO 存储实现（开发/测试环境）
+ *
+ * 对象路径规范：{folder}/{yyyyMM}/{uuid}.{ext}
+ *
+ * @author FaFa Team
+ * @since 1.0
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 @ConditionalOnProperty(name = "fafa.storage.type", havingValue = "minio")
 public class MinioStorageService implements StorageService {
 
+    private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM");
+
     private final MinioClient minioClient;
+    private final FaFaProperties properties;
 
-    @Value("${fafa.storage.minio.bucket}")
-    private String bucket;
-
-    public MinioStorageService(
-            @Value("${fafa.storage.minio.endpoint}") String endpoint,
-            @Value("${fafa.storage.minio.access-key}") String accessKey,
-            @Value("${fafa.storage.minio.secret-key}") String secretKey) {
-        this.minioClient = MinioClient.builder()
-                .endpoint(endpoint)
-                .credentials(accessKey, secretKey)
-                .build();
-    }
-
-    /**
-     * 启动时确保 bucket 存在，避免首次上传失败
-     */
     @PostConstruct
-    public void ensureBucket() {
-        try {
-            if (!minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build())) {
-                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
-                log.info("MinIO bucket 已创建: {}", bucket);
-            }
-        } catch (Exception e) {
-            // 不阻断启动：MinIO 未就绪时记录错误，上传时再失败
-            log.error("MinIO bucket 检查失败，请确认 MinIO 服务可用: bucket={}", bucket, e);
-        }
+    public void init() {
+        MinioConfig.ensureBucket(minioClient, properties.getMinio().getBucketMedia());
+        MinioConfig.ensureBucket(minioClient, properties.getMinio().getBucketAvatar());
     }
 
     @Override
-    public String upload(String objectKey, InputStream stream, long size, String contentType) {
+    public String upload(MultipartFile file, String folder) {
+        String originalFilename = file.getOriginalFilename();
+        String extension = originalFilename != null && originalFilename.contains(".") 
+            ? originalFilename.substring(originalFilename.lastIndexOf(".") + 1) 
+            : "jpg";
+        
+        String objectKey = buildObjectKey(folder, extension);
         try {
             minioClient.putObject(PutObjectArgs.builder()
-                    .bucket(bucket)
+                    .bucket(properties.getMinio().getBucketMedia())
                     .object(objectKey)
-                    .stream(stream, size, -1)
-                    .contentType(contentType)
+                    .stream(file.getInputStream(), file.getSize(), -1)
+                    .contentType(file.getContentType())
                     .build());
-            log.info("文件上传成功: {}", objectKey);
-            return objectKey;
-        } catch (Exception e) {
-            log.error("文件上传失败: objectKey={}", objectKey, e);
-            throw new BusinessException(ErrorCode.PHOTO_UPLOAD_FAILED);
+            
+            String endpoint = properties.getMinio().getEndpoint();
+            String bucket = properties.getMinio().getBucketMedia();
+            return endpoint + "/" + bucket + "/" + objectKey;
+            
+        } catch (Exception ex) {
+            log.error("MinIO 上传失败: objectKey={}", objectKey, ex);
+            throw new RuntimeException("File upload failed", ex);
         }
     }
 
     @Override
-    public void delete(String objectKey) {
+    public void delete(String fileUrl) {
         try {
-            minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(objectKey).build());
-            log.info("文件删除成功: {}", objectKey);
-        } catch (Exception e) {
-            // 先删库后删文件策略：文件删除失败仅记录，不阻断业务
-            log.error("文件删除失败，待人工清理: objectKey={}", objectKey, e);
+            String objectKey = extractObjectKey(fileUrl);
+            minioClient.removeObject(RemoveObjectArgs.builder()
+                    .bucket(properties.getMinio().getBucketMedia())
+                    .object(objectKey)
+                    .build());
+        } catch (Exception ex) {
+            log.error("MinIO 删除失败: fileUrl={}", fileUrl, ex);
         }
     }
 
     @Override
-    public String presignedGetUrl(String objectKey, int expireSeconds) {
+    public String generatePresignedUrl(String fileUrl, int expireSeconds) {
         try {
+            String objectKey = extractObjectKey(fileUrl);
             return minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
-                    .method(Method.GET)
-                    .bucket(bucket)
+                    .method(io.minio.http.Method.GET)
+                    .bucket(properties.getMinio().getBucketMedia())
                     .object(objectKey)
                     .expiry(expireSeconds, TimeUnit.SECONDS)
                     .build());
-        } catch (Exception e) {
-            log.error("生成预签名URL失败: objectKey={}", objectKey, e);
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        } catch (Exception ex) {
+            log.error("MinIO 预签名失败: fileUrl={}", fileUrl, ex);
+            throw new RuntimeException("Generate presigned URL failed", ex);
         }
+    }
+
+    private String buildObjectKey(String folder, String extension) {
+        String month = LocalDate.now().format(MONTH_FORMATTER);
+        return folder + "/" + month + "/" + IdUtil.fastSimpleUUID() + "." + extension;
+    }
+
+    private String extractObjectKey(String fileUrl) {
+        String bucket = properties.getMinio().getBucketMedia();
+        int bucketIndex = fileUrl.indexOf(bucket);
+        if (bucketIndex == -1) {
+            throw new IllegalArgumentException("Invalid MinIO URL: " + fileUrl);
+        }
+        return fileUrl.substring(bucketIndex + bucket.length() + 1);
     }
 }

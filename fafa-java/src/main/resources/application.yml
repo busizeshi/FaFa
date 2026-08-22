@@ -1,6 +1,4 @@
-server:
-  port: 8080
-
+# 公共配置：所有环境共享，环境差异见 application-{env}.yml
 spring:
   application:
     name: fafa-java
@@ -14,9 +12,12 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 100MB
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
 
 mybatis-plus:
-  mapper-locations: classpath*:mapper/**/*.xml
   configuration:
     map-underscore-to-camel-case: true
   global-config:
@@ -28,16 +29,16 @@ mybatis-plus:
       logic-not-delete-value: 0
 
 sa-token:
+  # 小程序请求头携带：Authorization: {token}
   token-name: Authorization
-  token-prefix: Bearer
-  # 30 天有效
+  # 会话 30 天
   timeout: 2592000
   active-timeout: -1
   is-concurrent: true
-  is-share: false
+  is-share: true
   token-style: uuid
   is-log: false
-  is-read-header: true
+  is-read-cookie: false
 
 management:
   endpoints:
@@ -46,13 +47,8 @@ management:
         include: health,info,prometheus
   endpoint:
     health:
-      show-details: when_authorized
+      show-details: always
 
-fafa:
-  # 服务间内部令牌（Java 调 Python、Python 回调 Java 共用，勿入代码库）
-  internal-token: ${FAFA_INTERNAL_TOKEN:dev-internal-token}
-  python:
-    base-url: ${FAFA_PYTHON_BASE_URL:http://127.0.0.1:8000}
-  wechat:
-    appid: ${WECHAT_APPID:your-appid}
-    secret: ${WECHAT_SECRET:your-secret}
+logging:
+  file:
+    path: ${LOG_PATH:./logs}
