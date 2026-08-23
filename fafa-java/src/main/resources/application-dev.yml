@@ -43,12 +43,27 @@ fafa:
     limit:
       normal: 2
       vip: 999
+  media:
+    # 单个照片大小上限（字节）
+    photo-max-size-bytes: 10485760
+    # 单个视频大小上限（字节）
+    video-max-size-bytes: 52428800
+    # 单批上传文件数上限
+    batch-max-count: 20
+  quota:
+    storage:
+      # 普通用户存储空间（字节）
+      normal-bytes: 2147483648
+      # VIP 存储空间（字节）
+      vip-bytes: 21474836480
+    ai-search:
+      # 普通用户每月 AI 语义检索次数（VIP 不限）
+      monthly-normal: 10
   minio:
     endpoint: http://192.168.1.14:9000
     access-key: minioadmin
     secret-key: minioadmin123
     bucket-media: fafa-media
-    bucket-avatar: fafa-avatar
 
 springdoc:
   api-docs:
@@ -62,6 +77,12 @@ springdoc:
       paths-to-match: /api/records/**
     - group: photo
       paths-to-match: /api/photos/**
+    - group: tag
+      paths-to-match: /api/tags/**
+    - group: event-record
+      paths-to-match: /api/event-records/**
+    - group: quota
+      paths-to-match: /api/quota/**
     - group: reminder
       paths-to-match: /api/reminders/**
     - group: medical

@@ -1,6 +1,7 @@
 package com.fafa.interfaces.controller;
 
 import com.fafa.common.Result;
+import com.fafa.application.service.MediaApplicationService;
 import com.fafa.interfaces.dto.callback.PhotoAnalysisCallback;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,16 +29,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CallbackController {
 
-    /**
-     * 照片分析结果回调
-     *
-     * TODO P0 照片模块上线后：回写 photo 表（描述、auto_recognized、pet_id、tags）
-     */
-    @Operation(summary = "照片分析结果回调")
+    private final MediaApplicationService mediaApplicationService;
+
+    /** 素材分析结果回调 */
+    @Operation(summary = "素材分析结果回调")
     @PostMapping("/photo-analysis")
     public Result<Void> onPhotoAnalysis(@RequestBody @Valid PhotoAnalysisCallback callback) {
-        log.info("收到照片分析回调: photoId={}, petId={}, messageId={}",
-                callback.getPhotoId(), callback.getRecognizedPetId(), callback.getMessageId());
+        mediaApplicationService.handleAnalysisCallback(new com.fafa.application.dto.media.PhotoAnalysisCallback(
+                callback.getMediaId(),
+                Boolean.TRUE.equals(callback.getSuccess()),
+                callback.getDescription(),
+                callback.getAiTags(),
+                callback.getRecognizedPetId(),
+                callback.getRecognitionScore(),
+                callback.getErrorMessage()
+        ));
+        log.info("素材分析回调处理完成: mediaId={}, petId={}, success={}",
+                callback.getMediaId(), callback.getRecognizedPetId(), callback.getSuccess());
         return Result.ok();
     }
 }

@@ -3,6 +3,7 @@ package com.fafa.infrastructure.mq;
 import lombok.Builder;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 /**
  * 照片分析异步任务消息体（Java → Python，经 RocketMQ 投递）
@@ -23,6 +24,7 @@ public record PhotoAnalysisMessage(
         String url,
         String mediaType,
         List<String> tags,
-        Long petId
+        Long petId,
+        LocalDateTime takenAt
 ) {
 }

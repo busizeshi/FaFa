@@ -13,4 +13,4 @@ prometheus-fastapi-instrumentator>=7.0.0
 dashscope>=1.20.0
 
 # RocketMQ 消费者仅 Linux 环境可用（Windows 开发环境走 HTTP 直推链路）
-# rocketmq-client-python 在 Linux 部署时另行安装
+# Linux 生产部署时安装：rocketmq-client-python>=2.0.0（基于 C++ 客户端，支持 name-server 直连）

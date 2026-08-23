@@ -31,6 +31,12 @@ public class FaFaProperties {
     /** 宠物数量限额配置 */
     private Pet pet = new Pet();
 
+    /** 素材上传约束配置 */
+    private Media media = new Media();
+
+    /** 配额配置（存储空间 + AI 语义检索） */
+    private Quota quota = new Quota();
+
     /** MinIO 配置 */
     private Minio minio = new Minio();
 
@@ -73,12 +79,42 @@ public class FaFaProperties {
     }
 
     @Data
+    public static class Media {
+        /** 单个照片大小上限（字节） */
+        private long photoMaxSizeBytes = 10485760L;
+        /** 单个视频大小上限（字节） */
+        private long videoMaxSizeBytes = 52428800L;
+        /** 单批上传文件数上限 */
+        private int batchMaxCount = 20;
+    }
+
+    @Data
+    public static class Quota {
+        private StorageQuota storage = new StorageQuota();
+        private AiSearchQuota aiSearch = new AiSearchQuota();
+
+        @Data
+        public static class StorageQuota {
+            /** 普通用户存储空间（字节） */
+            private long normalBytes = 2147483648L;
+            /** VIP 存储空间（字节） */
+            private long vipBytes = 21474836480L;
+        }
+
+        @Data
+        public static class AiSearchQuota {
+            /** 普通用户每月 AI 语义检索次数（VIP 不限） */
+            private int monthlyNormal = 10;
+        }
+    }
+
+    @Data
     public static class Minio {
         private String endpoint;
         private String accessKey;
         private String secretKey;
+        /** 单桶 + 路径前缀区分模块（avatar/、pet/ 等） */
         private String bucketMedia = "fafa-media";
-        private String bucketAvatar = "fafa-avatar";
     }
 
     @Data

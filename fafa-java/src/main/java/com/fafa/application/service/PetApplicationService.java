@@ -8,6 +8,8 @@ import com.fafa.domain.model.pet.Gender;
 import com.fafa.domain.model.pet.Pet;
 import com.fafa.domain.model.pet.PetType;
 import com.fafa.domain.repository.PetRepository;
+import com.fafa.domain.repository.MediaAssetRepository;
+import com.fafa.domain.repository.ReminderRepository;
 import com.fafa.infrastructure.ai.AiTaskDispatcher;
 import com.fafa.infrastructure.oss.StorageService;
 import lombok.RequiredArgsConstructor;
@@ -38,8 +40,11 @@ import java.util.stream.Collectors;
 public class PetApplicationService {
 
     private final PetRepository petRepository;
+    private final ReminderRepository reminderRepository;
     private final StorageService storageService;
     private final AiTaskDispatcher aiTaskDispatcher;
+    private final MediaAssetRepository mediaAssetRepository;
+    private final TagApplicationService tagApplicationService;
 
     /**
      * 注册新宠物
@@ -69,6 +74,7 @@ public class PetApplicationService {
 
         // 持久化
         pet = petRepository.save(pet);
+        tagApplicationService.createPetNameTagIfAbsent(userId, pet.getName());
 
         log.info("宠物注册成功: petId={}", pet.getId());
 
@@ -86,6 +92,13 @@ public class PetApplicationService {
         return pets.stream()
             .map(this::toPetInfoDTO)
             .collect(Collectors.toList());
+    }
+
+    /**
+     * 获取用户所有宠物领域对象（供其他应用服务装配宠物名等使用）
+     */
+    public List<Pet> getUserPetDomains(Long userId) {
+        return petRepository.findByUserId(userId);
     }
 
     /**
@@ -169,6 +182,10 @@ public class PetApplicationService {
         pet = petRepository.save(pet);
 
         log.info("宠物头像上传成功: petId={}, url={}", petId, avatarUrl);
+
+        // 触发向量化：头像 + 已有三视图一起重新嵌入（Qdrant upsert 幂等）
+        aiTaskDispatcher.dispatchPetPhotoVectorization(
+            petId, userId, avatarUrl, pet.getFrontPhotoUrl(), pet.getSidePhotoUrl());
 
         return toPetInfoDTO(pet);
     }
@@ -301,11 +318,43 @@ public class PetApplicationService {
         pet.delete();
         petRepository.save(pet);
 
+        // 素材属于用户而非宠物，删除宠物只清空当前归属并保留素材本身。
+        mediaAssetRepository.clearPetReference(petId);
+
+        // 级联逻辑删除该宠物的全部提醒（提醒是活着的待办，宠物删除后不应继续被扫描推送；
+        // 完成历史与事件记录保留，快照可独立展示）
+        reminderRepository.deleteByPetId(petId);
+
+        // 清理 Qdrant 中的宠物照片向量（幂等，失败不影响删除主流程）
+        aiTaskDispatcher.cleanupPetVectors(petId);
+
         log.info("宠物删除成功: petId={}", petId);
     }
 
     private Long getCurrentUserId() {
         return StpUtil.getLoginIdAsLong();
+    }
+
+    /**
+     * 校验宠物归属权（供记录模块等应用服务复用）
+     *
+     * 校验当前登录用户是否拥有该宠物，返回宠物领域对象。
+     *
+     * @param petId 宠物ID
+     * @return 归属当前用户的宠物
+     * @throws IllegalArgumentException 宠物不存在或不属于当前用户
+     */
+    public Pet checkPetOwnership(Long petId) {
+        Long userId = getCurrentUserId();
+
+        Pet pet = petRepository.findById(petId)
+            .orElseThrow(() -> new IllegalArgumentException("宠物不存在"));
+
+        if (!pet.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("无权操作此宠物");
+        }
+
+        return pet;
     }
 
     private PetInfoDTO toPetInfoDTO(Pet pet) {

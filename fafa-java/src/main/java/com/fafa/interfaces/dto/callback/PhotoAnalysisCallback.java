@@ -8,30 +8,37 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * 照片分析结果回调请求体
+ * 素材分析结果回调请求体
  *
  * 与 fafa-python 约定 snake_case 字段（见技术文档 7.3 契约）。
  *
  * @author FaFa Team
- * @since 1.0
+ * @since 4.0
  */
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class PhotoAnalysisCallback {
 
-    /** 照片 ID */
-    @NotNull(message = "photoId 不能为空")
-    private Long photoId;
+    /** 素材 ID */
+    @NotNull(message = "mediaId 不能为空")
+    private Long mediaId;
 
-    /** AI 生成的照片描述 */
+    /** 分析是否成功 */
+    @NotNull(message = "success 不能为空")
+    private Boolean success;
+
+    /** AI 生成的素材描述 */
     private String description;
 
     /** 个体识别判定的宠物 ID（未识别为空） */
     private Long recognizedPetId;
 
     /** AI 补充的标签 */
-    private List<String> tags;
+    private List<String> aiTags;
 
-    /** 幂等键 */
-    private String messageId;
+    /** 识别相似度（0~1） */
+    private java.math.BigDecimal recognitionScore;
+
+    /** 分析失败原因 */
+    private String errorMessage;
 }

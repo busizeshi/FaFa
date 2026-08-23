@@ -38,8 +38,9 @@ public class MinioStorageService implements StorageService {
 
     @PostConstruct
     public void init() {
+        // 单桶 + 路径前缀区分模块（avatar/、pet/ 等），桶设为公共读供直链访问
         MinioConfig.ensureBucket(minioClient, properties.getMinio().getBucketMedia());
-        MinioConfig.ensureBucket(minioClient, properties.getMinio().getBucketAvatar());
+        MinioConfig.ensurePublicRead(minioClient, properties.getMinio().getBucketMedia());
     }
 
     @Override

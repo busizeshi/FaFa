@@ -4,6 +4,7 @@ import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.stp.StpUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -23,8 +24,14 @@ public class SaTokenConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 用户会话鉴权
-        registry.addInterceptor(new SaInterceptor(handle -> StpUtil.checkLogin()))
+        // 用户会话鉴权：只对真实 Controller 方法校验登录态；
+        // 未匹配到 Controller 的路径（handler 为资源处理器）放行，由其抛 404，
+        // 避免「路径打错」被误报为「未登录」
+        registry.addInterceptor(new SaInterceptor(handler -> {
+                    if (handler instanceof HandlerMethod) {
+                        StpUtil.checkLogin();
+                    }
+                }))
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         // 认证与探活

@@ -48,9 +48,9 @@ public class AuthAppService {
         boolean newUser = false;
         if (user == null) {
             user = User.register(session.openid());
-            userRepository.save(user);
+            // save 返回回填了数据库生成 ID 的领域对象，必须接收返回值
+            user = userRepository.save(user);
             newUser = true;
-            log.info("新用户注册: userId={}", user.getId());
         }
 
         // 3. 建立 Sa-Token 会话

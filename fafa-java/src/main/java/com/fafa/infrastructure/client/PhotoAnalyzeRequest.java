@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 /**
  * 照片分析请求（Java → Python，契约见技术文档 7.3）
@@ -39,6 +40,9 @@ public class PhotoAnalyzeRequest {
 
     /** 已判定的宠物 ID，可空 */
     private Long petId;
+
+    /** 素材拍摄时间，用于语义检索时间过滤 */
+    private LocalDateTime takenAt;
 
     /** 幂等键 */
     private String messageId;

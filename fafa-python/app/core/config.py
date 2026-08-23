@@ -49,6 +49,11 @@ class Settings(BaseSettings):
     consumer_enabled: bool = False
     rocketmq_namesrv: str = ""
 
+    # Phase 4 素材分析与语义检索
+    recognition_threshold: float = 0.85
+    search_score_threshold: float = 0.30
+    callback_retry: int = 3
+
 
 @lru_cache
 def get_settings() -> Settings:

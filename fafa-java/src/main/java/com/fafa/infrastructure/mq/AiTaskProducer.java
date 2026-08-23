@@ -9,6 +9,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 /**
  * AI 异步任务生产者
@@ -39,6 +40,13 @@ public class AiTaskProducer {
      */
     public String sendPhotoAnalysis(Long userId, Long photoId, String url,
                                     String mediaType, List<String> tags, Long petId) {
+        return sendPhotoAnalysis(userId, photoId, url, mediaType, tags, petId, null);
+    }
+
+    /** 投递素材分析任务（带拍摄时间，用于 Qdrant 时间过滤）。 */
+    public String sendPhotoAnalysis(Long userId, Long photoId, String url,
+                                    String mediaType, List<String> tags, Long petId,
+                                    LocalDateTime takenAt) {
         String messageId = IdUtil.fastSimpleUUID();
         PhotoAnalysisMessage message = PhotoAnalysisMessage.builder()
                 .messageId(messageId)
@@ -49,6 +57,7 @@ public class AiTaskProducer {
                 .mediaType(mediaType)
                 .tags(tags)
                 .petId(petId)
+                .takenAt(takenAt)
                 .build();
         try {
             rocketMQTemplate.syncSend(

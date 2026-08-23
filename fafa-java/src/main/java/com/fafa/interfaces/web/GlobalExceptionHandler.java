@@ -4,6 +4,7 @@ import cn.dev33.satoken.exception.NotLoginException;
 import com.fafa.common.BusinessException;
 import com.fafa.common.ErrorCode;
 import com.fafa.common.Result;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
@@ -32,10 +33,10 @@ public class GlobalExceptionHandler {
         return Result.fail(ex.getErrorCode(), ex.getMessage());
     }
 
-    /** 未登录 / 会话过期 */
+    /** 未登录 / 会话过期（日志带 URI，便于定位是哪个接口被拒） */
     @ExceptionHandler(NotLoginException.class)
-    public Result<Void> handleNotLoginException(NotLoginException ex) {
-        log.warn("未登录访问: {}", ex.getMessage());
+    public Result<Void> handleNotLoginException(NotLoginException ex, HttpServletRequest request) {
+        log.warn("未登录访问: {} {} - {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
         return Result.fail(ErrorCode.UNAUTHORIZED);
     }
 
