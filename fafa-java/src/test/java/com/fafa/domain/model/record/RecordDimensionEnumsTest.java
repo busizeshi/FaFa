@@ -96,6 +96,7 @@ class RecordDimensionEnumsTest {
         assertThat(FoodType.fromCode("main_food")).isEqualTo(FoodType.MAIN_FOOD);
         assertThat(FoodType.fromCode("SNACK")).isEqualTo(FoodType.SNACK);
         assertThat(FoodType.fromCode("can")).isEqualTo(FoodType.CAN);
+        assertThat(FoodType.fromCode("canned")).isEqualTo(FoodType.CAN);
         assertThat(FoodType.fromCode("other")).isEqualTo(FoodType.OTHER);
         assertThatThrownBy(() -> FoodType.fromCode("raw"))
                 .isInstanceOf(IllegalArgumentException.class);

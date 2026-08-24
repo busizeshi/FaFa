@@ -27,14 +27,14 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class AiTaskProducer {
 
-    /** 照片分析 Topic */
+    /** 媒体分析 Topic */
     public static final String TOPIC_PHOTO_ANALYSIS = "fafa_photo_analysis_topic";
     private static final String TAG_PHOTO = "photo";
 
     private final RocketMQTemplate rocketMQTemplate;
 
     /**
-     * 投递照片分析任务
+     * 投递媒体分析任务
      *
      * @return 消息 ID（幂等键），投递失败抛出异常由上层决定是否降级为同步调用
      */
@@ -64,10 +64,10 @@ public class AiTaskProducer {
                     TOPIC_PHOTO_ANALYSIS + ":" + TAG_PHOTO,
                     MessageBuilder.withPayload(message).build(),
                     5000);
-            log.info("照片分析任务已投递: photoId={}, messageId={}", photoId, messageId);
+            log.info("媒体分析任务已投递: mediaId={}, messageId={}", photoId, messageId);
             return messageId;
         } catch (Exception ex) {
-            log.error("照片分析任务投递失败: photoId={}", photoId, ex);
+            log.error("媒体分析任务投递失败: mediaId={}", photoId, ex);
             throw ex;
         }
     }

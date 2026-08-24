@@ -42,7 +42,7 @@ public class PhotoController {
     private final MediaApplicationService mediaApplicationService;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "批量上传素材", description = "单批≤20个；tags 应用到全部素材；照片自动进入 AI 分析")
+    @Operation(summary = "批量上传素材", description = "单批≤20个；tags 应用到全部素材；照片和视频自动进入 AI 分析")
     public Result<List<MediaDTO>> upload(
             @Parameter(description = "素材文件（图片/视频）") @RequestParam("files") List<MultipartFile> files,
             @Parameter(description = "标签（逗号分隔，可选）") @RequestParam(value = "tags", required = false) List<String> tags,
@@ -90,6 +90,12 @@ public class PhotoController {
     @Operation(summary = "素材详情", description = "含 AI 描述、AI 标签、识别状态")
     public Result<MediaDTO> getById(@Parameter(description = "素材ID") @PathVariable Long id) {
         return Result.ok(mediaApplicationService.getById(id));
+    }
+
+    @PostMapping("/{id}/reanalyze")
+    @Operation(summary = "重新分析素材", description = "重置为 pending 并重新投递照片/视频 AI 分析")
+    public Result<MediaDTO> reanalyze(@Parameter(description = "素材ID") @PathVariable Long id) {
+        return Result.ok(mediaApplicationService.reanalyze(id));
     }
 
     @PatchMapping("/{id}")

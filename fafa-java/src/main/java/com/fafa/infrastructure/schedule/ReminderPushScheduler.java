@@ -22,7 +22,7 @@ public class ReminderPushScheduler {
 
     private final ReminderPushService reminderPushService;
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "${fafa.collaboration.reminder-delivery-cron:0 0 * * * *}")
     public void scanAndPush() {
         try {
             reminderPushService.scanAndPush();

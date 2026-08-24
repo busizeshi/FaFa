@@ -31,8 +31,16 @@ public class FeedingRecordPO {
     /** 单位: g/ml */
     private String unit;
 
-    /** 关联食品管理卡ID（Phase 7 预留） */
+    /** 关联食品管理卡ID */
     private Long foodId;
+
+    private Long feedingPlanId;
+
+    private Long feedingPlanItemId;
+
+    private LocalDateTime plannedAt;
+
+    private String foodNameSnapshot;
 
     private String notes;
 

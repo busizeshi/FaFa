@@ -16,7 +16,7 @@ from loguru import logger
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app import __version__
-from app.api import chat, health, photos, pets, record, vector
+from app.api import chat, content, foods, health, medical, photos, pets, record, reports, vector
 from app.consumer.photo_consumer import start_photo_consumer, stop_photo_consumer
 from app.core.config import get_settings
 from app.core.logging import set_trace_id, setup_logging
@@ -50,6 +50,10 @@ app.include_router(pets.router)
 app.include_router(vector.router)
 app.include_router(chat.router)
 app.include_router(record.router)
+app.include_router(medical.router)
+app.include_router(foods.router)
+app.include_router(reports.router)
+app.include_router(content.router)
 
 # Prometheus 指标：/metrics
 Instrumentator().instrument(app).expose(app)

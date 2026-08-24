@@ -37,7 +37,7 @@ public interface AiTaskDispatcher {
     void cleanupPetVectors(Long petId);
 
     /**
-     * 分发素材 AI 分析任务（仅照片；视频不调用）
+     * 分发素材 AI 分析任务（照片/视频）
      *
      * 素材已上传到对象存储，此处只传 URL。Python 端完成：
      * qwen-vl 生成描述与标签 → qwen3-vl-embedding 向量化入 Qdrant fafa_media
@@ -46,7 +46,7 @@ public interface AiTaskDispatcher {
      * @param mediaId   素材ID
      * @param userId    用户ID
      * @param url       素材对象存储URL
-     * @param mediaType 媒体类型（photo）
+     * @param mediaType 媒体类型（photo/video）
      * @param tags      用户标签（可为空）
      * @param petId     用户指定归属宠物（可为空，表示待识别）
      * @param takenAt   素材拍摄时间，用于 Qdrant 时间范围过滤

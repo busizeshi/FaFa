@@ -79,6 +79,10 @@ public class FeedingRecordController {
                 request.getAmount(),
                 request.getUnit(),
                 request.getFoodId(),
+                request.getFeedingPlanId(),
+                request.getFeedingPlanItemId(),
+                request.getPlannedAt(),
+                request.getFoodNameSnapshot(),
                 request.getNotes()
         );
     }

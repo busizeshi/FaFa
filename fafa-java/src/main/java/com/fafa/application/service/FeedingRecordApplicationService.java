@@ -7,7 +7,10 @@ import com.fafa.common.BusinessException;
 import com.fafa.common.ErrorCode;
 import com.fafa.domain.model.record.FeedingRecord;
 import com.fafa.domain.model.record.FoodType;
+import com.fafa.domain.model.collaboration.PetPermission;
 import com.fafa.domain.repository.FeedingRecordRepository;
+import com.fafa.domain.repository.FeedingPlanRepository;
+import com.fafa.domain.repository.FoodCardRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,15 +41,23 @@ public class FeedingRecordApplicationService {
     private static final long FUTURE_TOLERANCE_MINUTES = 5;
 
     private final FeedingRecordRepository feedingRecordRepository;
+    private final FeedingPlanRepository feedingPlanRepository;
+    private final FoodCardRepository foodCardRepository;
     private final PetApplicationService petApplicationService;
+    private final PetAccessApplicationService petAccessApplicationService;
 
     /**
      * 新增喂食记录
      */
     @Transactional
     public FeedingRecordDTO create(SaveFeedingRecordCommand command) {
-        petApplicationService.checkPetOwnership(command.petId());
+        petAccessApplicationService.require(getCurrentUserId(), command.petId(), PetPermission.CREATE_RECORD);
         validateFeedingTime(command.feedingTime());
+        validateFoodAndPlan(command);
+        FeedingRecord duplicate = findDuplicatePlanRecord(command);
+        if (duplicate != null) {
+            return toDTO(duplicate);
+        }
 
         FeedingRecord record = FeedingRecord.create(
                 command.petId(),
@@ -55,6 +66,10 @@ public class FeedingRecordApplicationService {
                 command.amount(),
                 command.unit(),
                 command.foodId(),
+                command.feedingPlanId(),
+                command.feedingPlanItemId(),
+                command.plannedAt(),
+                command.foodNameSnapshot(),
                 command.notes(),
                 getCurrentUserId()
         );
@@ -71,7 +86,9 @@ public class FeedingRecordApplicationService {
     @Transactional
     public FeedingRecordDTO update(Long id, SaveFeedingRecordCommand command) {
         FeedingRecord record = findOwnedRecord(id);
+        petAccessApplicationService.requireOwner(getCurrentUserId(), record.getPetId());
         validateFeedingTime(command.feedingTime());
+        validateFoodAndPlan(command);
 
         record.update(
                 command.feedingTime(),
@@ -79,6 +96,10 @@ public class FeedingRecordApplicationService {
                 command.amount(),
                 command.unit(),
                 command.foodId(),
+                command.feedingPlanId(),
+                command.feedingPlanItemId(),
+                command.plannedAt(),
+                command.foodNameSnapshot(),
                 command.notes()
         );
 
@@ -92,7 +113,8 @@ public class FeedingRecordApplicationService {
      */
     @Transactional
     public void delete(Long id) {
-        findOwnedRecord(id);
+        FeedingRecord record = findOwnedRecord(id);
+        petAccessApplicationService.requireOwner(getCurrentUserId(), record.getPetId());
         feedingRecordRepository.deleteById(id);
         log.info("喂食记录删除成功: id={}", id);
     }
@@ -101,7 +123,7 @@ public class FeedingRecordApplicationService {
      * 当天喂食列表（按时间升序）
      */
     public List<FeedingRecordDTO> listByDate(Long petId, LocalDate date) {
-        petApplicationService.checkPetOwnership(petId);
+        petAccessApplicationService.require(getCurrentUserId(), petId, PetPermission.READ_RECORD);
         return feedingRecordRepository.findByPetIdAndDate(petId, date).stream()
                 .map(this::toDTO)
                 .toList();
@@ -111,7 +133,7 @@ public class FeedingRecordApplicationService {
      * 范围列表（按时间升序，范围 ≤366 天）
      */
     public List<FeedingRecordDTO> listByRange(Long petId, LocalDate start, LocalDate end) {
-        petApplicationService.checkPetOwnership(petId);
+        petAccessApplicationService.require(getCurrentUserId(), petId, PetPermission.READ_RECORD);
         validateRange(start, end);
         return feedingRecordRepository.findByPetIdAndDateRange(petId, start, end).stream()
                 .map(this::toDTO)
@@ -165,6 +187,37 @@ public class FeedingRecordApplicationService {
         return StpUtil.getLoginIdAsLong();
     }
 
+    private void validateFoodAndPlan(SaveFeedingRecordCommand command) {
+        Long userId = getCurrentUserId();
+        if (command.foodId() != null) {
+            foodCardRepository.findByIdAndUserId(command.foodId(), userId)
+                    .filter(food -> food.getPetId().equals(command.petId()))
+                    .orElseThrow(() -> new BusinessException(ErrorCode.FOOD_NOT_FOUND));
+        }
+        if (command.feedingPlanId() == null && command.feedingPlanItemId() == null) {
+            return;
+        }
+        if (command.feedingPlanId() == null || command.feedingPlanItemId() == null) {
+            throw new BusinessException(ErrorCode.FEEDING_PLAN_INVALID, "计划关联字段必须同时提供");
+        }
+        feedingPlanRepository.findByIdAndUserId(command.feedingPlanId(), userId)
+                .filter(plan -> plan.getPetId().equals(command.petId())
+                        && plan.getItems().stream().anyMatch(item -> command.feedingPlanItemId().equals(item.id())))
+                .orElseThrow(() -> new BusinessException(ErrorCode.FEEDING_PLAN_INVALID, "计划项不存在"));
+    }
+
+    private FeedingRecord findDuplicatePlanRecord(SaveFeedingRecordCommand command) {
+        if (command.feedingPlanId() == null || command.feedingPlanItemId() == null) {
+            return null;
+        }
+        return feedingRecordRepository.findByPetIdAndDate(command.petId(), command.feedingTime().toLocalDate())
+                .stream()
+                .filter(record -> command.feedingPlanId().equals(record.getFeedingPlanId()))
+                .filter(record -> command.feedingPlanItemId().equals(record.getFeedingPlanItemId()))
+                .findFirst()
+                .orElse(null);
+    }
+
     /**
      * 领域对象转DTO
      */
@@ -177,6 +230,10 @@ public class FeedingRecordApplicationService {
                 r.getAmount(),
                 r.getUnit(),
                 r.getFoodId(),
+                r.getFeedingPlanId(),
+                r.getFeedingPlanItemId(),
+                r.getPlannedAt(),
+                r.getFoodNameSnapshot(),
                 r.getNotes(),
                 r.getCreatedAt(),
                 r.getUpdatedAt()

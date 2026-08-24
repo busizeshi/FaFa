@@ -1,0 +1,5 @@
+.container { padding: 24rpx; background: #f6f8f7; min-height: 100vh; }
+.card { background: #fff; border-radius: 16rpx; padding: 30rpx; }
+.title { font-size: 34rpx; font-weight: 600; margin-bottom: 26rpx; }
+.input { width: auto; border: 1rpx solid #dce4df; border-radius: 10rpx; padding: 20rpx; margin: 18rpx 0; }
+.primary { background: #4caf50; color: #fff; }

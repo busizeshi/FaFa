@@ -1,0 +1,65 @@
+<view class="container">
+  <view class="header">
+    <view class="header-title">医疗健康档案</view>
+    <view class="header-sub">近 90 天 · 宠物 ID {{petId}}</view>
+  </view>
+
+  <view class="actions">
+    <button class="btn-primary" bindtap="evaluateAlerts">立即评估预警</button>
+    <button class="btn-secondary" bindtap="generateSummary">生成就诊摘要</button>
+    <text class="refresh" bindtap="refresh">刷新数据</text>
+  </view>
+  <view class="actions secondary-actions">
+    <button class="btn-secondary" bindtap="openVisitForm">新增就诊记录</button>
+    <button class="btn-secondary" bindtap="openMedicationForm">新增用药计划</button>
+  </view>
+
+  <view class="section">
+    <view class="section-title">健康预警（{{alerts.length}}）</view>
+    <view class="card alert-card" wx:for="{{alerts}}" wx:key="id">
+      <view class="alert-title">{{item.title}} <text class="severity">{{item.severity}}</text></view>
+      <view class="muted">{{item.message}}</view>
+      <view class="muted">{{item.observedFrom}} 至 {{item.observedTo}}</view>
+    </view>
+    <view class="empty" wx:if="{{!alerts.length}}">暂无待处理预警</view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">医疗时间线（{{timeline.length}}）</view>
+    <view class="card timeline-item" wx:for="{{timeline}}" wx:key="sourceId">
+      <view class="row"><text class="label">{{item.eventDate}}</text><text class="value">{{item.title}}</text></view>
+      <view class="muted">{{item.summary || '-'}} · {{item.status}}</view>
+    </view>
+    <view class="empty" wx:if="{{!timeline.length}}">暂无时间线记录</view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">就医记录（{{visits.length}}）</view>
+    <view class="card" wx:for="{{visits}}" wx:key="id">
+      <view class="row"><text class="label">日期</text><text class="value">{{item.visitDate}}</text></view>
+      <view class="row"><text class="label">医院</text><text class="value">{{item.hospitalName}}</text></view>
+      <view class="row"><text class="label">主诉</text><text class="value">{{item.chiefComplaint || '-'}}</text></view>
+      <view class="row"><text class="label">诊疗记录</text><text class="value">{{item.treatment || item.diagnosis || '-'}}</text></view>
+    </view>
+    <view class="empty" wx:if="{{!visits.length}}">暂无就医记录</view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">当前用药计划（{{plans.length}}）</view>
+    <view class="card" wx:for="{{plans}}" wx:key="id">
+      <view class="row"><text class="label">药品</text><text class="value">{{item.medicationName}}</text></view>
+      <view class="row"><text class="label">剂量</text><text class="value">{{item.dosageValue}}{{item.dosageUnit}}</text></view>
+      <view class="row"><text class="label">疗程</text><text class="value">{{item.startDate}} 至 {{item.endDate || '持续'}}</text></view>
+    </view>
+    <view class="empty" wx:if="{{!plans.length}}">暂无当前用药计划</view>
+  </view>
+
+  <view class="section" wx:if="{{summary}}">
+    <view class="section-title">就诊摘要</view>
+    <view class="card summary-card">
+      <view>{{summary.overview}}</view>
+      <view class="summary-line" wx:for="{{summary.attentionItems}}" wx:key="*this">需要关注：{{item}}</view>
+      <view class="muted">{{summary.disclaimer}}</view>
+    </view>
+  </view>
+</view>

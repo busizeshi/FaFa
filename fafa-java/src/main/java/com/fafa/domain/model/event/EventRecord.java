@@ -97,6 +97,14 @@ public class EventRecord {
                                            String content, LocalDate eventDate,
                                            List<String> materialUrls, List<String> tags,
                                            LocalDateTime now, LocalDate today) {
+        return createManual(petId, userId, eventType, title, content, eventDate, materialUrls, tags,
+                userId, now, today);
+    }
+
+    public static EventRecord createManual(Long petId, Long userId, EventType eventType, String title,
+                                           String content, LocalDate eventDate,
+                                           List<String> materialUrls, List<String> tags, Long operatorId,
+                                           LocalDateTime now, LocalDate today) {
         Objects.requireNonNull(petId, "petId 不能为空");
         Objects.requireNonNull(userId, "userId 不能为空");
         Objects.requireNonNull(eventType, "eventType 不能为空");
@@ -110,7 +118,7 @@ public class EventRecord {
         }
 
         return new EventRecord(null, petId, userId, EventSource.MANUAL, null,
-                eventType, title, content, eventDate, materialUrls, normalizedTags, userId,
+                eventType, title, content, eventDate, materialUrls, normalizedTags, operatorId,
                 false, now, now);
     }
 

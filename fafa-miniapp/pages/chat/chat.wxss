@@ -1,0 +1,115 @@
+.page {
+  box-sizing: border-box;
+  height: calc(100vh - 120rpx);
+  padding: 24rpx;
+}
+
+.welcome {
+  padding: 80rpx 24rpx 32rpx;
+  text-align: center;
+}
+
+.welcome-title {
+  font-size: 38rpx;
+  font-weight: bold;
+}
+
+.welcome-sub,
+.loading,
+.recommend-title {
+  color: #999;
+  font-size: 24rpx;
+  margin-top: 12rpx;
+}
+
+.message {
+  display: flex;
+  margin: 20rpx 0;
+}
+
+.message.user {
+  justify-content: flex-end;
+}
+
+.bubble {
+  max-width: 80%;
+  padding: 20rpx 24rpx;
+  border-radius: 18rpx;
+  background: #fff;
+  line-height: 1.6;
+}
+
+.message.user .bubble {
+  background: #4caf50;
+  color: #fff;
+}
+
+.blocks {
+  width: 80%;
+  margin-top: 12rpx;
+}
+
+.block,
+.recommend {
+  background: #fff;
+  border-radius: 14rpx;
+  padding: 16rpx 20rpx;
+  margin-top: 12rpx;
+  text-align: left;
+}
+
+.link {
+  color: #278b3a;
+}
+
+.media-image,
+.media-video {
+  width: 100%;
+  height: 320rpx;
+  margin-top: 8rpx;
+  border-radius: 12rpx;
+}
+
+.notice,
+.stat {
+  color: #555;
+}
+
+.recommendations {
+  padding: 20rpx 0 40rpx;
+}
+
+.recommend {
+  color: #333;
+  font-size: 26rpx;
+}
+
+.composer {
+  display: flex;
+  align-items: center;
+  height: 120rpx;
+  padding: 16rpx 20rpx;
+  box-sizing: border-box;
+  background: #fff;
+  border-top: 1rpx solid #eee;
+}
+
+.input {
+  flex: 1;
+  height: 76rpx;
+  padding: 0 20rpx;
+  background: #f5f5f5;
+  border-radius: 38rpx;
+}
+
+.send {
+  width: 120rpx;
+  height: 76rpx;
+  line-height: 76rpx;
+  margin-left: 16rpx;
+  padding: 0;
+  border-radius: 38rpx;
+  background: #4caf50;
+  color: #fff;
+  font-size: 26rpx;
+}

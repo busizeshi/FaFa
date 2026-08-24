@@ -1,0 +1,17 @@
+/* 全局样式 */
+page {
+  background-color: #f7f7f7;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.btn-primary {
+  background-color: #4caf50;
+  color: #fff;
+  border-radius: 12rpx;
+}
+
+.btn-primary[disabled] {
+  background-color: #a5d6a7;
+  color: #fff;
+}

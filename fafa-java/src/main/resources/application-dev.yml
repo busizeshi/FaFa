@@ -39,6 +39,8 @@ fafa:
     type: minio
   ai:
     dispatcher: http
+    # 视频向量化需要百炼可访问的临时对象存储 URL
+    media-url-expire-seconds: 3600
   pet:
     limit:
       normal: 2
@@ -59,8 +61,79 @@ fafa:
     ai-search:
       # 普通用户每月 AI 语义检索次数（VIP 不限）
       monthly-normal: 10
+    food-recognition:
+      # 普通用户每月食品包装识别次数
+      monthly-normal: 5
+      # VIP 用户每月食品包装识别次数
+      monthly-vip: 50
+    report-content:
+      # 普通用户每月报告与内容生成次数；VIP 使用独立上限
+      monthly-normal: 3
+      monthly-vip: 10
+  food:
+    recognition:
+      timeout-seconds: 90
+      draft-retention-days: 7
+      max-image-bytes: 10485760
+      prompt-version: food-recognition-v1
+    transition:
+      min-days: 3
+      max-days: 30
+    score:
+      policy-version: v1
+      protein-source-partial-score: 12
+      additive-flag-penalty: 5
+      calcium-phosphorus-min-ratio: 1.0
+      calcium-phosphorus-max-ratio: 2.0
+  feeding:
+    max-range-days: 366
+    max-items-per-plan: 12
+    recommendation-timeout-seconds: 45
+    policy-version: v1
+  expense:
+    default-currency: CNY
+    max-amount: 1000000.00
+    max-range-days: 3660
+    auto-sync-medical: true
+    calculation-version: v1
+  report:
+    max-range-days: 3660
+    max-media-count: 12
+    generation-timeout-seconds: 90
+    snapshot-version: report-facts-v1
+    prompt-version: report-content-v1
+    calculation-version: v1
+    schedule-scan-cron: "0 */10 * * * *"
+  collaboration:
+    enabled: true
+    normal-max-members: 0
+    vip-max-members: 5
+    caregiver-max-days: 30
+    invitation-expire-minutes: 30
+    invite-rate-limit-per-hour: 20
+    accept-rate-limit-per-hour: 30
+    audit-retention-days: 730
+    reminder-max-retries: 3
+    reminder-delivery-cron: "0 */5 * * * *"
+  medical:
+    visit-max-range-days: 366
+    summary-max-range-days: 90
+    summary-timeout-seconds: 45
+    medication-future-tolerance-minutes: 5
+    max-administration-times: 6
+  health-alert:
+    enabled: true
+    scan-cron: "0 */30 * * * *"
+    daily-window-days: 7
+    increased-water-days: 3
+    appetite-energy-decline-days: 2
+    diarrhea-days: 2
+    missed-medication-count: 2
+    red-repeat-hours: 24
+    retention-days: 180
   minio:
-    endpoint: http://192.168.1.14:9000
+    # 视频 Embedding 需要百炼可访问的地址；本地联调可保持内网地址，云端联调通过 FAFA_MINIO_ENDPOINT 覆盖
+    endpoint: ${FAFA_MINIO_ENDPOINT:http://192.168.1.14:9000}
     access-key: minioadmin
     secret-key: minioadmin123
     bucket-media: fafa-media
@@ -87,8 +160,26 @@ springdoc:
       paths-to-match: /api/reminders/**
     - group: medical
       paths-to-match: /api/medical/**
+    - group: health-alert
+      paths-to-match: /api/health-alerts/**
     - group: expense
       paths-to-match: /api/expenses/**
+    - group: chat
+      paths-to-match: /api/chat/**
+    - group: food
+      paths-to-match: /api/foods/**,/api/food-transitions/**
+    - group: feeding
+      paths-to-match: /api/feeding-plans/**,/api/feeding-analysis/**
+    - group: report
+      paths-to-match: /api/reports/**
+    - group: content
+      paths-to-match: /api/content-drafts/**,/api/content-schedules/**
+    - group: collaboration
+      paths-to-match: /api/pets/*/access,/api/pets/*/members/**,/api/pets/*/invitations/**,/api/pet-invitations/**
+    - group: emergency
+      paths-to-match: /api/pets/*/emergency-profile,/api/pets/*/emergency-card
+    - group: audit
+      paths-to-match: /api/pets/*/audit-logs/**
 
 knife4j:
   enable: true

@@ -21,6 +21,8 @@ public class MediaAssetPO {
 
     private Long userId;
 
+    private Long operatorId;
+
     /** 归属宠物ID（用户指定或AI识别判定，待用户确认） */
     private Long petId;
 

@@ -32,7 +32,12 @@ class Settings(BaseSettings):
     model_chat_deep: str = "qwen-plus"
     model_vision: str = "qwen-vl-plus"
     model_embed_multimodal: str = "qwen3-vl-embedding"
-    model_embed_text: str = "qwen3-embedding"
+    # 纯文本向量模型保留给文本专用场景；素材跨模态检索使用 model_embed_multimodal。
+    model_embed_text: str = "text-embedding-v4"
+    # 视频向量化与视觉描述参数；视频 Embedding 由百炼原生接口按 URL 拉取。
+    video_embedding_fps: float = 1.0
+    video_vision_fps: float = 2.0
+    video_vision_inline_max_bytes: int = 7_500_000
 
     # Qdrant 向量数据库
     qdrant_url: str = "http://192.168.1.14:6333"
@@ -41,6 +46,10 @@ class Settings(BaseSettings):
     # fafa-java 回调地址与服务间内部令牌
     java_base_url: str = "http://localhost:8080"
     internal_token: str = ""
+    tool_timeout_seconds: float = 8.0
+    agent_timeout_seconds: float = 45.0
+    max_tool_calls: int = 5
+    media_search_limit: int = 20
 
     # 日志输出目录
     log_path: str = "./logs/fafa-python"
@@ -53,6 +62,11 @@ class Settings(BaseSettings):
     recognition_threshold: float = 0.85
     search_score_threshold: float = 0.30
     callback_retry: int = 3
+
+    # Phase 7 食品包装识别
+    food_recognition_prompt_version: str = "food-recognition-v1"
+    food_recognition_max_image_bytes: int = 10_485_760
+    food_recognition_timeout_seconds: float = 90.0
 
 
 @lru_cache

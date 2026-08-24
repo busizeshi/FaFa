@@ -1,0 +1,2 @@
+.checklist { margin-top: 20rpx; }
+.done { color: #4caf50; padding: 16rpx 0; }

@@ -1,0 +1,9 @@
+<view class="container" wx:if="{{report}}">
+  <view class="header"><view class="title">{{report.content.title || '周期报告'}}</view><view class="muted">{{report.periodStart}} 至 {{report.periodEnd}} · {{report.status}}</view></view>
+  <view class="card"><view class="section-title">摘要</view><view>{{report.content.summary || '暂无摘要'}}</view></view>
+  <view class="card" wx:if="{{report.content.highlights.length}}"><view class="section-title">记录亮点</view><view wx:for="{{report.content.highlights}}" wx:key="*this" class="item">· {{item}}</view></view>
+  <view class="card" wx:if="{{report.content.careSuggestions.length}}"><view class="section-title">照护建议</view><view wx:for="{{report.content.careSuggestions}}" wx:key="*this" class="item">· {{item}}</view></view>
+  <view class="card"><view class="section-title">事实快照</view><view class="muted">报告生成于 {{report.generatedAt || '尚未完成'}}；原始记录仍以各功能页为准。</view></view>
+  <button class="primary" loading="{{loading}}" bindtap="regenerate">重新生成</button>
+</view>
+<view class="empty" wx:else>加载中…</view>

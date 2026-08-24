@@ -15,7 +15,7 @@ import java.util.Objects;
  * 一行 = 一个照片或视频素材 + AI 分析状态 + 宠物归属识别。
  *
  * 业务规则（见 phase4-implementation-plan.md 4.2）：
- * 1. photo 落库 status=pending（等 AI 回调）；video 落库 status=skipped（不进 AI 链路）
+ * 1. photo/video 落库 status=pending（等 AI 回调）
  * 2. tags 为标签名快照：去重去空、≤10 个、单个 ≤32 字符；标签定义删除不影响快照
  * 3. 上传指定 petId → recognitionConfirmed=true、recognitionScore=null（用户明确归属）
  * 4. AI 识别归属回填仅当「petId 为空且未确认」；用户已指定归属不覆盖
@@ -36,6 +36,7 @@ public class MediaAsset {
 
     private Long id;
     private final Long userId;
+    private final Long operatorId;
     /** 当前归属宠物（可空；识别回填待确认 / 用户指定即确认） */
     private Long petId;
     private final MediaType mediaType;
@@ -60,7 +61,7 @@ public class MediaAsset {
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private MediaAsset(Long id, Long userId, Long petId, MediaType mediaType, String fileUrl,
+    private MediaAsset(Long id, Long userId, Long operatorId, Long petId, MediaType mediaType, String fileUrl,
                        String fileName, long fileSize, String mimeType, List<String> tags,
                        MediaAnalysisStatus status, String aiDescription, List<String> aiTags,
                        BigDecimal recognitionScore, boolean recognitionConfirmed,
@@ -68,6 +69,7 @@ public class MediaAsset {
                        LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.userId = userId;
+        this.operatorId = operatorId;
         this.petId = petId;
         this.mediaType = mediaType;
         this.fileUrl = fileUrl;
@@ -96,6 +98,12 @@ public class MediaAsset {
     public static MediaAsset create(Long userId, MediaType mediaType, String fileUrl, String fileName,
                                     long fileSize, String mimeType, List<String> tags,
                                     Long petId, LocalDateTime takenAt, LocalDateTime now) {
+        return create(userId, mediaType, fileUrl, fileName, fileSize, mimeType, tags, petId, takenAt, userId, now);
+    }
+
+    public static MediaAsset create(Long userId, MediaType mediaType, String fileUrl, String fileName,
+                                    long fileSize, String mimeType, List<String> tags,
+                                    Long petId, LocalDateTime takenAt, Long operatorId, LocalDateTime now) {
         Objects.requireNonNull(userId, "userId 不能为空");
         Objects.requireNonNull(mediaType, "mediaType 不能为空");
         if (fileUrl == null || fileUrl.isBlank()) {
@@ -109,12 +117,8 @@ public class MediaAsset {
 
         // 上传指定归属 → 直接确认；识别相似度无意义置 null
         boolean confirmed = petId != null;
-        MediaAnalysisStatus initialStatus = mediaType == MediaType.PHOTO
-                ? MediaAnalysisStatus.PENDING
-                : MediaAnalysisStatus.SKIPPED;
-
-        return new MediaAsset(null, userId, petId, mediaType, fileUrl, fileName, fileSize, mimeType,
-                normalizedTags, initialStatus, null, null, null, confirmed,
+        return new MediaAsset(null, userId, operatorId, petId, mediaType, fileUrl, fileName, fileSize, mimeType,
+                normalizedTags, MediaAnalysisStatus.PENDING, null, null, null, confirmed,
                 takenAt, null, false, now, now);
     }
 
@@ -127,7 +131,18 @@ public class MediaAsset {
                                      BigDecimal recognitionScore, boolean recognitionConfirmed,
                                      LocalDateTime takenAt, String errorMessage, boolean deleted,
                                      LocalDateTime createdAt, LocalDateTime updatedAt) {
-        return new MediaAsset(id, userId, petId, mediaType, fileUrl, fileName, fileSize, mimeType,
+        return restore(id, userId, petId, mediaType, fileUrl, fileName, fileSize, mimeType, tags, status,
+                aiDescription, aiTags, recognitionScore, recognitionConfirmed, takenAt, errorMessage, deleted,
+                null, createdAt, updatedAt);
+    }
+
+    public static MediaAsset restore(Long id, Long userId, Long petId, MediaType mediaType, String fileUrl,
+                                     String fileName, long fileSize, String mimeType, List<String> tags,
+                                     MediaAnalysisStatus status, String aiDescription, List<String> aiTags,
+                                     BigDecimal recognitionScore, boolean recognitionConfirmed,
+                                     LocalDateTime takenAt, String errorMessage, boolean deleted, Long operatorId,
+                                     LocalDateTime createdAt, LocalDateTime updatedAt) {
+        return new MediaAsset(id, userId, operatorId, petId, mediaType, fileUrl, fileName, fileSize, mimeType,
                 tags, status, aiDescription, aiTags, recognitionScore, recognitionConfirmed,
                 takenAt, errorMessage, deleted, createdAt, updatedAt);
     }
@@ -169,6 +184,23 @@ public class MediaAsset {
         this.errorMessage = errorMessage;
     }
 
+    /** 重新发起 AI 分析，兼容历史 skipped 素材和用户主动重试。 */
+    public void requestAnalysis(LocalDateTime now) {
+        Objects.requireNonNull(now, "分析时间不能为空");
+        if (deleted) {
+            throw new IllegalStateException("已删除素材不能重新分析");
+        }
+        if (!recognitionConfirmed) {
+            this.petId = null;
+        }
+        this.status = MediaAnalysisStatus.PENDING;
+        this.aiDescription = null;
+        this.aiTags = null;
+        this.recognitionScore = null;
+        this.errorMessage = null;
+        this.updatedAt = now;
+    }
+
     /**
      * 确认或修正归属
      *
@@ -203,6 +235,10 @@ public class MediaAsset {
      */
     public void delete() {
         this.deleted = true;
+    }
+
+    public Long getOperatorId() {
+        return operatorId;
     }
 
     /**

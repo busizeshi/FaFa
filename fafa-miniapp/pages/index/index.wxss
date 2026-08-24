@@ -1,0 +1,84 @@
+.container {
+  padding: 24rpx;
+}
+
+.header {
+  padding: 24rpx 8rpx 32rpx;
+}
+
+.header-title {
+  font-size: 40rpx;
+  font-weight: bold;
+}
+
+.header-sub {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 8rpx;
+}
+
+.section {
+  margin-bottom: 32rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #666;
+  margin-bottom: 16rpx;
+}
+
+.refresh {
+  color: #4caf50;
+  font-weight: normal;
+  font-size: 24rpx;
+  margin-left: 16rpx;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 12rpx 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.row {
+  display: flex;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.label {
+  width: 140rpx;
+  color: #999;
+}
+
+.value {
+  flex: 1;
+  word-break: break-all;
+}
+
+.empty {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 40rpx;
+  text-align: center;
+  color: #999;
+  font-size: 26rpx;
+}
+
+.logout-btn {
+  margin-top: 16rpx;
+}
+
+.ai-btn {
+  margin: 24rpx 0;
+}
+
+.medical-btn {
+  margin: 24rpx 0;
+}

@@ -57,6 +57,16 @@ public class ReminderRepositoryImpl implements ReminderRepository {
     }
 
     @Override
+    public List<Reminder> findByMedicationPlanId(Long medicationPlanId) {
+        LambdaQueryWrapper<ReminderPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ReminderPO::getMedicationId, medicationPlanId)
+                .orderByAsc(ReminderPO::getNextRemindTime);
+        return reminderMapper.selectList(wrapper).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<Reminder> findDueByUserId(Long userId, LocalDateTime endExclusive) {
         LambdaQueryWrapper<ReminderPO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ReminderPO::getUserId, userId)
@@ -90,6 +100,13 @@ public class ReminderRepositoryImpl implements ReminderRepository {
         // @TableLogic 下 delete(wrapper) 即批量逻辑删除
         LambdaQueryWrapper<ReminderPO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ReminderPO::getPetId, petId);
+        reminderMapper.delete(wrapper);
+    }
+
+    @Override
+    public void deleteByMedicationPlanId(Long medicationPlanId) {
+        LambdaQueryWrapper<ReminderPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ReminderPO::getMedicationId, medicationPlanId);
         reminderMapper.delete(wrapper);
     }
 

@@ -58,6 +58,13 @@ public class PetRepositoryImpl implements PetRepository {
     }
 
     @Override
+    public List<Pet> findAllActive() {
+        LambdaQueryWrapper<PetPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByAsc(PetPO::getId);
+        return petMapper.selectList(wrapper).stream().map(this::toDomain).toList();
+    }
+
+    @Override
     public int countByUserId(Long userId) {
         LambdaQueryWrapper<PetPO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(PetPO::getUserId, userId);

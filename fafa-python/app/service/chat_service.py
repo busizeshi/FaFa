@@ -1,19 +1,34 @@
-"""
-AI 助手对话服务：LangGraph 状态图编排
+"""AI 助手服务入口。"""
 
-TODO P1 实现，图结构（见技术文档 5.4）：
-意图分类 → 工具调用（查记录/查照片/查就医档案，经 HTTP 回调 Java 只读接口取数）
-→ 回答生成 → 敏感边界检查（不输出医疗诊断结论）
-"""
+import asyncio
+from typing import Any
 
 from loguru import logger
 
+from app.agent.graph import AgentError, ChatAgent
+from app.core.config import get_settings
+from app.schemas.chat import ChatSendRequest
+
 
 class ChatService:
-    """AI 助手编排服务"""
+    """AI 助手编排服务。"""
 
-    async def chat(self, user_id: int, pet_id: int | None,
-                   message: str, session_id: str) -> str:
-        """执行对话（流式返回由路由层处理）"""
-        logger.info("对话处理: user_id={}, session_id={}", user_id, session_id)
-        raise NotImplementedError("AI 助手随 P1 LangGraph Agent 实现")
+    def __init__(self) -> None:
+        self.agent = ChatAgent()
+
+    async def chat(self, request: ChatSendRequest) -> dict[str, Any]:
+        """执行一次同步 Agent 请求。"""
+
+        logger.info("开始处理 AI 对话: user_id={}, session_id={}, message_len={}",
+                    request.user_id, request.session_id, len(request.message))
+        try:
+            return await asyncio.wait_for(
+                self.agent.chat(request),
+                timeout=get_settings().agent_timeout_seconds,
+            )
+        except asyncio.TimeoutError as exc:
+            logger.error("AI Agent 超时: trace_id={}", request.trace_id)
+            raise AgentError("AI Agent 超时") from exc
+
+
+chat_service = ChatService()

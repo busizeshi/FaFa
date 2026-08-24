@@ -1,0 +1,70 @@
+<view class="container">
+  <view class="header">
+    <view class="header-title">后端联调测试</view>
+    <view class="header-sub">userId: {{userId || '未知'}}</view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">用户信息 <text class="refresh" bindtap="refresh">刷新</text></view>
+    <view class="card" wx:if="{{userInfo}}">
+      <view class="row"><text class="label">昵称</text><text class="value">{{userInfo.nickname || '-'}}</text></view>
+      <view class="row"><text class="label">手机</text><text class="value">{{userInfo.phone || '-'}}</text></view>
+      <view class="row"><text class="label">城市</text><text class="value">{{userInfo.city || '-'}}</text></view>
+      <view class="row"><text class="label">会员</text><text class="value">{{userInfo.vip ? '是' : '否'}}</text></view>
+    </view>
+    <view class="empty" wx:else>{{loading ? '加载中…' : '获取失败，请检查 token 或后端日志'}}</view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">宠物列表（共 {{pets.length}} 只）</view>
+    <view class="card" wx:for="{{pets}}" wx:key="id">
+      <view class="row">
+        <text class="label">名字</text>
+        <text class="value">{{item.name}}（{{item.type}}）</text>
+      </view>
+      <view class="row">
+        <text class="label">品种</text>
+        <text class="value">{{item.breed || '-'}}</text>
+      </view>
+      <view class="row">
+        <text class="label">排序</text>
+        <text class="value">{{item.sortOrder}}</text>
+      </view>
+    </view>
+    <view class="empty" wx:if="{{!loading && pets.length === 0}}">暂无宠物，可通过宠物接口创建</view>
+  </view>
+
+  <button class="btn-primary ai-btn" wx:if="{{pets.length}}" bindtap="openAssistant">
+    问问关于 {{pets[0].name}} 的任何事情
+  </button>
+
+  <button class="btn-primary medical-btn" wx:if="{{pets.length}}" bindtap="openMedical">
+    查看 {{pets[0].name}} 的医疗健康档案
+  </button>
+
+  <button class="btn-primary" wx:if="{{pets.length}}" bindtap="openFood">
+    管理 {{pets[0].name}} 的食品卡
+  </button>
+
+  <button class="btn-primary" wx:if="{{pets.length}}" bindtap="openFeedingPlan">
+    查看今日喂食计划
+  </button>
+
+  <button class="btn-primary" wx:if="{{pets.length}}" bindtap="openExpense">
+    查看 {{pets[0].name}} 的开支统计
+  </button>
+
+  <button class="btn-primary" wx:if="{{pets.length}}" bindtap="openReport">
+    查看 {{pets[0].name}} 的周期报告
+  </button>
+
+  <button class="btn-primary" wx:if="{{pets.length}}" bindtap="openCollaboration">
+    管理 {{pets[0].name}} 的家庭协同
+  </button>
+
+  <button class="btn-primary" wx:if="{{pets.length}}" bindtap="openEmergencyCard">
+    查看 {{pets[0].name}} 的应急信息卡
+  </button>
+
+  <button class="btn-primary logout-btn" bindtap="logout">登出</button>
+</view>

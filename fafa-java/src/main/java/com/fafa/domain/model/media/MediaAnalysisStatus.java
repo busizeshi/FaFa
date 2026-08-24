@@ -6,8 +6,7 @@ import lombok.Getter;
  * 媒体 AI 分析状态
  *
  * 状态机（回调驱动，见 phase4-implementation-plan.md 2.3）：
- * - photo：pending → completed / failed（processing 预留，本阶段不流转）
- * - video：落库即 skipped（不进 AI 链路）
+ * - photo/video：pending → completed / failed（processing 预留，本阶段不流转）
  * - 已终态（completed/failed/skipped）时重复回调幂等跳过
  *
  * @author FaFa Team

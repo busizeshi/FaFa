@@ -16,6 +16,10 @@ public record SaveFeedingRecordCommand(
     BigDecimal amount,
     String unit,
     Long foodId,
+    Long feedingPlanId,
+    Long feedingPlanItemId,
+    LocalDateTime plannedAt,
+    String foodNameSnapshot,
     String notes
 ) {
 }

@@ -36,6 +36,11 @@ public class FeedingRecord {
     private String unit;
     /** 关联食品管理卡ID（Phase 7 预留） */
     private Long foodId;
+    /** 关联计划，可空；手工喂食不需要填写。 */
+    private Long feedingPlanId;
+    private Long feedingPlanItemId;
+    private LocalDateTime plannedAt;
+    private String foodNameSnapshot;
     private String notes;
     private final Long operatorId;
     private boolean deleted;
@@ -44,7 +49,8 @@ public class FeedingRecord {
     private LocalDateTime updatedAt;
 
     private FeedingRecord(Long id, Long petId, LocalDateTime feedingTime, FoodType foodType,
-                          BigDecimal amount, String unit, Long foodId, String notes,
+                          BigDecimal amount, String unit, Long foodId, Long feedingPlanId,
+                          Long feedingPlanItemId, LocalDateTime plannedAt, String foodNameSnapshot, String notes,
                           Long operatorId, boolean deleted,
                           LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
@@ -54,6 +60,10 @@ public class FeedingRecord {
         this.amount = amount;
         this.unit = unit;
         this.foodId = foodId;
+        this.feedingPlanId = feedingPlanId;
+        this.feedingPlanItemId = feedingPlanItemId;
+        this.plannedAt = plannedAt;
+        this.foodNameSnapshot = foodNameSnapshot;
         this.notes = notes;
         this.operatorId = operatorId;
         this.deleted = deleted;
@@ -67,6 +77,14 @@ public class FeedingRecord {
     public static FeedingRecord create(Long petId, LocalDateTime feedingTime, FoodType foodType,
                                        BigDecimal amount, String unit, Long foodId,
                                        String notes, Long operatorId) {
+        return create(petId, feedingTime, foodType, amount, unit, foodId, null, null, null, null,
+                notes, operatorId);
+    }
+
+    public static FeedingRecord create(Long petId, LocalDateTime feedingTime, FoodType foodType,
+                                       BigDecimal amount, String unit, Long foodId, Long feedingPlanId,
+                                       Long feedingPlanItemId, LocalDateTime plannedAt,
+                                       String foodNameSnapshot, String notes, Long operatorId) {
         Objects.requireNonNull(petId, "petId 不能为空");
         Objects.requireNonNull(feedingTime, "feedingTime 不能为空");
         Objects.requireNonNull(foodType, "foodType 不能为空");
@@ -74,7 +92,8 @@ public class FeedingRecord {
         validateNotes(notes);
 
         return new FeedingRecord(null, petId, feedingTime, foodType,
-                amount, normalizeUnit(unit), foodId, notes, operatorId,
+                amount, normalizeUnit(unit), foodId, feedingPlanId, feedingPlanItemId, plannedAt,
+                foodNameSnapshot, notes, operatorId,
                 false, null, null);
     }
 
@@ -85,8 +104,18 @@ public class FeedingRecord {
                                         BigDecimal amount, String unit, Long foodId, String notes,
                                         Long operatorId, boolean deleted,
                                         LocalDateTime createdAt, LocalDateTime updatedAt) {
+        return restore(id, petId, feedingTime, foodType, amount, unit, foodId, null, null, null, null,
+                notes, operatorId, deleted, createdAt, updatedAt);
+    }
+
+    public static FeedingRecord restore(Long id, Long petId, LocalDateTime feedingTime, FoodType foodType,
+                                        BigDecimal amount, String unit, Long foodId, Long feedingPlanId,
+                                        Long feedingPlanItemId, LocalDateTime plannedAt,
+                                        String foodNameSnapshot, String notes, Long operatorId,
+                                        boolean deleted, LocalDateTime createdAt, LocalDateTime updatedAt) {
         return new FeedingRecord(id, petId, feedingTime, foodType,
-                amount, unit, foodId, notes, operatorId, deleted, createdAt, updatedAt);
+                amount, unit, foodId, feedingPlanId, feedingPlanItemId, plannedAt, foodNameSnapshot,
+                notes, operatorId, deleted, createdAt, updatedAt);
     }
 
     /**
@@ -94,6 +123,13 @@ public class FeedingRecord {
      */
     public void update(LocalDateTime feedingTime, FoodType foodType,
                        BigDecimal amount, String unit, Long foodId, String notes) {
+        update(feedingTime, foodType, amount, unit, foodId, null, null, null, null, notes);
+    }
+
+    public void update(LocalDateTime feedingTime, FoodType foodType,
+                       BigDecimal amount, String unit, Long foodId, Long feedingPlanId,
+                       Long feedingPlanItemId, LocalDateTime plannedAt, String foodNameSnapshot,
+                       String notes) {
         Objects.requireNonNull(feedingTime, "feedingTime 不能为空");
         Objects.requireNonNull(foodType, "foodType 不能为空");
         validateAmount(amount);
@@ -104,6 +140,10 @@ public class FeedingRecord {
         this.amount = amount;
         this.unit = normalizeUnit(unit);
         this.foodId = foodId;
+        this.feedingPlanId = feedingPlanId;
+        this.feedingPlanItemId = feedingPlanItemId;
+        this.plannedAt = plannedAt;
+        this.foodNameSnapshot = foodNameSnapshot;
         this.notes = notes;
     }
 

@@ -5,6 +5,7 @@ import com.fafa.application.dto.reminder.*;
 import com.fafa.common.BusinessException;
 import com.fafa.common.ErrorCode;
 import com.fafa.domain.model.event.EventRecord;
+import com.fafa.domain.model.collaboration.PetPermission;
 import com.fafa.domain.model.pet.Pet;
 import com.fafa.domain.model.reminder.*;
 import com.fafa.domain.repository.EventRecordRepository;
@@ -46,6 +47,8 @@ public class ReminderApplicationService {
     private final EventRecordRepository eventRecordRepository;
     private final ReminderScheduleService scheduleService;
     private final PetApplicationService petApplicationService;
+    private final MedicationApplicationService medicationApplicationService;
+    private final PetAccessApplicationService petAccessApplicationService;
 
     /**
      * 创建提醒
@@ -55,6 +58,7 @@ public class ReminderApplicationService {
         Pet pet = petApplicationService.checkPetOwnership(command.petId());
 
         ReminderType type = parseEnum(ReminderType::fromCode, command.type(), "提醒类型");
+        rejectMedicationType(type);
         IntervalType intervalType = parseEnum(IntervalType::fromCode, command.intervalType(), "周期类型");
         validateInterval(intervalType, command.intervalValue());
 
@@ -84,6 +88,7 @@ public class ReminderApplicationService {
         Reminder reminder = findOwnedReminder(id);
 
         ReminderType type = parseEnum(ReminderType::fromCode, command.type(), "提醒类型");
+        rejectMedicationType(type);
         IntervalType intervalType = parseEnum(IntervalType::fromCode, command.intervalType(), "周期类型");
         validateInterval(intervalType, command.intervalValue());
 
@@ -119,7 +124,7 @@ public class ReminderApplicationService {
      */
     @Transactional
     public ReminderDTO complete(Long id, CompleteReminderCommand command) {
-        Reminder reminder = findOwnedReminder(id);
+        Reminder reminder = findAccessibleReminder(id, PetPermission.COMPLETE_REMINDER);
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime completionTime = command.completionTime() != null ? command.completionTime() : now;
@@ -127,6 +132,7 @@ public class ReminderApplicationService {
             throw new BusinessException(ErrorCode.REMINDER_COMPLETION_TIME_INVALID);
         }
 
+        LocalDateTime scheduledAt = reminder.getNextRemindTime();
         // 1. 领域完成：一次性→finished；周期性→推进 nextRemindTime
         try {
             reminder.complete(completionTime, command.notes(), scheduleService);
@@ -150,6 +156,11 @@ public class ReminderApplicationService {
 
         // 4. 保存完成历史
         completionRepository.save(completion);
+
+        // 5. 用药提醒在同一事务内写入实际用药记录，确保提醒完成和用药事实一致。
+        if (reminder.getType() == ReminderType.MEDICATION) {
+            medicationApplicationService.recordFromReminder(reminder, scheduledAt, completion);
+        }
 
         log.info("提醒完成: reminderId={}, petId={}, type={}, 下次提醒={}, 事件={}",
                 id, reminder.getPetId(), reminder.getType().getCode(),
@@ -193,7 +204,7 @@ public class ReminderApplicationService {
      * 提醒详情
      */
     public ReminderDTO getById(Long id) {
-        Reminder reminder = findOwnedReminder(id);
+        Reminder reminder = findAccessibleReminder(id, PetPermission.READ_RECORD);
         return toDTO(reminder, petNameOf(reminder.getPetId()));
     }
 
@@ -201,7 +212,8 @@ public class ReminderApplicationService {
      * 宠物提醒列表（status 可选过滤）
      */
     public List<ReminderDTO> listByPet(Long petId, String status) {
-        Pet pet = petApplicationService.checkPetOwnership(petId);
+        petAccessApplicationService.require(getCurrentUserId(), petId, PetPermission.READ_RECORD);
+        Pet pet = petApplicationService.getPetDomain(petId);
 
         ReminderStatus filter = null;
         if (status != null && !status.isBlank()) {
@@ -260,8 +272,8 @@ public class ReminderApplicationService {
      * 单提醒完成历史（时间倒序）
      */
     public List<CompletionDTO> history(Long reminderId) {
-        Reminder reminder = findOwnedReminder(reminderId);
-        Map<Long, Pet> pets = petsById(getCurrentUserId());
+        Reminder reminder = findAccessibleReminder(reminderId, PetPermission.READ_RECORD);
+        Map<Long, Pet> pets = Map.of(reminder.getPetId(), petApplicationService.getPetDomain(reminder.getPetId()));
         return completionRepository.findByReminderId(reminderId).stream()
                 .map(c -> toCompletionDTO(c, petName(pets, c.getPetId())))
                 .toList();
@@ -276,6 +288,13 @@ public class ReminderApplicationService {
         if (!reminder.getUserId().equals(getCurrentUserId())) {
             throw new BusinessException(ErrorCode.REMINDER_NOT_FOUND);
         }
+        return reminder;
+    }
+
+    private Reminder findAccessibleReminder(Long id, PetPermission permission) {
+        Reminder reminder = reminderRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.REMINDER_NOT_FOUND));
+        petAccessApplicationService.require(getCurrentUserId(), reminder.getPetId(), permission);
         return reminder;
     }
 
@@ -300,11 +319,7 @@ public class ReminderApplicationService {
     }
 
     private String petNameOf(Long petId) {
-        return petApplicationService.getUserPetDomains(getCurrentUserId()).stream()
-                .filter(p -> p.getId().equals(petId))
-                .map(Pet::getName)
-                .findFirst()
-                .orElse(null);
+        return petApplicationService.getPetDomain(petId).getName();
     }
 
     /**
@@ -318,6 +333,12 @@ public class ReminderApplicationService {
             return parser.apply(code);
         } catch (IllegalArgumentException e) {
             throw new BusinessException(ErrorCode.PARAM_INVALID, fieldName + "取值非法: " + code);
+        }
+    }
+
+    private void rejectMedicationType(ReminderType type) {
+        if (type == ReminderType.MEDICATION) {
+            throw new BusinessException(ErrorCode.MEDICATION_PLAN_REQUIRED);
         }
     }
 

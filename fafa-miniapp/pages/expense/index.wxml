@@ -1,0 +1,49 @@
+<view class="container">
+  <view class="header">
+    <view class="header-title">宠物记账</view>
+    <view class="header-sub">记录每一笔照顾 {{petId}} 的开支</view>
+  </view>
+
+  <view class="period-tabs">
+    <view class="period-tab {{period === 'month' ? 'active' : ''}}" data-period="month" bindtap="switchPeriod">本月</view>
+    <view class="period-tab {{period === 'year' ? 'active' : ''}}" data-period="year" bindtap="switchPeriod">本年</view>
+  </view>
+
+  <view class="summary-card" wx:if="{{statistics}}">
+    <view class="summary-label">统计总额</view>
+    <view class="total">¥ {{statistics.totalAmount}}</view>
+    <view class="muted">{{statistics.expenseCount}} 笔 · {{statistics.dataStatus === 'partial' ? '当前周期进行中' : '完整周期'}}</view>
+  </view>
+
+  <view class="section" wx:if="{{statistics && statistics.categoryBreakdown.length}}">
+    <view class="section-title">分类占比</view>
+    <view class="chart-card">
+      <canvas canvas-id="expensePie" class="pie"></canvas>
+      <view class="category-list">
+        <view class="category-row" wx:for="{{statistics.categoryBreakdown}}" wx:key="category">
+          <text>{{item.categoryLabel}}</text><text>¥ {{item.amount}}（{{item.percentage}}%）</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{statistics}}">
+    <view class="section-title">趋势</view>
+    <view class="trend-row" wx:for="{{statistics.trend}}" wx:key="period">
+      <text class="trend-date">{{item.period}}</text>
+      <view class="trend-bar"><view class="trend-fill" style="width: {{item.amount > 0 ? 100 : 0}}%;"></view></view>
+      <text class="trend-amount">¥{{item.amount}}</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">开支明细 <text class="refresh" bindtap="loadAll">刷新</text></view>
+    <view class="card expense-card" wx:for="{{expenses}}" wx:key="id">
+      <view class="row"><text class="label">{{item.expenseDate}}</text><text class="value">{{item.title}}</text><text class="amount">¥ {{item.amount}}</text></view>
+      <view class="muted">{{item.categoryLabel}} · {{item.sourceType === 'medical_visit' ? '就医档案同步' : '手工记录'}}</view>
+    </view>
+    <view class="empty" wx:if="{{!loading && expenses.length === 0}}">暂无开支记录</view>
+  </view>
+
+  <button class="btn-primary" bindtap="openEdit">+ 记录一笔开支</button>
+</view>

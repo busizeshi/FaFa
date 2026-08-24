@@ -59,6 +59,21 @@ public class ReminderCompletionRepositoryImpl implements ReminderCompletionRepos
                 .toList();
     }
 
+    @Override
+    public List<ReminderCompletion> findByPetIdAndTimeBetween(Long userId, Long petId,
+                                                               LocalDateTime start,
+                                                               LocalDateTime end) {
+        LambdaQueryWrapper<ReminderCompletionHistoryPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ReminderCompletionHistoryPO::getUserId, userId)
+                .eq(ReminderCompletionHistoryPO::getPetId, petId)
+                .ge(ReminderCompletionHistoryPO::getCompletionTime, start)
+                .lt(ReminderCompletionHistoryPO::getCompletionTime, end)
+                .orderByDesc(ReminderCompletionHistoryPO::getCompletionTime);
+        return completionMapper.selectList(wrapper).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
     /**
      * 持久化对象转领域对象
      */

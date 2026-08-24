@@ -17,6 +17,10 @@ public record FeedingRecordDTO(
     BigDecimal amount,
     String unit,
     Long foodId,
+    Long feedingPlanId,
+    Long feedingPlanItemId,
+    LocalDateTime plannedAt,
+    String foodNameSnapshot,
     String notes,
     LocalDateTime createdAt,
     LocalDateTime updatedAt

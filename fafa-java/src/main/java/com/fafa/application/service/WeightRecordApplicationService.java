@@ -7,6 +7,7 @@ import com.fafa.application.dto.record.WeightTrendDTO;
 import com.fafa.common.BusinessException;
 import com.fafa.common.ErrorCode;
 import com.fafa.domain.model.pet.Pet;
+import com.fafa.domain.model.collaboration.PetPermission;
 import com.fafa.domain.model.record.WeightRecord;
 import com.fafa.domain.repository.PetRepository;
 import com.fafa.domain.repository.WeightRecordRepository;
@@ -44,13 +45,15 @@ public class WeightRecordApplicationService {
     private final WeightRecordRepository weightRecordRepository;
     private final PetRepository petRepository;
     private final PetApplicationService petApplicationService;
+    private final PetAccessApplicationService petAccessApplicationService;
 
     /**
      * 新增体重记录，同一事务内同步 pet.weight 冗余字段
      */
     @Transactional
     public WeightRecordDTO create(SaveWeightRecordCommand command) {
-        Pet pet = petApplicationService.checkPetOwnership(command.petId());
+        Pet pet = petApplicationService.getPetDomain(command.petId());
+        petAccessApplicationService.require(getCurrentUserId(), command.petId(), PetPermission.CREATE_RECORD);
         validateNotFuture(command.recordDate());
 
         WeightRecord record = WeightRecord.create(
@@ -76,7 +79,7 @@ public class WeightRecordApplicationService {
      * 最近 N 条记录（按日期倒序，每条含较上一条的变化值）
      */
     public List<WeightRecordDTO> latest(Long petId, int limit) {
-        petApplicationService.checkPetOwnership(petId);
+        petAccessApplicationService.require(getCurrentUserId(), petId, PetPermission.READ_RECORD);
         int safeLimit = Math.max(1, Math.min(limit, MAX_LIMIT));
 
         // 多取一条更早的记录，保证返回列表中最早一条也能算出 change
@@ -94,7 +97,7 @@ public class WeightRecordApplicationService {
      * 体重趋势（升序 + 逐条变化 + 区间总变化；区间缺省为最近 90 天）
      */
     public WeightTrendDTO trend(Long petId, LocalDate start, LocalDate end) {
-        petApplicationService.checkPetOwnership(petId);
+        petAccessApplicationService.require(getCurrentUserId(), petId, PetPermission.READ_RECORD);
 
         LocalDate effectiveEnd = end != null ? end : LocalDate.now();
         LocalDate effectiveStart = start != null ? start : effectiveEnd.minusDays(DEFAULT_TREND_DAYS);
@@ -130,7 +133,7 @@ public class WeightRecordApplicationService {
     public void delete(Long id) {
         WeightRecord record = weightRecordRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RECORD_NOT_FOUND));
-        petApplicationService.checkPetOwnership(record.getPetId());
+        petAccessApplicationService.requireOwner(getCurrentUserId(), record.getPetId());
 
         weightRecordRepository.deleteById(id);
         log.info("体重记录删除成功: id={}", id);

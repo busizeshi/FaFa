@@ -8,7 +8,7 @@ from loguru import logger
 from qdrant_client.models import FieldCondition, Filter, MatchValue, Range
 
 from app.core.config import get_settings
-from app.core.llm import Purpose, get_embedding_model
+from app.core.dashscope_client import get_text_multimodal_embedding
 from app.core.qdrant import COLLECTION_MEDIA, get_client
 from app.schemas.photo import PhotoAnalyzeRequest, PhotoSearchRequest
 from app.service.photo_service import photo_service
@@ -24,7 +24,7 @@ async def analyze_photo(
 ) -> dict:
     """受理素材分析任务，视觉理解与向量化在后台执行。"""
     logger.info(
-        "收到照片分析任务: media_id={}, media_type={}, message_id={}",
+        "收到媒体分析任务: media_id={}, media_type={}, message_id={}",
         request.photo_id, request.media_type, request.message_id,
     )
     background_tasks.add_task(
@@ -46,8 +46,7 @@ async def analyze_photo(
 async def search_photos(request: PhotoSearchRequest) -> dict:
     """文本向量检索素材，并叠加用户、宠物和拍摄时间过滤。"""
     logger.info("收到语义检索请求: user_id={}, query={}", request.user_id, request.query)
-    embedder = get_embedding_model(Purpose.EMBED_TEXT)
-    embedding = await asyncio.to_thread(embedder.embed_query, request.query)
+    embedding = await get_text_multimodal_embedding(request.query)
 
     conditions = [FieldCondition(key="user_id", match=MatchValue(value=request.user_id))]
     if request.pet_id is not None:
@@ -56,15 +55,16 @@ async def search_photos(request: PhotoSearchRequest) -> dict:
     if time_range is not None:
         conditions.append(FieldCondition(key="taken_ts", range=time_range))
 
-    points = await asyncio.to_thread(
-        get_client().search,
+    query_response = await asyncio.to_thread(
+        get_client().query_points,
         collection_name=COLLECTION_MEDIA,
-        query_vector=embedding,
+        query=embedding,
         query_filter=Filter(must=conditions),
         limit=request.limit,
         score_threshold=get_settings().search_score_threshold,
         with_payload=True,
     )
+    points = query_response.points
     results = []
     for point in points:
         media_id = (point.payload or {}).get("media_id")

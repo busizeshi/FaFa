@@ -28,7 +28,7 @@ class MediaAssetTest {
     }
 
     @Test
-    @DisplayName("视频创建为 skipped，照片分析回调可回填疑似归属")
+    @DisplayName("照片和视频创建为 pending，分析回调可回填疑似归属")
     void analysis_shouldCompleteAndRecognizePet() {
         MediaAsset asset = MediaAsset.create(1L, MediaType.PHOTO, "https://media/photo.jpg", "photo.jpg",
                 100L, "image/jpeg", null, null, NOW, NOW);
@@ -41,7 +41,9 @@ class MediaAssetTest {
 
         MediaAsset video = MediaAsset.create(1L, MediaType.VIDEO, "https://media/video.mp4", "video.mp4",
                 100L, "video/mp4", null, null, NOW, NOW);
-        assertThat(video.getStatus()).isEqualTo(MediaAnalysisStatus.SKIPPED);
+        assertThat(video.getStatus()).isEqualTo(MediaAnalysisStatus.PENDING);
+        video.markAnalysisCompleted("一只猫在视频中玩耍", List.of("玩耍"), null, null);
+        assertThat(video.getStatus()).isEqualTo(MediaAnalysisStatus.COMPLETED);
     }
 
     @Test
@@ -62,6 +64,22 @@ class MediaAssetTest {
 
         asset.clearPetReference();
         assertThat(asset.getPetId()).isNull();
+    }
+
+    @Test
+    @DisplayName("重新分析会清理旧 AI 结果并回到 pending")
+    void requestAnalysis_shouldResetAnalysisState() {
+        MediaAsset asset = MediaAsset.create(1L, MediaType.VIDEO, "https://media/video.mp4", "video.mp4",
+                100L, "video/mp4", null, null, NOW, NOW);
+        asset.markAnalysisCompleted("旧描述", List.of("旧标签"), 8L, new BigDecimal("0.91"));
+
+        asset.requestAnalysis(NOW.plusMinutes(1));
+
+        assertThat(asset.getStatus()).isEqualTo(MediaAnalysisStatus.PENDING);
+        assertThat(asset.getAiDescription()).isNull();
+        assertThat(asset.getAiTags()).isNull();
+        assertThat(asset.getPetId()).isNull();
+        assertThat(asset.getRecognitionScore()).isNull();
     }
 
     @Test

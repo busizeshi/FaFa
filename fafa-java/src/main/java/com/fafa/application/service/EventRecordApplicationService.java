@@ -8,6 +8,7 @@ import com.fafa.common.BusinessException;
 import com.fafa.common.ErrorCode;
 import com.fafa.domain.model.event.EventRecord;
 import com.fafa.domain.model.event.EventType;
+import com.fafa.domain.model.collaboration.PetPermission;
 import com.fafa.domain.model.pet.Pet;
 import com.fafa.domain.repository.EventRecordRepository;
 import com.fafa.domain.repository.UserTagRepository;
@@ -38,12 +39,13 @@ public class EventRecordApplicationService {
     private final EventRecordRepository eventRecordRepository;
     private final PetApplicationService petApplicationService;
     private final UserTagRepository userTagRepository;
+    private final PetAccessApplicationService petAccessApplicationService;
 
     /**
      * 宠物事件范围查询（日期升序，范围 ≤366 天）
      */
     public List<EventRecordDTO> listByPetAndRange(Long petId, LocalDate startDate, LocalDate endDate) {
-        petApplicationService.checkPetOwnership(petId);
+        petAccessApplicationService.require(StpUtil.getLoginIdAsLong(), petId, PetPermission.READ_RECORD);
         validateRange(startDate, endDate);
 
         return eventRecordRepository.findByPetIdAndDateRange(petId, startDate, endDate).stream()
@@ -54,12 +56,14 @@ public class EventRecordApplicationService {
     /** 创建手动成长档案事件，并刷新标签热度字典。 */
     @org.springframework.transaction.annotation.Transactional
     public EventRecordDTO createManual(CreateEventCommand command) {
-        Pet pet = petApplicationService.checkPetOwnership(command.petId());
+        Pet pet = petApplicationService.getPetDomain(command.petId());
+        petAccessApplicationService.require(StpUtil.getLoginIdAsLong(), command.petId(), PetPermission.CREATE_RECORD);
         EventRecord record;
         try {
             record = EventRecord.createManual(
                     pet.getId(), pet.getUserId(), parseEventType(command.eventType()), command.title(),
                     command.content(), command.eventDate(), command.materialUrls(), command.tags(),
+                    StpUtil.getLoginIdAsLong(),
                     java.time.LocalDateTime.now(), LocalDate.now());
         } catch (IllegalArgumentException e) {
             throw new BusinessException(ErrorCode.PARAM_INVALID, e.getMessage());

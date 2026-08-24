@@ -29,4 +29,8 @@ public interface ReminderCompletionRepository {
      * 用户当日完成记录 [start, end)，首页「今日已完成」
      */
     List<ReminderCompletion> findByUserIdAndTimeBetween(Long userId, LocalDateTime start, LocalDateTime end);
+
+    /** 查询指定宠物的提醒完成历史，供医疗时间线和健康摘要使用。 */
+    List<ReminderCompletion> findByPetIdAndTimeBetween(Long userId, Long petId,
+                                                       LocalDateTime start, LocalDateTime end);
 }

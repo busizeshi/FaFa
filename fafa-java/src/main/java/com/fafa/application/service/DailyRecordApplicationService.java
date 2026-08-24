@@ -6,6 +6,7 @@ import com.fafa.common.BusinessException;
 import com.fafa.common.ErrorCode;
 import com.fafa.domain.model.pet.Pet;
 import com.fafa.domain.model.pet.PetType;
+import com.fafa.domain.model.collaboration.PetPermission;
 import com.fafa.domain.model.record.*;
 import com.fafa.domain.repository.DailyStatusRepository;
 import com.fafa.domain.service.SpeciesRecordPolicy;
@@ -42,13 +43,15 @@ public class DailyRecordApplicationService {
     private final DailyStatusRepository dailyStatusRepository;
     private final PetApplicationService petApplicationService;
     private final SpeciesRecordPolicy speciesRecordPolicy;
+    private final PetAccessApplicationService petAccessApplicationService;
 
     /**
      * upsert 每日状态：校验所有权 + 日期不晚于今天 + 物种必填维度，同日重复提交覆盖
      */
     @Transactional
     public DailyStatusDTO upsertStatus(SaveDailyStatusCommand command) {
-        Pet pet = petApplicationService.checkPetOwnership(command.petId());
+        Pet pet = petApplicationService.getPetDomain(command.petId());
+        petAccessApplicationService.require(getCurrentUserId(), command.petId(), PetPermission.CREATE_RECORD);
         validateNotFuture(command.recordDate());
 
         DailyStatus status = DailyStatus.create(
@@ -84,7 +87,8 @@ public class DailyRecordApplicationService {
      */
     @Transactional
     public DailyStatusDTO recordNormal(Long petId, LocalDate date) {
-        Pet pet = petApplicationService.checkPetOwnership(petId);
+        Pet pet = petApplicationService.getPetDomain(petId);
+        petAccessApplicationService.require(getCurrentUserId(), petId, PetPermission.CREATE_RECORD);
         validateNotFuture(date);
 
         DailyStatus status = DailyStatus.createNormal(petId, date, pet.getType(), getCurrentUserId());
@@ -97,7 +101,7 @@ public class DailyRecordApplicationService {
      * 最近一条记录（before 可选，缺省含今天；「同上次」预览回填用）
      */
     public Optional<DailyStatusDTO> getLatest(Long petId, LocalDate before) {
-        petApplicationService.checkPetOwnership(petId);
+        petAccessApplicationService.require(getCurrentUserId(), petId, PetPermission.READ_RECORD);
         LocalDate boundary = before != null ? before : LocalDate.now().plusDays(1);
         return dailyStatusRepository.findLatestBefore(petId, boundary).map(this::toDTO);
     }
@@ -107,7 +111,7 @@ public class DailyRecordApplicationService {
      */
     @Transactional
     public DailyStatusDTO copyFromLast(Long petId, LocalDate date) {
-        petApplicationService.checkPetOwnership(petId);
+        petAccessApplicationService.require(getCurrentUserId(), petId, PetPermission.CREATE_RECORD);
         validateNotFuture(date);
 
         DailyStatus previous = dailyStatusRepository.findLatestBefore(petId, date)
@@ -123,7 +127,7 @@ public class DailyRecordApplicationService {
      * 查询某天记录（未记录返回 empty，前端显示灰格）
      */
     public Optional<DailyStatusDTO> getByDate(Long petId, LocalDate date) {
-        petApplicationService.checkPetOwnership(petId);
+        petAccessApplicationService.require(getCurrentUserId(), petId, PetPermission.READ_RECORD);
         return dailyStatusRepository.findByPetIdAndDate(petId, date).map(this::toDTO);
     }
 
@@ -131,7 +135,7 @@ public class DailyRecordApplicationService {
      * 日期范围列表（升序，范围 ≤366 天）
      */
     public List<DailyStatusDTO> listByRange(Long petId, LocalDate start, LocalDate end) {
-        petApplicationService.checkPetOwnership(petId);
+        petAccessApplicationService.require(getCurrentUserId(), petId, PetPermission.READ_RECORD);
         validateRange(start, end);
         return dailyStatusRepository.findByPetIdAndDateRange(petId, start, end).stream()
                 .map(this::toDTO)
@@ -143,7 +147,7 @@ public class DailyRecordApplicationService {
      */
     @Transactional
     public void delete(Long petId, LocalDate date) {
-        petApplicationService.checkPetOwnership(petId);
+        petAccessApplicationService.requireOwner(getCurrentUserId(), petId);
         boolean deleted = dailyStatusRepository.deleteByPetIdAndDate(petId, date);
         if (!deleted) {
             throw new BusinessException(ErrorCode.RECORD_NOT_FOUND);

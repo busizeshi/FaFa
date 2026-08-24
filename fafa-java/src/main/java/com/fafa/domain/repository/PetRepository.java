@@ -29,6 +29,9 @@ public interface PetRepository {
      */
     List<Pet> findByUserId(Long userId);
 
+    /** 查询全部有效宠物，供系统级健康规则扫描使用。 */
+    List<Pet> findAllActive();
+
     /**
      * 统计用户的宠物数量（不含已删除）
      */

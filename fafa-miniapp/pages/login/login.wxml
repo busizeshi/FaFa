@@ -1,0 +1,38 @@
+<view class="container">
+  <view class="title">FaFa 登录测试</view>
+  <view class="subtitle">微信一键登录（wx.login → 后端换取 token）</view>
+
+  <view class="card">
+    <view class="row">
+      <text class="label">后端地址</text>
+      <text class="value">{{baseUrl}}</text>
+    </view>
+    <view class="row code-row">
+      <text class="label">code</text>
+      <text class="value code">{{code || '（获取中…）'}}</text>
+    </view>
+  </view>
+
+  <view class="btn-group">
+    <button class="btn-primary" bindtap="getCode" disabled="{{getting}}">
+      {{getting ? '获取中…' : '获取 code'}}
+    </button>
+    <button class="btn-copy" bindtap="copyCode" disabled="{{copying || !code}}">
+      复制 code（去 Apifox 调试）
+    </button>
+  </view>
+
+  <button class="btn-login" bindtap="autoLogin" disabled="{{logging}}">
+    {{logging ? '登录中…' : '一键登录（小程序内直接验证）'}}
+  </button>
+
+  <view class="result" wx:if="{{loginResult}}">{{loginResult}}</view>
+
+  <view class="tips">
+    <view class="tips-title">常见问题排查</view>
+    <view class="tip">1. code 为空：确认 appid 与后端 WECHAT_APPID 一致，关闭「游客模式」</view>
+    <view class="tip">2. code 仅 5 分钟有效且只能用一次，复制后请尽快在 Apifox 调用</view>
+    <view class="tip">3. 网络异常：开发者工具「详情-本地设置」勾选「不校验合法域名」</view>
+    <view class="tip">4. 登录失败：后端 jscode2session 需 AppID 对应的 secret 正确</view>
+  </view>
+</view>

@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * HTTP 同步调用 AI 任务分发实现（开发环境）
  *
- * 照片已上传到对象存储，仅传 URL 到 Python 服务，
+ * 媒体已上传到对象存储，仅传 URL 到 Python 服务，
  * 由 Python 调用 qwen3-vl-embedding 生成向量并写入 Qdrant。
  * 复用统一配置的 pythonRestClient（内网令牌 + 120s 读超时覆盖 AI 推理耗时）。
  *

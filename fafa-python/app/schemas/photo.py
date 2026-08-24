@@ -3,7 +3,7 @@
 """
 
 from datetime import date, datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -14,7 +14,7 @@ class PhotoAnalyzeRequest(BaseModel):
     user_id: int = Field(..., description="用户 ID")
     photo_id: int = Field(..., description="照片 ID")
     url: str = Field(..., description="对象存储可访问 URL")
-    media_type: str = Field(..., description="photo / video / pet_profile")
+    media_type: Literal["photo", "video"] = Field(..., description="photo / video")
     tags: Optional[List[str]] = Field(default=None, description="用户自定义标签")
     pet_id: Optional[int] = Field(default=None, description="已判定的宠物 ID，可空")
     taken_at: Optional[datetime] = Field(default=None, description="素材拍摄时间")

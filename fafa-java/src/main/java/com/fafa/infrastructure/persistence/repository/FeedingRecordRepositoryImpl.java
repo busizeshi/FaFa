@@ -92,6 +92,10 @@ public class FeedingRecordRepositoryImpl implements FeedingRecordRepository {
                 po.getAmount(),
                 po.getUnit(),
                 po.getFoodId(),
+                po.getFeedingPlanId(),
+                po.getFeedingPlanItemId(),
+                po.getPlannedAt(),
+                po.getFoodNameSnapshot(),
                 po.getNotes(),
                 po.getOperatorId(),
                 po.getIsDeleted() != null && po.getIsDeleted(),
@@ -112,6 +116,10 @@ public class FeedingRecordRepositoryImpl implements FeedingRecordRepository {
         po.setAmount(record.getAmount());
         po.setUnit(record.getUnit());
         po.setFoodId(record.getFoodId());
+        po.setFeedingPlanId(record.getFeedingPlanId());
+        po.setFeedingPlanItemId(record.getFeedingPlanItemId());
+        po.setPlannedAt(record.getPlannedAt());
+        po.setFoodNameSnapshot(record.getFoodNameSnapshot());
         po.setNotes(record.getNotes());
         po.setOperatorId(record.getOperatorId());
         po.setIsDeleted(record.isDeleted());

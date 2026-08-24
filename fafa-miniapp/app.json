@@ -1,0 +1,30 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/index/index",
+    "pages/chat/chat",
+    "pages/medical/medical",
+    "pages/medical/visit",
+    "pages/medical/medication",
+    "pages/food/index",
+    "pages/feeding-plan/today",
+    "pages/expense/index",
+    "pages/expense/edit",
+    "pages/report/index",
+    "pages/report/detail",
+    "pages/content/create",
+    "pages/content/schedule",
+    "pages/collaboration/index",
+    "pages/invitation/accept",
+    "pages/emergency-card/index",
+    "pages/emergency-card/edit"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#4CAF50",
+    "navigationBarTitleText": "FaFa",
+    "navigationBarTextStyle": "white"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

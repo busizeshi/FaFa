@@ -7,6 +7,7 @@ import com.fafa.application.dto.pet.UpdatePetProfileCommand;
 import com.fafa.domain.model.pet.Gender;
 import com.fafa.domain.model.pet.Pet;
 import com.fafa.domain.model.pet.PetType;
+import com.fafa.domain.model.collaboration.PetPermission;
 import com.fafa.domain.repository.PetRepository;
 import com.fafa.domain.repository.MediaAssetRepository;
 import com.fafa.domain.repository.ReminderRepository;
@@ -45,6 +46,7 @@ public class PetApplicationService {
     private final AiTaskDispatcher aiTaskDispatcher;
     private final MediaAssetRepository mediaAssetRepository;
     private final TagApplicationService tagApplicationService;
+    private final PetAccessApplicationService petAccessApplicationService;
 
     /**
      * 注册新宠物
@@ -101,20 +103,20 @@ public class PetApplicationService {
         return petRepository.findByUserId(userId);
     }
 
+    /** 返回宠物领域对象，具体访问权限由调用方先通过 PetAccessApplicationService 判断。 */
+    public Pet getPetDomain(Long petId) {
+        return petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("宠物不存在"));
+    }
+
     /**
      * 获取宠物详情
      */
     public PetInfoDTO getPetInfo(Long petId) {
         Long userId = getCurrentUserId();
-        
+        petAccessApplicationService.require(userId, petId, PetPermission.READ_PROFILE);
         Pet pet = petRepository.findById(petId)
             .orElseThrow(() -> new IllegalArgumentException("宠物不存在"));
-        
-        // 验证所有权
-        if (!pet.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("无权访问此宠物");
-        }
-        
         return toPetInfoDTO(pet);
     }
 
@@ -346,6 +348,14 @@ public class PetApplicationService {
      */
     public Pet checkPetOwnership(Long petId) {
         Long userId = getCurrentUserId();
+
+        return checkPetOwnership(userId, petId);
+    }
+
+    /**
+     * 校验指定用户对宠物的所有权，供 Python Agent 内部查询使用。
+     */
+    public Pet checkPetOwnership(Long userId, Long petId) {
 
         Pet pet = petRepository.findById(petId)
             .orElseThrow(() -> new IllegalArgumentException("宠物不存在"));

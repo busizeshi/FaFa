@@ -31,6 +31,9 @@ public interface ReminderRepository {
      */
     List<Reminder> findByPetId(Long petId);
 
+    /** 查询一个用药计划生成的提醒。 */
+    List<Reminder> findByMedicationPlanId(Long medicationPlanId);
+
     /**
      * 用户待办：status=pending 且 nextRemindTime < endExclusive（今日+逾期，首页今日提醒）
      */
@@ -50,6 +53,9 @@ public interface ReminderRepository {
      * 宠物删除级联：逻辑删除该宠物全部提醒
      */
     void deleteByPetId(Long petId);
+
+    /** 逻辑删除一个用药计划生成的全部提醒。 */
+    void deleteByMedicationPlanId(Long medicationPlanId);
 
     /**
      * 推送去重标记回写（独立小更新，避免整行 update 竞争）

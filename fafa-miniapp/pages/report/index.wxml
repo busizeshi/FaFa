@@ -1,0 +1,18 @@
+<view class="container">
+  <view class="header"><view class="title">周期报告</view><view class="muted">宠物：{{petId}}</view></view>
+  <view class="card generate-card">
+    <picker mode="selector" range="{{periodNames}}" value="{{periodIndex}}" bindchange="changePeriod">
+      <view>报告周期：{{periodNames[periodIndex]}}</view>
+    </picker>
+    <button class="primary" loading="{{loading}}" bindtap="generate">生成/查看本周期报告</button>
+  </view>
+  <view class="section-title">历史报告</view>
+  <view class="card report-card" wx:for="{{reports}}" wx:key="id" data-id="{{item.id}}" bindtap="openDetail">
+    <view class="row"><text>{{item.periodType}}</text><text class="status">{{item.status}}</text></view>
+    <view class="muted">{{item.periodStart}} 至 {{item.periodEnd}}</view>
+    <view class="muted">{{item.contentMode || '等待生成'}} · 第 {{item.generationVersion}} 版</view>
+  </view>
+  <view class="empty" wx:if="{{!loading && reports.length === 0}}">暂无报告，点击上方生成第一份</view>
+  <button class="primary" wx:if="{{petId}}" bindtap="openContent">生成分享笔记草稿</button>
+  <button class="secondary" wx:if="{{petId}}" bindtap="openSchedule">设置周期生成</button>
+</view>

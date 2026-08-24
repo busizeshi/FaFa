@@ -30,6 +30,10 @@ public enum FoodType {
                 return value;
             }
         }
+        // Phase 7 食品卡使用 canned；旧喂食记录仍返回 can，输入两种写法都兼容。
+        if ("canned".equalsIgnoreCase(code)) {
+            return CAN;
+        }
         throw new IllegalArgumentException("Invalid food type: " + code);
     }
 }

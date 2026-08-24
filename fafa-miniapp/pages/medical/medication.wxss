@@ -1,0 +1,9 @@
+.form-page { padding: 32rpx; }
+.form-title { font-size: 40rpx; font-weight: bold; margin-bottom: 16rpx; }
+.hint { color: #888; font-size: 24rpx; line-height: 1.6; margin-bottom: 20rpx; }
+.field { background: #fff; border-radius: 12rpx; padding: 20rpx; margin-bottom: 16rpx; display: flex; align-items: center; }
+.field > text { width: 160rpx; color: #666; }
+.field input, .picker-value { flex: 1; }
+.multiline { align-items: flex-start; }
+.multiline textarea { flex: 1; min-height: 100rpx; }
+.btn-primary { margin-top: 24rpx; }

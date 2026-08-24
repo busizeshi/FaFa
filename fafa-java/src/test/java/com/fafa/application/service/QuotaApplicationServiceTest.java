@@ -78,4 +78,16 @@ class QuotaApplicationServiceTest {
                 .isEqualTo(ErrorCode.AI_SEARCH_QUOTA_EXCEEDED);
         verify(valueOperations).decrement(anyString());
     }
+
+    @Test
+    @DisplayName("普通用户第6次食品包装识别超限时回滚 Redis 计数")
+    void tryAcquireFoodRecognition_shouldRollbackWhenOverLimit() {
+        when(valueOperations.increment(anyString())).thenReturn(6L);
+
+        assertThatThrownBy(() -> service.tryAcquireFoodRecognition(1L))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.FOOD_RECOGNITION_QUOTA_EXCEEDED);
+        verify(valueOperations).decrement(anyString());
+    }
 }

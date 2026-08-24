@@ -156,6 +156,7 @@ public class MediaAssetRepositoryImpl implements MediaAssetRepository {
                 po.getTakenAt(),
                 po.getErrorMessage(),
                 po.getIsDeleted() != null && po.getIsDeleted(),
+                po.getOperatorId(),
                 po.getCreatedAt(),
                 po.getUpdatedAt()
         );
@@ -168,6 +169,7 @@ public class MediaAssetRepositoryImpl implements MediaAssetRepository {
         MediaAssetPO po = new MediaAssetPO();
         po.setId(asset.getId());
         po.setUserId(asset.getUserId());
+        po.setOperatorId(asset.getOperatorId());
         po.setPetId(asset.getPetId());
         po.setMediaType(asset.getMediaType().getCode());
         po.setFileUrl(asset.getFileUrl());

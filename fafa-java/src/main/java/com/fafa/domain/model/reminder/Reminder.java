@@ -98,9 +98,41 @@ public class Reminder {
             throw new IllegalArgumentException("提醒时间不能早于当前时间");
         }
 
+        return createInternal(petId, userId, type, title, description, intervalType,
+                intervalValue, nextRemindTime, null, now);
+    }
+
+    /**
+     * 创建由用药计划拥有的提醒。普通提醒接口不得使用 medication 类型直接创建。
+     */
+    public static Reminder createMedication(Long petId, Long userId, Long medicationPlanId,
+                                             String title, String description,
+                                             IntervalType intervalType, Integer intervalValue,
+                                             LocalDateTime nextRemindTime, LocalDateTime now) {
+        Objects.requireNonNull(medicationPlanId, "medicationPlanId 不能为空");
+        return createInternal(petId, userId, ReminderType.MEDICATION, title, description,
+                intervalType, intervalValue, nextRemindTime, medicationPlanId, now);
+    }
+
+    private static Reminder createInternal(Long petId, Long userId, ReminderType type,
+                                           String title, String description,
+                                           IntervalType intervalType, Integer intervalValue,
+                                           LocalDateTime nextRemindTime, Long medicationPlanId,
+                                           LocalDateTime now) {
+        Objects.requireNonNull(petId, "petId 不能为空");
+        Objects.requireNonNull(userId, "userId 不能为空");
+        Objects.requireNonNull(type, "type 不能为空");
+        Objects.requireNonNull(intervalType, "intervalType 不能为空");
+        Objects.requireNonNull(nextRemindTime, "nextRemindTime 不能为空");
+        validateTitle(title);
+        validateDescription(description);
+        Objects.requireNonNull(now, "now 不能为空");
+        if (!nextRemindTime.isAfter(now)) {
+            throw new IllegalArgumentException("提醒时间不能早于当前时间");
+        }
         return new Reminder(null, petId, userId, type, title, description,
                 intervalType, intervalValue, nextRemindTime, ReminderStatus.PENDING,
-                null, null, null, null, false, null, null);
+                null, null, null, medicationPlanId, false, null, null);
     }
 
     /**

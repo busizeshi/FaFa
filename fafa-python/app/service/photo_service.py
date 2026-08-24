@@ -4,6 +4,7 @@ import base64
 import json
 from datetime import datetime
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 from langchain_core.messages import HumanMessage
@@ -11,7 +12,12 @@ from loguru import logger
 from qdrant_client.models import FieldCondition, Filter, MatchValue, PointStruct
 
 from app.core.config import get_settings
-from app.core.dashscope_client import get_multimodal_embedding
+from app.core.dashscope_client import (
+    VideoEmbeddingInputError,
+    get_multimodal_embedding,
+    get_video_multimodal_embedding,
+    is_private_url,
+)
 from app.core.llm import Purpose, get_chat_model
 from app.core.qdrant import COLLECTION_MEDIA, COLLECTION_PET_PROFILES, get_client, point_id
 from app.service.callback_client import send_photo_analysis_callback
@@ -36,17 +42,21 @@ class PhotoService:
         taken_at: datetime | None = None,
         trace_id: str | None = None,
     ) -> None:
-        """执行照片分析全链路；重复执行通过确定性 point_id 实现幂等。"""
-        if media_type != "photo":
-            logger.info("非照片素材跳过 AI 分析: media_id={}, media_type={}", photo_id, media_type)
-            return
+        """执行媒体理解、向量化、个体识别与回调；重复执行通过 point_id 幂等。"""
+        if media_type not in {"photo", "video"}:
+            raise PermanentMediaError(f"不支持的媒体类型: {media_type}")
 
-        logger.info("照片分析开始: media_id={}, user_id={}, message_id={}", photo_id, user_id, message_id)
+        logger.info("媒体分析开始: media_id={}, media_type={}, user_id={}, message_id={}",
+                    photo_id, media_type, user_id, message_id)
         try:
-            # 统一下载一次并转 Data URI，既支持开发环境 MinIO 内网地址，也能尽早识别 404/损坏图片。
-            image_data_uri = await self._download_image_as_data_uri(url)
-            description, ai_tags = await self._understand_image(image_data_uri)
-            embedding = await get_multimodal_embedding(image_data_uri)
+            if media_type == "photo":
+                image_data_uri = await self._download_image_as_data_uri(url)
+                description, ai_tags = await self._understand_image(image_data_uri)
+                embedding = await get_multimodal_embedding(image_data_uri)
+            else:
+                vision_source = await self._prepare_video_for_vision(url)
+                description, ai_tags = await self._understand_video(vision_source)
+                embedding = await get_video_multimodal_embedding(url)
 
             recognized_pet_id = None
             recognition_score = None
@@ -73,8 +83,8 @@ class PhotoService:
             )
             logger.info("照片分析完成: media_id={}, recognized_pet_id={}, score={}",
                         photo_id, recognized_pet_id, recognition_score)
-        except PermanentMediaError as exc:
-            logger.warning("照片素材不可处理: media_id={}, error={}", photo_id, str(exc))
+        except (PermanentMediaError, VideoEmbeddingInputError) as exc:
+            logger.warning("媒体素材不可处理: media_id={}, error={}", photo_id, str(exc))
             await send_photo_analysis_callback(
                 media_id=photo_id,
                 success=False,
@@ -85,6 +95,33 @@ class PhotoService:
             # 模型、Qdrant 等暂时性失败交给 MQ 重试；HTTP 直推场景保留 pending 供人工处理。
             logger.exception("照片分析失败: media_id={}", photo_id)
             raise
+
+    async def _prepare_video_for_vision(self, url: str) -> str:
+        """为视觉模型准备视频；内网视频转受控 Base64，公网视频保留 URL。"""
+        if url.startswith("data:video/") or not is_private_url(url):
+            return url
+        try:
+            async with httpx.AsyncClient(timeout=60) as client:
+                response = await client.get(url)
+                response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise PermanentMediaError(f"视频下载失败: HTTP {exc.response.status_code}") from exc
+        except httpx.HTTPError as exc:
+            raise PermanentMediaError(f"视频下载失败: {exc}") from exc
+
+        settings = get_settings()
+        if len(response.content) > settings.video_vision_inline_max_bytes:
+            raise PermanentMediaError(
+                "内网视频超过视觉模型 Base64 大小限制，请配置百炼可访问的公网视频 URL"
+            )
+        content_type = response.headers.get("content-type", "video/mp4").split(";", 1)[0].lower()
+        if not content_type.startswith("video/"):
+            suffix = urlparse(url).path.lower()
+            if not suffix.endswith((".mp4", ".avi", ".mov")):
+                raise PermanentMediaError(f"素材不是有效视频: {content_type}")
+            content_type = "video/mp4"
+        encoded = base64.b64encode(response.content).decode("ascii")
+        return f"data:{content_type};base64,{encoded}"
 
     async def _download_image_as_data_uri(self, url: str) -> str:
         """下载图片并转为 Data URI，避免百炼访问不到开发环境内网对象存储。"""
@@ -131,6 +168,31 @@ class PhotoService:
         ai_tags = [str(tag).strip() for tag in raw_tags if str(tag).strip()] if isinstance(raw_tags, list) else []
         return description, list(dict.fromkeys(ai_tags))[:10]
 
+    async def _understand_video(self, video_source: str) -> tuple[str, list[str]]:
+        """调用视觉模型按抽帧理解视频，输出与照片一致的描述和标签契约。"""
+        settings = get_settings()
+        model = get_chat_model(Purpose.VISION)
+        message = HumanMessage(content=[
+            {
+                "type": "text",
+                "text": (
+                    "请分析这个宠物视频，只返回 JSON，不要 Markdown。格式为 "
+                    '{"description":"不超过200字的客观描述","tags":["不超过10个中文短标签"]}。'
+                    "标签应描述视频中可观察到的宠物、动作、地点或物品，不要猜测健康诊断。"
+                ),
+            },
+            {
+                "type": "video_url",
+                "video_url": {"url": video_source, "fps": settings.video_vision_fps},
+            },
+        ])
+        response = await model.ainvoke([message])
+        parsed = self._parse_json(self._response_text(response))
+        description = str(parsed.get("description") or "").strip()[:1000]
+        raw_tags = parsed.get("tags")
+        ai_tags = [str(tag).strip() for tag in raw_tags if str(tag).strip()] if isinstance(raw_tags, list) else []
+        return description, list(dict.fromkeys(ai_tags))[:10]
+
     @staticmethod
     def _response_text(response: Any) -> str:
         content = getattr(response, "content", response)
@@ -170,13 +232,14 @@ class PhotoService:
         query_filter = Filter(must=[
             FieldCondition(key="user_id", match=MatchValue(value=user_id)),
         ])
-        points = get_client().search(
+        query_response = get_client().query_points(
             collection_name=COLLECTION_PET_PROFILES,
-            query_vector=embedding,
+            query=embedding,
             query_filter=query_filter,
             limit=20,
             with_payload=True,
         )
+        points = query_response.points
         best_by_pet: dict[int, float] = {}
         for point in points:
             payload = point.payload or {}

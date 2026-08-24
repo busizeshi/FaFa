@@ -20,13 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/quota")
 @RequiredArgsConstructor
-@Tag(name = "配额", description = "存储与 AI 检索配额用量查询")
+@Tag(name = "配额", description = "存储、AI 检索和食品包装识别配额用量查询")
 public class QuotaController {
 
     private final QuotaApplicationService quotaApplicationService;
 
     @GetMapping
-    @Operation(summary = "配额与用量", description = "存储用量/上限 + 本月 AI 检索用量/上限 + 会员状态")
+    @Operation(summary = "配额与用量", description = "存储、AI 检索、食品包装识别用量/上限 + 会员状态")
     public Result<QuotaDTO> getQuota() {
         return Result.ok(quotaApplicationService.getQuota(StpUtil.getLoginIdAsLong()));
     }

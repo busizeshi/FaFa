@@ -34,6 +34,55 @@ fafa:
   internal-token: ${INTERNAL_TOKEN:}
   storage:
     type: minio
+  quota:
+    food-recognition:
+      monthly-normal: 5
+      monthly-vip: 50
+    report-content:
+      monthly-normal: 3
+      monthly-vip: 10
+  food:
+    recognition:
+      timeout-seconds: 90
+      draft-retention-days: 7
+      max-image-bytes: 10485760
+      prompt-version: food-recognition-v1
+    score:
+      policy-version: v1
+      protein-source-partial-score: 12
+      additive-flag-penalty: 5
+      calcium-phosphorus-min-ratio: 1.0
+      calcium-phosphorus-max-ratio: 2.0
+  feeding:
+    max-range-days: 366
+    max-items-per-plan: 12
+    recommendation-timeout-seconds: 45
+    policy-version: v1
+  expense:
+    default-currency: CNY
+    max-amount: 100000.00
+    max-range-days: 3660
+    auto-sync-medical: true
+    calculation-version: v1
+  report:
+    max-range-days: 3660
+    max-media-count: 12
+    generation-timeout-seconds: 90
+    snapshot-version: report-facts-v1
+    prompt-version: report-content-v1
+    calculation-version: v1
+    schedule-scan-cron: "0 */10 * * * *"
+  collaboration:
+    enabled: true
+    normal-max-members: 0
+    vip-max-members: 5
+    caregiver-max-days: 30
+    invitation-expire-minutes: 30
+    invite-rate-limit-per-hour: 20
+    accept-rate-limit-per-hour: 30
+    audit-retention-days: 730
+    reminder-max-retries: 3
+    reminder-delivery-cron: "0 */5 * * * *"
   minio:
     endpoint: ${FAFA_MINIO_ENDPOINT:http://192.168.1.14:9000}
     access-key: ${FAFA_MINIO_AK:minioadmin}

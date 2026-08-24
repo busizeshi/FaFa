@@ -3,7 +3,8 @@
 
 业务代码只声明「用途」（Purpose），不直接写模型名；
 模型名与参数配置在环境变量/.env 中维护，换模型不改代码。
-所有 Qwen 系列模型经百炼 OpenAI 兼容接口调用。
+对话模型与纯文本嵌入经百炼 OpenAI 兼容接口调用；照片跨模态嵌入走
+`app.core.dashscope_client` 的百炼原生多模态接口。
 """
 
 from enum import Enum
@@ -72,9 +73,9 @@ def get_embedding_model(purpose: Purpose) -> OpenAIEmbeddings:
     """
     获取文本嵌入模型客户端
 
-    注意：EMBED_MULTIMODAL（qwen3-vl-embedding）的多模态调用路径
-    需在照片链路开发时对照百炼文档核实（OpenAI 兼容 /embeddings
-    端点是否支持图片输入），届时在此扩展。
+    照片跨模态嵌入不经过此客户端，使用
+    `app.core.dashscope_client.get_multimodal_embedding`；此方法仅用于
+    纯文本嵌入等 OpenAI 兼容场景。
 
     Raises:
         NotEnabledError: 用途对应的模型未启用

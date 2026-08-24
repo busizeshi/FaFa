@@ -1,0 +1,27 @@
+<view class="container">
+  <view class="card" wx:if="{{access}}">
+    <view class="title">当前权限：{{access.role}}</view>
+    <view class="muted">状态：{{access.status}}<text wx:if="{{access.expiresAt}}">，到期：{{access.expiresAt}}</text></view>
+    <view class="permission-list"><text wx:for="{{access.permissions}}" wx:key="*this" class="permission">{{item}}</text></view>
+  </view>
+
+  <view class="card" wx:if="{{access.role === 'owner'}}">
+    <view class="title">生成一次性邀请</view>
+    <picker mode="selector" range="{{roles}}" bindchange="selectRole">
+      <view class="field">角色：{{role}}</view>
+    </picker>
+    <input class="input" type="number" value="{{expiresInDays}}" bindinput="inputDays" placeholder="临时照护天数" />
+    <button class="primary" bindtap="createInvitation">生成邀请并复制</button>
+    <view class="invitation" wx:if="{{invitation}}">邀请有效至：{{invitation.expiresAt}}<view>{{invitation.sharePath}}</view></view>
+  </view>
+
+  <view class="card">
+    <view class="title">协作者（{{members.length}}）</view>
+    <view class="member" wx:for="{{members}}" wx:key="memberId">
+      <view><text>{{item.nickname || ('用户' + item.userId)}}</text><text class="muted"> {{item.role}} / {{item.status}}</text></view>
+      <view class="muted" wx:if="{{item.expiresAt}}">到期：{{item.expiresAt}}</view>
+      <button class="danger" data-id="{{item.memberId}}" bindtap="revokeMember">撤销</button>
+    </view>
+    <view class="muted" wx:if="{{!members.length}}">暂无协作者</view>
+  </view>
+</view>

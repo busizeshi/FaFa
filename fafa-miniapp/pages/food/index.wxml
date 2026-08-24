@@ -1,0 +1,31 @@
+<view class="container">
+  <view class="header">
+    <view class="header-title">食品管理卡</view>
+    <view class="header-sub">先核对包装信息，再确认保存</view>
+  </view>
+
+  <button class="btn-primary" bindtap="choosePackageImage" loading="{{recognizing}}">
+    {{recognizing ? '识别处理中…' : '拍摄/选择包装图片并识别'}}
+  </button>
+
+  <view class="card task" wx:if="{{task}}">
+    <view class="row"><text class="label">识别状态</text><text class="value">{{task.status}}</text></view>
+    <view wx:if="{{task.draft}}">
+      <view class="row"><text class="label">名称</text><text class="value">{{task.draft.name || '未识别'}}</text></view>
+      <view class="row"><text class="label">品牌</text><text class="value">{{task.draft.brand || '未识别'}}</text></view>
+      <view class="row"><text class="label">类型</text><text class="value">{{task.draft.foodType || '未识别'}}</text></view>
+      <view class="notice">候选信息请与包装原文核对，AI 不会自动写入食品卡。</view>
+      <button class="btn-primary" wx:if="{{task.status === 'completed'}}" bindtap="confirmRecognition">确认保存</button>
+      <button class="btn-secondary" wx:if="{{task.status === 'completed'}}" bindtap="rejectRecognition">放弃并手工录入</button>
+    </view>
+  </view>
+
+  <view class="section-title">当前食品（{{foods.length}}）</view>
+  <view class="card" wx:for="{{foods}}" wx:key="id">
+    <view class="row"><text class="label">名称</text><text class="value">{{item.name}}</text></view>
+    <view class="row"><text class="label">类型</text><text class="value">{{item.foodType}}</text></view>
+    <view class="row"><text class="label">营养完整度</text><text class="value">{{item.nutritionCompleteness}}</text></view>
+  </view>
+  <view class="empty" wx:if="{{!foods.length}}">暂无食品卡，可先手工创建或识别包装图片</view>
+  <button class="btn-secondary" bindtap="openPlan">查看喂食计划</button>
+</view>

@@ -42,6 +42,19 @@ public class SaveFeedingRequest {
     @Schema(description = "关联食品管理卡ID（Phase 7 预留）", example = "null")
     private Long foodId;
 
+    @Schema(description = "来源喂食计划ID", example = "601")
+    private Long feedingPlanId;
+
+    @Schema(description = "来源喂食计划项ID", example = "701")
+    private Long feedingPlanItemId;
+
+    @Schema(description = "计划时段", example = "2026-08-24T08:00:00")
+    private LocalDateTime plannedAt;
+
+    @Size(max = 100)
+    @Schema(description = "食品名称快照", example = "室内成猫鸡肉配方")
+    private String foodNameSnapshot;
+
     @Size(max = 500, message = "备注不能超过500字符")
     @Schema(description = "备注", example = "新开的罐头")
     private String notes;

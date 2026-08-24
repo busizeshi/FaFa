@@ -1,0 +1,111 @@
+-- Phase 6：健康管理、用药闭环与规则预警
+
+CREATE TABLE IF NOT EXISTS `medical_visit` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '就诊记录ID',
+  `user_id` BIGINT NOT NULL COMMENT '所属用户ID',
+  `pet_id` BIGINT NOT NULL COMMENT '宠物ID',
+  `visit_date` DATE NOT NULL COMMENT '就诊日期',
+  `hospital_name` VARCHAR(200) NOT NULL COMMENT '医院名称',
+  `doctor_name` VARCHAR(100) DEFAULT NULL COMMENT '医生姓名',
+  `chief_complaint` VARCHAR(1000) DEFAULT NULL COMMENT '主诉',
+  `diagnosis` VARCHAR(2000) DEFAULT NULL COMMENT '诊断原文，仅作病历记录',
+  `prescription` VARCHAR(3000) DEFAULT NULL COMMENT '处方原文，仅作病历记录',
+  `treatment` VARCHAR(2000) DEFAULT NULL COMMENT '治疗/检查项目',
+  `total_cost` DECIMAL(10,2) DEFAULT NULL COMMENT '本次就诊费用',
+  `notes` VARCHAR(2000) DEFAULT NULL COMMENT '补充备注',
+  `is_deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_medical_visit_pet_date` (`pet_id`, `visit_date`, `is_deleted`),
+  KEY `idx_medical_visit_user_date` (`user_id`, `visit_date`, `is_deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='宠物就医档案';
+
+CREATE TABLE IF NOT EXISTS `medical_visit_attachment` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '关联ID',
+  `user_id` BIGINT NOT NULL COMMENT '所属用户ID',
+  `visit_id` BIGINT NOT NULL COMMENT '就诊记录ID',
+  `media_id` BIGINT NOT NULL COMMENT 'media_asset ID',
+  `attachment_type` VARCHAR(16) NOT NULL DEFAULT 'other' COMMENT 'receipt/report/prescription/other',
+  `sort_order` INT NOT NULL DEFAULT 0 COMMENT '展示顺序',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_medical_visit_media` (`visit_id`, `media_id`),
+  KEY `idx_medical_attachment_visit` (`visit_id`, `sort_order`),
+  KEY `idx_medical_attachment_media` (`media_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='就诊记录与媒体素材关联';
+
+CREATE TABLE IF NOT EXISTS `medication_plan` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '用药计划ID',
+  `user_id` BIGINT NOT NULL COMMENT '所属用户ID',
+  `pet_id` BIGINT NOT NULL COMMENT '宠物ID',
+  `source_visit_id` BIGINT DEFAULT NULL COMMENT '处方来源就诊记录ID',
+  `medication_name` VARCHAR(200) NOT NULL COMMENT '药品名称',
+  `specification` VARCHAR(100) DEFAULT NULL COMMENT '药品规格',
+  `purpose` VARCHAR(500) DEFAULT NULL COMMENT '处方用途/用户备注',
+  `dosage_value` DECIMAL(10,3) NOT NULL COMMENT '每次默认剂量',
+  `dosage_unit` VARCHAR(16) NOT NULL COMMENT '剂量单位',
+  `frequency_type` VARCHAR(16) NOT NULL COMMENT 'daily/every_days/weekly/as_needed',
+  `frequency_value` INT DEFAULT NULL COMMENT '频次值',
+  `administration_times` JSON NOT NULL COMMENT '执行时间列表，如 ["09:00","21:00"]',
+  `meal_relation` VARCHAR(16) NOT NULL DEFAULT 'any' COMMENT 'before_meal/after_meal/any',
+  `start_date` DATE NOT NULL COMMENT '疗程开始日期',
+  `end_date` DATE DEFAULT NULL COMMENT '疗程结束日期',
+  `status` VARCHAR(16) NOT NULL DEFAULT 'active' COMMENT 'active/paused/completed/deleted',
+  `notes` VARCHAR(1000) DEFAULT NULL COMMENT '计划备注',
+  `is_deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_medication_plan_pet_status` (`pet_id`, `status`, `is_deleted`),
+  KEY `idx_medication_plan_user_date` (`user_id`, `start_date`, `end_date`, `is_deleted`),
+  KEY `idx_medication_plan_source_visit` (`source_visit_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='宠物用药计划';
+
+CREATE TABLE IF NOT EXISTS `medication_record` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '实际用药记录ID',
+  `user_id` BIGINT NOT NULL COMMENT '所属用户ID',
+  `pet_id` BIGINT NOT NULL COMMENT '宠物ID',
+  `medication_plan_id` BIGINT NOT NULL COMMENT '用药计划ID',
+  `reminder_id` BIGINT DEFAULT NULL COMMENT '产生该记录的提醒ID',
+  `scheduled_at` DATETIME NOT NULL COMMENT '计划执行时间',
+  `taken_at` DATETIME DEFAULT NULL COMMENT '实际用药时间',
+  `dosage_value` DECIMAL(10,3) NOT NULL COMMENT '本次剂量',
+  `dosage_unit` VARCHAR(16) NOT NULL COMMENT '剂量单位',
+  `status` VARCHAR(16) NOT NULL COMMENT 'taken/skipped/missed/cancelled',
+  `notes` VARCHAR(500) DEFAULT NULL COMMENT '实际执行备注',
+  `operator_id` BIGINT DEFAULT NULL COMMENT '操作人',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_medication_record_slot` (`medication_plan_id`, `scheduled_at`),
+  KEY `idx_medication_record_pet_time` (`pet_id`, `scheduled_at`),
+  KEY `idx_medication_record_user_time` (`user_id`, `scheduled_at`),
+  KEY `idx_medication_record_reminder` (`reminder_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='实际用药记录';
+
+CREATE TABLE IF NOT EXISTS `health_alert` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '预警ID',
+  `user_id` BIGINT NOT NULL COMMENT '所属用户ID',
+  `pet_id` BIGINT NOT NULL COMMENT '宠物ID',
+  `rule_code` VARCHAR(64) NOT NULL COMMENT '规则编码',
+  `severity` VARCHAR(16) NOT NULL COMMENT 'red/yellow',
+  `title` VARCHAR(200) NOT NULL COMMENT '预警标题',
+  `message` VARCHAR(1000) NOT NULL COMMENT '中性提示文案',
+  `evidence_json` JSON NOT NULL COMMENT '触发事实快照',
+  `observed_from` DATE NOT NULL COMMENT '事实窗口开始日期',
+  `observed_to` DATE NOT NULL COMMENT '事实窗口结束日期',
+  `fingerprint` CHAR(64) NOT NULL COMMENT '事实指纹',
+  `status` VARCHAR(16) NOT NULL DEFAULT 'open' COMMENT 'open/acknowledged/resolved/expired',
+  `first_detected_at` DATETIME NOT NULL COMMENT '首次发现时间',
+  `last_detected_at` DATETIME NOT NULL COMMENT '最近发现时间',
+  `acknowledged_at` DATETIME DEFAULT NULL COMMENT '用户确认时间',
+  `resolved_at` DATETIME DEFAULT NULL COMMENT '解除时间',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_health_alert_fingerprint` (`pet_id`, `rule_code`, `fingerprint`),
+  KEY `idx_health_alert_user_status` (`user_id`, `status`, `last_detected_at`),
+  KEY `idx_health_alert_pet_status` (`pet_id`, `status`, `last_detected_at`),
+  KEY `idx_health_alert_severity` (`severity`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='规则健康预警';

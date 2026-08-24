@@ -1,12 +1,9 @@
-"""
-AI 数据查询工具链
+"""AI 数据查询工具包。
 
-工具清单与产品文档第十一章保持一致，全部经 HTTP 回调 fafa-java 只读接口取数：
-getPetProfile / getWeightHistory / getFeedingHistory
-getWaterHistory / getDefecationHistory / getEventHistory
-getVaccineHistory / getDewormingHistory / searchPetPhotos
-getFoodInfo / getReminderHistory / getPetReports
-getMedicalHistory / getMedicationHistory / getExpenseHistory
-
-TODO P1：以 LangChain Tool 形式逐个封装，统一注入 traceId 与内部令牌。
+Phase 5 已实现的工具集中在 :mod:`app.agent.tools.registry`，统一经 Java
+内部只读接口取数；未落地的健康、食品、报告和记账工具不会被注册给 Agent。
 """
+
+from app.agent.tools.registry import ToolRegistry
+
+__all__ = ["ToolRegistry"]

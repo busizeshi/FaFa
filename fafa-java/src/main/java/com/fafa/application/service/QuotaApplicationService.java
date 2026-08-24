@@ -40,6 +40,9 @@ public class QuotaApplicationService {
     private static final String QUOTA_TYPE_STORAGE = "STORAGE_USED";
     /** AI 检索月配额 Redis key 前缀 */
     private static final String AI_SEARCH_KEY_PREFIX = "fafa:quota:ai-search:";
+    /** 食品包装识别月配额 Redis key 前缀 */
+    private static final String FOOD_RECOGNITION_KEY_PREFIX = "fafa:quota:food-recognition:";
+    private static final String REPORT_CONTENT_KEY_PREFIX = "fafa:quota:report-content:";
 
     private final UserQuotaUsageRepository quotaUsageRepository;
     private final UserRepository userRepository;
@@ -123,6 +126,51 @@ public class QuotaApplicationService {
         stringRedisTemplate.opsForValue().decrement(aiSearchKey(userId));
     }
 
+    /** 获取食品包装识别月配额，普通用户和 VIP 使用独立配置上限。 */
+    public void tryAcquireFoodRecognition(Long userId) {
+        int limit = foodRecognitionLimit(userId);
+        String key = foodRecognitionKey(userId);
+        Long count = stringRedisTemplate.opsForValue().increment(key);
+        if (count != null && count == 1) {
+            stringRedisTemplate.expire(key, ttlToEndOfMonth());
+        }
+        if (count != null && count > limit) {
+            stringRedisTemplate.opsForValue().decrement(key);
+            log.info("食品包装识别月配额已用完: userId={}, limit={}", userId, limit);
+            throw new BusinessException(ErrorCode.FOOD_RECOGNITION_QUOTA_EXCEEDED);
+        }
+    }
+
+    /** 识别服务失败时释放本次已获取的配额。 */
+    public void releaseFoodRecognition(Long userId) {
+        String key = foodRecognitionKey(userId);
+        Long count = stringRedisTemplate.opsForValue().decrement(key);
+        if (count != null && count < 0) {
+            stringRedisTemplate.opsForValue().set(key, "0");
+        }
+    }
+
+    /** 报告与内容共用月配额，防止两个入口分别绕过限制。 */
+    public void tryAcquireReportContent(Long userId) {
+        int limit = reportContentLimit(userId);
+        String key = reportContentKey(userId);
+        Long count = stringRedisTemplate.opsForValue().increment(key);
+        if (count != null && count == 1) {
+            stringRedisTemplate.expire(key, ttlToEndOfMonth());
+        }
+        if (count != null && count > limit) {
+            stringRedisTemplate.opsForValue().decrement(key);
+            throw new BusinessException(ErrorCode.REPORT_GENERATION_QUOTA_EXCEEDED);
+        }
+    }
+
+    public void releaseReportContent(Long userId) {
+        Long count = stringRedisTemplate.opsForValue().decrement(reportContentKey(userId));
+        if (count != null && count < 0) {
+            stringRedisTemplate.opsForValue().set(reportContentKey(userId), "0");
+        }
+    }
+
     /**
      * 配额与用量查询
      */
@@ -139,7 +187,15 @@ public class QuotaApplicationService {
             aiSearchLimit = faFaProperties.getQuota().getAiSearch().getMonthlyNormal();
         }
 
-        return new QuotaDTO(storageUsed, storageLimit, aiSearchUsed, aiSearchLimit, vip);
+        String foodUsedValue = stringRedisTemplate.opsForValue().get(foodRecognitionKey(userId));
+        long foodRecognitionUsed = foodUsedValue == null ? 0 : Long.parseLong(foodUsedValue);
+        long foodRecognitionLimit = vip ? -1 : faFaProperties.getQuota().getFoodRecognition().getMonthlyNormal();
+        String reportUsedValue = stringRedisTemplate.opsForValue().get(reportContentKey(userId));
+        long reportContentUsed = reportUsedValue == null ? 0 : Long.parseLong(reportUsedValue);
+        long reportContentLimit = vip ? faFaProperties.getQuota().getReportContent().getMonthlyVip()
+                : faFaProperties.getQuota().getReportContent().getMonthlyNormal();
+        return new QuotaDTO(storageUsed, storageLimit, aiSearchUsed, aiSearchLimit,
+                foodRecognitionUsed, foodRecognitionLimit, vip, reportContentUsed, reportContentLimit);
     }
 
     /**
@@ -159,6 +215,25 @@ public class QuotaApplicationService {
 
     private String aiSearchKey(Long userId) {
         return AI_SEARCH_KEY_PREFIX + userId + ":" + YearMonth.now();
+    }
+
+    private String foodRecognitionKey(Long userId) {
+        return FOOD_RECOGNITION_KEY_PREFIX + userId + ":" + YearMonth.now();
+    }
+
+    private int foodRecognitionLimit(Long userId) {
+        return isVip(userId)
+                ? faFaProperties.getQuota().getFoodRecognition().getMonthlyVip()
+                : faFaProperties.getQuota().getFoodRecognition().getMonthlyNormal();
+    }
+
+    private String reportContentKey(Long userId) {
+        return REPORT_CONTENT_KEY_PREFIX + userId + ":" + YearMonth.now();
+    }
+
+    private int reportContentLimit(Long userId) {
+        return isVip(userId) ? faFaProperties.getQuota().getReportContent().getMonthlyVip()
+                : faFaProperties.getQuota().getReportContent().getMonthlyNormal();
     }
 
     private Duration ttlToEndOfMonth() {
