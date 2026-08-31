@@ -73,18 +73,23 @@ public class HttpAiTaskDispatcher implements AiTaskDispatcher {
     }
 
     @Override
-    public void dispatchMediaAnalysis(Long mediaId, Long userId, String url,
+    public void dispatchMediaAnalysis(Long mediaId, Long userId, String sourceUrl, String analysisUrl,
                                       String mediaType, java.util.List<String> tags, Long petId,
-                                      java.time.LocalDateTime takenAt) {
+                                      java.util.List<Long> candidatePetIds,
+                                      java.time.LocalDateTime takenAt,
+                                      java.time.LocalDateTime uploadedAt) {
         try {
             Map<String, Object> body = new HashMap<>();
             body.put("user_id", userId);
             body.put("photo_id", mediaId);
-            body.put("url", url);
+            body.put("url", analysisUrl);
+            body.put("file_url", sourceUrl);
             body.put("media_type", mediaType);
             body.put("tags", tags);
             body.put("pet_id", petId);
+            body.put("candidate_pet_ids", candidatePetIds);
             body.put("taken_at", takenAt);
+            body.put("uploaded_at", uploadedAt);
             body.put("message_id", "media-" + mediaId);
 
             pythonRestClient.post()

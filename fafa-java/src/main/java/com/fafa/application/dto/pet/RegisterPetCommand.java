@@ -1,5 +1,6 @@
 package com.fafa.application.dto.pet;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
@@ -15,6 +16,7 @@ public record RegisterPetCommand(
     String gender,
     LocalDate birthDate,
     Boolean neutered,
-    LocalDate adoptDate
+    LocalDate adoptDate,
+    BigDecimal weight
 ) {
 }

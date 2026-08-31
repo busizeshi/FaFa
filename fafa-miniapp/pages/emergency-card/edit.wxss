@@ -1,6 +1,0 @@
-.container { padding: 24rpx; background: #f6f8f7; min-height: 100vh; }
-.card { background: #fff; border-radius: 18rpx; padding: 30rpx; }
-.hint { color: #78817c; font-size: 24rpx; line-height: 1.6; margin-bottom: 20rpx; }
-.input { width: auto; border: 1rpx solid #dce4df; border-radius: 10rpx; padding: 20rpx; margin: 14rpx 0; }
-.area { min-height: 100rpx; }
-.primary { color: #fff; background: #4caf50; margin-top: 18rpx; }

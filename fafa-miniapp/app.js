@@ -1,8 +1,7 @@
-// FaFa 小程序入口
-// 全局生命周期与公共逻辑（日志、全局异常等）
+const config = require('./utils/config');
+
 App({
-  onLaunch() {
-    // 预留：后续可在此做版本更新检查、全局登录态预检等
+  globalData: {
+    config,
   },
-  globalData: {}
 });

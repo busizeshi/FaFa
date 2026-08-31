@@ -33,12 +33,16 @@ public class HttpSemanticSearchGateway implements SemanticSearchGateway {
 
     @Override
     public List<SearchHit> search(Long userId, String query, Long petId,
+                                  List<PetCandidate> petCandidates,
                                   LocalDate startDate, LocalDate endDate, int limit) {
         Map<String, Object> body = new HashMap<>();
         body.put("user_id", userId);
         body.put("query", query);
         body.put("limit", limit);
         body.put("pet_id", petId);
+        body.put("pet_candidates", petCandidates == null ? List.of() : petCandidates.stream()
+                .map(candidate -> Map.of("pet_id", candidate.petId(), "name", candidate.name()))
+                .toList());
         body.put("start_date", startDate == null ? null : startDate.toString());
         body.put("end_date", endDate == null ? null : endDate.toString());
 

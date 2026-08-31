@@ -38,14 +38,16 @@ public class CallbackController {
         mediaApplicationService.handleAnalysisCallback(new com.fafa.application.dto.media.PhotoAnalysisCallback(
                 callback.getMediaId(),
                 Boolean.TRUE.equals(callback.getSuccess()),
-                callback.getDescription(),
-                callback.getAiTags(),
-                callback.getRecognizedPetId(),
+                callback.getRecognizedPetIds() != null
+                        ? callback.getRecognizedPetIds()
+                        : callback.getRecognizedPetId() == null
+                        ? java.util.List.of()
+                        : java.util.List.of(callback.getRecognizedPetId()),
                 callback.getRecognitionScore(),
                 callback.getErrorMessage()
         ));
-        log.info("素材分析回调处理完成: mediaId={}, petId={}, success={}",
-                callback.getMediaId(), callback.getRecognizedPetId(), callback.getSuccess());
+        log.info("素材向量化回调处理完成: mediaId={}, petIds={}, success={}",
+                callback.getMediaId(), callback.getRecognizedPetIds(), callback.getSuccess());
         return Result.ok();
     }
 }

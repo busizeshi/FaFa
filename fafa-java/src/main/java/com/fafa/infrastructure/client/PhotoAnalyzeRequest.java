@@ -32,6 +32,9 @@ public class PhotoAnalyzeRequest {
     @NotBlank(message = "url 不能为空")
     private String url;
 
+    /** 对象存储永久引用，写入 Qdrant；url 可为视频临时预签名地址 */
+    private String fileUrl;
+
     /** photo / video / pet_profile */
     @NotBlank(message = "mediaType 不能为空")
     private String mediaType;
@@ -41,8 +44,14 @@ public class PhotoAnalyzeRequest {
     /** 已判定的宠物 ID，可空 */
     private Long petId;
 
+    /** 多宠物匹配候选 ID；单宠物/指定宠物为空 */
+    private List<Long> candidatePetIds;
+
     /** 素材拍摄时间，用于语义检索时间过滤 */
     private LocalDateTime takenAt;
+
+    /** 素材上传入库时间，写入 Qdrant 用于追溯 */
+    private LocalDateTime uploadedAt;
 
     /** 幂等键 */
     private String messageId;

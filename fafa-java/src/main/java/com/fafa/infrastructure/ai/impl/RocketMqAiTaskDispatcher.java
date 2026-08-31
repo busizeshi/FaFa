@@ -77,9 +77,11 @@ public class RocketMqAiTaskDispatcher implements AiTaskDispatcher {
     }
 
     @Override
-    public void dispatchMediaAnalysis(Long mediaId, Long userId, String url,
+    public void dispatchMediaAnalysis(Long mediaId, Long userId, String sourceUrl, String analysisUrl,
                                       String mediaType, java.util.List<String> tags, Long petId,
-                                      java.time.LocalDateTime takenAt) {
+                                      java.util.List<Long> candidatePetIds,
+                                      java.time.LocalDateTime takenAt,
+                                      java.time.LocalDateTime uploadedAt) {
         try {
             // 消息体 camelCase（对齐既有宠物向量化消息风格），messageId 幂等键
             Map<String, Object> message = new HashMap<>();
@@ -87,11 +89,14 @@ public class RocketMqAiTaskDispatcher implements AiTaskDispatcher {
             message.put("traceId", MDC.get("traceId"));
             message.put("userId", userId);
             message.put("photoId", mediaId);
-            message.put("url", url);
+            message.put("url", analysisUrl);
+            message.put("fileUrl", sourceUrl);
             message.put("mediaType", mediaType);
             message.put("tags", tags);
             message.put("petId", petId);
+            message.put("candidatePetIds", candidatePetIds);
             message.put("takenAt", takenAt);
+            message.put("uploadedAt", uploadedAt);
             message.put("timestamp", System.currentTimeMillis());
 
             rocketMQTemplate.convertAndSend(TOPIC_PHOTO_ANALYSIS + ":photo", message);

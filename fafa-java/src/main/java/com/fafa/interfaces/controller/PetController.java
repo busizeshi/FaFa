@@ -42,7 +42,8 @@ public class PetController {
             request.getGender(),
             request.getBirthDate(),
             request.getIsNeutered(),
-            request.getAdoptDate()
+            request.getAdoptDate(),
+            request.getWeight()
         );
 
         PetInfoDTO dto = petApplicationService.registerPet(command);

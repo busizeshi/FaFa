@@ -27,14 +27,19 @@ public class PhotoAnalysisCallback {
     @NotNull(message = "success 不能为空")
     private Boolean success;
 
-    /** AI 生成的素材描述 */
+    /** 达到相似度阈值的全部宠物 ID；多个宠物同时命中时全部保留 */
+    private List<Long> recognizedPetIds;
+
+    /** 兼容旧版本回调字段；新 embedding 链路不会填充 */
+    @Deprecated
     private String description;
 
-    /** 个体识别判定的宠物 ID（未识别为空） */
-    private Long recognizedPetId;
-
-    /** AI 补充的标签 */
+    /** 兼容旧版本回调字段；新 embedding 链路不会填充 */
+    @Deprecated
     private List<String> aiTags;
+
+    /** 兼容旧版本回调的单个宠物 ID */
+    private Long recognizedPetId;
 
     /** 识别相似度（0~1） */
     private java.math.BigDecimal recognitionScore;

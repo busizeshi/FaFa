@@ -6,7 +6,7 @@ import java.util.List;
 import java.time.LocalDateTime;
 
 /**
- * 照片分析异步任务消息体（Java → Python，经 RocketMQ 投递）
+ * 素材 embedding 异步任务消息体（Java → Python，经 RocketMQ 投递）
  *
  * 字段 camelCase（与 Java 序列化一致），Python 消费端做 camelCase → snake_case 映射。
  *
@@ -22,9 +22,12 @@ public record PhotoAnalysisMessage(
         Long userId,
         Long photoId,
         String url,
+        String fileUrl,
         String mediaType,
         List<String> tags,
         Long petId,
-        LocalDateTime takenAt
+        List<Long> candidatePetIds,
+        LocalDateTime takenAt,
+        LocalDateTime uploadedAt
 ) {
 }

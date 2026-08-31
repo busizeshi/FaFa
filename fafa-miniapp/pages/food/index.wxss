@@ -1,3 +1,0 @@
-.task { margin-top: 24rpx; }
-.notice { color: #8a5a00; background: #fff7df; padding: 16rpx; margin: 16rpx 0; border-radius: 8rpx; font-size: 26rpx; }
-.btn-secondary { margin-top: 20rpx; color: #4caf50; background: #f0f8f0; }

@@ -14,7 +14,7 @@ from functools import lru_cache
 
 from loguru import logger
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams
+from qdrant_client.models import Distance, PayloadSchemaType, VectorParams
 
 from app.core.config import get_settings
 
@@ -59,9 +59,27 @@ def ensure_collections() -> None:
                 logger.info("创建 Qdrant 集合: {}, dim={}", collection, VECTOR_DIM)
             else:
                 logger.info("Qdrant 集合已存在: {}", collection)
+            if collection == COLLECTION_MEDIA:
+                _ensure_media_payload_indexes(client)
         except Exception as e:
             # 集合初始化失败不阻断启动，记日志人工处理
             logger.error("Qdrant 集合初始化失败: collection={}, error={}", collection, e)
+
+
+def _ensure_media_payload_indexes(client: QdrantClient) -> None:
+    """为媒体筛选和按拍摄时间精确召回创建必要的 payload 索引。"""
+    for field_name in ("user_id", "pet_id", "pet_ids", "taken_ts", "uploaded_ts"):
+        try:
+            client.create_payload_index(
+                collection_name=COLLECTION_MEDIA,
+                field_name=field_name,
+                field_schema=PayloadSchemaType.INTEGER,
+                wait=True,
+            )
+        except Exception as exc:
+            # 已存在或短暂不可用均不影响服务启动；Qdrant 会在下次启动继续补偿。
+            logger.warning("Qdrant payload 索引确保失败: collection={}, field={}, error={}",
+                           COLLECTION_MEDIA, field_name, str(exc))
 
 
 def drop_collection(collection: str) -> None:

@@ -1,29 +1,16 @@
 {
   "pages": [
-    "pages/login/login",
-    "pages/index/index",
-    "pages/chat/chat",
-    "pages/medical/medical",
-    "pages/medical/visit",
-    "pages/medical/medication",
-    "pages/food/index",
-    "pages/feeding-plan/today",
-    "pages/expense/index",
-    "pages/expense/edit",
-    "pages/report/index",
-    "pages/report/detail",
-    "pages/content/create",
-    "pages/content/schedule",
-    "pages/collaboration/index",
-    "pages/invitation/accept",
-    "pages/emergency-card/index",
-    "pages/emergency-card/edit"
+    "pages/index/index"
   ],
   "window": {
-    "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#4CAF50",
-    "navigationBarTitleText": "FaFa",
-    "navigationBarTextStyle": "white"
+    "navigationBarTitleText": "微信登录调试台",
+    "navigationBarBackgroundColor": "#f6f8fb",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f6f8fb",
+    "backgroundTextStyle": "light"
+  },
+  "networkTimeout": {
+    "request": 15000
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json"

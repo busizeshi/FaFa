@@ -93,4 +93,22 @@ class MediaAssetTest {
                 null, NOW, NOW))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    @DisplayName("自动宠物标签可以超过手工标签上限，并支持多宠物结果")
+    void vectorization_shouldAppendAllPetTags() {
+        MediaAsset asset = MediaAsset.create(1L, MediaType.PHOTO, "https://media/photo.jpg", "photo.jpg",
+                100L, "image/jpeg", java.util.stream.IntStream.range(0, 10)
+                        .mapToObj(String::valueOf).toList(), null, NOW, NOW);
+
+        assertThat(asset.markVectorizationCompleted(List.of(8L, 9L), new BigDecimal("0.92"), NOW.plusMinutes(1)))
+                .isTrue();
+        asset.addTags(List.of("豆包", "团子"));
+
+        assertThat(asset.getPetId()).isNull();
+        assertThat(asset.getTags()).contains("豆包", "团子");
+        assertThat(asset.getTags()).hasSize(12);
+        assertThat(asset.getAiDescription()).isNull();
+        assertThat(asset.getAiTags()).isNull();
+    }
 }

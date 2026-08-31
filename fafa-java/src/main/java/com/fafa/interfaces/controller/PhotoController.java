@@ -42,7 +42,7 @@ public class PhotoController {
     private final MediaApplicationService mediaApplicationService;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "批量上传素材", description = "单批≤20个；tags 应用到全部素材；照片和视频自动进入 AI 分析")
+    @Operation(summary = "批量上传素材", description = "单批≤20个；tags 应用到全部素材；照片和视频异步生成 embedding 并自动追加宠物名称标签")
     public Result<List<MediaDTO>> upload(
             @Parameter(description = "素材文件（图片/视频）") @RequestParam("files") List<MultipartFile> files,
             @Parameter(description = "标签（逗号分隔，可选）") @RequestParam(value = "tags", required = false) List<String> tags,
@@ -81,19 +81,19 @@ public class PhotoController {
     }
 
     @GetMapping("/pending-recognition")
-    @Operation(summary = "识别待确认列表", description = "AI 识别出疑似归属但未确认的素材（含相似度）")
+    @Operation(summary = "历史待确认列表", description = "兼容历史数据；新上传素材不进入待确认流程，匹配结果直接写入宠物名称标签")
     public Result<List<MediaDTO>> pendingRecognition() {
         return Result.ok(mediaApplicationService.findUnconfirmed());
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "素材详情", description = "含 AI 描述、AI 标签、识别状态")
+    @Operation(summary = "素材详情", description = "含媒体地址、用户/宠物标签、向量化状态和匹配分数")
     public Result<MediaDTO> getById(@Parameter(description = "素材ID") @PathVariable Long id) {
         return Result.ok(mediaApplicationService.getById(id));
     }
 
     @PostMapping("/{id}/reanalyze")
-    @Operation(summary = "重新分析素材", description = "重置为 pending 并重新投递照片/视频 AI 分析")
+    @Operation(summary = "重新分析素材", description = "重置为 pending 并重新投递照片/视频 embedding 向量化")
     public Result<MediaDTO> reanalyze(@Parameter(description = "素材ID") @PathVariable Long id) {
         return Result.ok(mediaApplicationService.reanalyze(id));
     }
@@ -109,7 +109,7 @@ public class PhotoController {
     }
 
     @PostMapping("/{id}/confirm-pet")
-    @Operation(summary = "确认/修正归属", description = "petId 传 null 表示清除归属")
+    @Operation(summary = "手工修正归属", description = "兼容旧客户端；petId 传 null 表示清除归属，指定宠物时同步追加宠物名称标签")
     public Result<MediaDTO> confirmPet(
             @Parameter(description = "素材ID") @PathVariable Long id,
             @Valid @RequestBody(required = false) ConfirmPetRequest request

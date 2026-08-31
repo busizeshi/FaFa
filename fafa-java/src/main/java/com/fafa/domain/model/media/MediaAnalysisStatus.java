@@ -3,7 +3,7 @@ package com.fafa.domain.model.media;
 import lombok.Getter;
 
 /**
- * 媒体 AI 分析状态
+ * 媒体 embedding 处理状态
  *
  * 状态机（回调驱动，见 phase4-implementation-plan.md 2.3）：
  * - photo/video：pending → completed / failed（processing 预留，本阶段不流转）

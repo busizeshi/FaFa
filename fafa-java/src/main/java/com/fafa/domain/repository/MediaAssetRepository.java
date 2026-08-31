@@ -26,20 +26,20 @@ public interface MediaAssetRepository {
     /**
      * 确定性检索（tags 任一命中，OR 语义），按 takenAt 倒序
      *
-     * @param petId     归属宠物过滤，可空
+     * @param petTagName 宠物名称标签过滤，可空。媒体归属以 tags 为唯一业务标记
      * @param tags      标签过滤（任一命中），可空
      * @param startDate 拍摄日期起（含），可空
      * @param endDate   拍摄日期止（含），可空
      * @param offset    偏移
      * @param limit     条数
      */
-    List<MediaAsset> search(Long userId, Long petId, List<String> tags,
+    List<MediaAsset> search(Long userId, String petTagName, List<String> tags,
                             LocalDate startDate, LocalDate endDate, int offset, int limit);
 
     /**
      * 确定性检索总数（配合 search 分页）
      */
-    long countSearch(Long userId, Long petId, List<String> tags, LocalDate startDate, LocalDate endDate);
+    long countSearch(Long userId, String petTagName, List<String> tags, LocalDate startDate, LocalDate endDate);
 
     /**
      * 语义检索结果批量补全（过滤归属与逻辑删除，免疫 Qdrant 残留 point）
@@ -57,4 +57,12 @@ public interface MediaAssetRepository {
      * @return 受影响行数
      */
     int clearPetReference(Long petId);
+
+    /**
+     * 宠物改名后批量迁移该用户媒体中的宠物名称标签。
+     *
+     * @return 受影响素材数量
+     */
+    int replacePetNameTag(Long userId, String oldName, String newName);
+
 }

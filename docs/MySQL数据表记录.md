@@ -84,15 +84,18 @@ CREATE TABLE `pet` (
   `is_deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `active_name` VARCHAR(32) GENERATED ALWAYS AS (IF(`is_deleted` = 0, `name`, NULL)) STORED COMMENT '有效宠物名称唯一约束辅助列',
   PRIMARY KEY (`id`),
   INDEX `idx_user_id` (`user_id`, `is_deleted`),
-  INDEX `idx_sort_order` (`user_id`, `sort_order`)
+  INDEX `idx_sort_order` (`user_id`, `sort_order`),
+  UNIQUE KEY `uk_pet_user_active_name` (`user_id`, `active_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='宠物档案表';
 ```
 
 **索引**：
 - `idx_user_id`：查询用户宠物列表，过滤逻辑删除
 - `idx_sort_order`：手动排序
+- `uk_pet_user_active_name`：同一用户有效宠物名称唯一；逻辑删除后名称可复用
 
 ---
 
@@ -282,7 +285,7 @@ CREATE TABLE IF NOT EXISTS `event_record` (
 
 ## Phase 4 素材管理与成长档案
 
-> 设计说明：① `user_tag` 为早期已建表（无代码引用、无数据），Phase 4 正式启用，结构含 `category` 分类与 `usage_count` 热度计数（支撑「选择已有标签」列表按使用频次排序），本阶段补齐使用逻辑；② `media_asset.tags` 与 `event_record.tags` 均为标签名快照（JSON 数组），标签定义删除不影响已打标数据；③ `media_asset.status` 承载 AI 异步分析状态机（pending→processing→completed/failed；照片和视频均进入 AI 链路）；④ 宠物归属采用「`pet_id` 当前归属 + `recognition_confirmed` 确认标志」双字段：上传指定或 AI 识别回填时 confirmed=0 待确认，用户确认识别/修正归属后置 1；⑤ 存储配额复用 Phase 0 的 `user_quota_usage` 表（新增 quota_type=`STORAGE_USED`，单位字节），AI 语义检索月配额走 Redis 计数（技术文档 6.2），不建新表。
+> 设计说明：① `user_tag` 为早期已建表（无代码引用、无数据），Phase 4 正式启用，结构含 `category` 分类与 `usage_count` 热度计数（支撑「选择已有标签」列表按使用频次排序），本阶段补齐使用逻辑；② `media_asset.tags` 与 `event_record.tags` 均为标签名快照（JSON 数组），标签定义删除不影响已打标数据；③ `media_asset.status` 承载 embedding 异步处理状态机（pending→processing→completed/failed；照片和视频均进入链路）；④ 宠物归属以 `media_asset.tags` 中的宠物名称为业务事实，支持多宠物同时命中；`pet_id` 与 `recognition_confirmed` 保留用于单宠物历史兼容，不产生新的归属表；⑤ 存储配额复用 Phase 0 的 `user_quota_usage` 表（新增 quota_type=`STORAGE_USED`，单位字节），AI 语义检索月配额走 Redis 计数（技术文档 6.2），不建新表。
 
 ### user_tag - 用户标签表（早期已建，Phase 4 启用）
 
@@ -316,7 +319,7 @@ CREATE TABLE IF NOT EXISTS `user_tag` (
 CREATE TABLE IF NOT EXISTS `media_asset` (
   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
   `user_id` BIGINT NOT NULL COMMENT '上传用户ID',
-  `pet_id` BIGINT DEFAULT NULL COMMENT '归属宠物ID（用户指定或AI识别判定，待用户确认）',
+  `pet_id` BIGINT DEFAULT NULL COMMENT '单宠物兼容归属ID，多宠物归属以 tags 中的宠物名称为准',
   `media_type` VARCHAR(16) NOT NULL COMMENT '媒体类型: photo图片/video视频',
   `file_url` VARCHAR(512) NOT NULL COMMENT '对象存储URL',
   `file_name` VARCHAR(255) DEFAULT NULL COMMENT '原始文件名',
@@ -324,10 +327,10 @@ CREATE TABLE IF NOT EXISTS `media_asset` (
   `mime_type` VARCHAR(64) DEFAULT NULL COMMENT 'MIME类型',
   `tags` JSON DEFAULT NULL COMMENT '标签名数组（快照语义，标签定义删除不影响已有素材）',
   `status` VARCHAR(16) NOT NULL DEFAULT 'pending' COMMENT 'AI分析状态: pending待分析/processing分析中/completed已完成/failed失败',
-  `ai_description` VARCHAR(1000) DEFAULT NULL COMMENT 'AI视觉理解描述（qwen-vl生成）',
-  `ai_tags` JSON DEFAULT NULL COMMENT 'AI生成标签（qwen-vl生成）',
+  `ai_description` VARCHAR(1000) DEFAULT NULL COMMENT '历史 AI 描述字段，embedding 链路不生成',
+  `ai_tags` JSON DEFAULT NULL COMMENT '历史 AI 标签字段，embedding 链路不生成',
   `recognition_score` DECIMAL(5,4) DEFAULT NULL COMMENT '宠物识别相似度（cosine 0~1；用户手动指定归属时为NULL）',
-  `recognition_confirmed` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '归属是否已确认（用户上传时指定/AI识别后确认识别/修正归属时置1）',
+  `recognition_confirmed` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '单宠物历史兼容确认标志，新自动匹配不进入待确认流程',
   `taken_at` DATETIME NOT NULL COMMENT '拍摄/发生时间（用户指定，缺省为上传时刻）',
   `error_message` VARCHAR(500) DEFAULT NULL COMMENT '分析失败原因（status=failed时记录）',
   `is_deleted` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',

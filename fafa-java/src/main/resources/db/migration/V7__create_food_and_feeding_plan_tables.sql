@@ -134,15 +134,34 @@ CREATE TABLE IF NOT EXISTS `feeding_plan_item` (
   KEY `idx_feeding_plan_item_plan_time` (`feeding_plan_id`, `meal_time`, `is_deleted`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='喂食计划项';
 
-ALTER TABLE `feeding_record`
-  ADD COLUMN IF NOT EXISTS `feeding_plan_id` BIGINT DEFAULT NULL COMMENT '来源喂食计划ID' AFTER `food_id`,
-  ADD COLUMN IF NOT EXISTS `feeding_plan_item_id` BIGINT DEFAULT NULL COMMENT '来源喂食计划项ID' AFTER `feeding_plan_id`,
-  ADD COLUMN IF NOT EXISTS `planned_at` DATETIME DEFAULT NULL COMMENT '计划时段' AFTER `feeding_plan_item_id`,
-  ADD COLUMN IF NOT EXISTS `food_name_snapshot` VARCHAR(100) DEFAULT NULL COMMENT '食品名称快照' AFTER `planned_at`;
+-- MySQL 8.0 不支持 ADD COLUMN IF NOT EXISTS / CREATE INDEX IF NOT EXISTS（该语法仅 MariaDB 支持），
+-- 以下通过 information_schema 判断 + 动态 SQL 实现幂等，与上方 CREATE TABLE IF NOT EXISTS 保持一致。
+-- feeding_record 补充喂食计划关联字段
+SET @sql = (SELECT IF(COUNT(*)=0, 'ALTER TABLE `feeding_record` ADD COLUMN `feeding_plan_id` BIGINT DEFAULT NULL COMMENT ''来源喂食计划ID'' AFTER `food_id`', 'SELECT 1')
+            FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='feeding_record' AND COLUMN_NAME='feeding_plan_id');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CREATE INDEX IF NOT EXISTS `idx_feeding_record_plan`
-  ON `feeding_record` (`feeding_plan_id`, `planned_at`, `is_deleted`);
-CREATE UNIQUE INDEX IF NOT EXISTS `uk_feeding_record_plan_slot`
-  ON `feeding_record` (`feeding_plan_id`, `feeding_plan_item_id`, `planned_at`, `is_deleted`);
-CREATE INDEX IF NOT EXISTS `idx_feeding_record_food_time`
-  ON `feeding_record` (`pet_id`, `food_id`, `feeding_time`, `is_deleted`);
+SET @sql = (SELECT IF(COUNT(*)=0, 'ALTER TABLE `feeding_record` ADD COLUMN `feeding_plan_item_id` BIGINT DEFAULT NULL COMMENT ''来源喂食计划项ID'' AFTER `feeding_plan_id`', 'SELECT 1')
+            FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='feeding_record' AND COLUMN_NAME='feeding_plan_item_id');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'ALTER TABLE `feeding_record` ADD COLUMN `planned_at` DATETIME DEFAULT NULL COMMENT ''计划时段'' AFTER `feeding_plan_item_id`', 'SELECT 1')
+            FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='feeding_record' AND COLUMN_NAME='planned_at');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'ALTER TABLE `feeding_record` ADD COLUMN `food_name_snapshot` VARCHAR(100) DEFAULT NULL COMMENT ''食品名称快照'' AFTER `planned_at`', 'SELECT 1')
+            FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='feeding_record' AND COLUMN_NAME='food_name_snapshot');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- feeding_record 索引
+SET @sql = (SELECT IF(COUNT(*)=0, 'CREATE INDEX `idx_feeding_record_plan` ON `feeding_record` (`feeding_plan_id`, `planned_at`, `is_deleted`)', 'SELECT 1')
+            FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='feeding_record' AND INDEX_NAME='idx_feeding_record_plan');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'CREATE UNIQUE INDEX `uk_feeding_record_plan_slot` ON `feeding_record` (`feeding_plan_id`, `feeding_plan_item_id`, `planned_at`, `is_deleted`)', 'SELECT 1')
+            FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='feeding_record' AND INDEX_NAME='uk_feeding_record_plan_slot');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'CREATE INDEX `idx_feeding_record_food_time` ON `feeding_record` (`pet_id`, `food_id`, `feeding_time`, `is_deleted`)', 'SELECT 1')
+            FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='feeding_record' AND INDEX_NAME='idx_feeding_record_food_time');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;

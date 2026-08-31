@@ -34,7 +34,7 @@ public class AiTaskProducer {
     private final RocketMQTemplate rocketMQTemplate;
 
     /**
-     * 投递媒体分析任务
+     * 投递媒体 embedding 任务
      *
      * @return 消息 ID（幂等键），投递失败抛出异常由上层决定是否降级为同步调用
      */
@@ -54,10 +54,13 @@ public class AiTaskProducer {
                 .userId(userId)
                 .photoId(photoId)
                 .url(url)
+                .fileUrl(url)
                 .mediaType(mediaType)
                 .tags(tags)
                 .petId(petId)
+                .candidatePetIds(List.of())
                 .takenAt(takenAt)
+                .uploadedAt(LocalDateTime.now())
                 .build();
         try {
             rocketMQTemplate.syncSend(

@@ -31,6 +31,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,7 +45,7 @@ import java.util.stream.Collectors;
  * - 批量上传（OSS 先行 → 配额原子扣减 → 落库 → AFTER_COMMIT 分发 AI 分析）
  * - 确定性检索（不限次）与 AI 语义检索（会员月限额）
  * - 编辑 / 确认归属 / 删除（先删库后删文件四步链路）
- * - AI 分析回调处理（幂等）
+ * - embedding 向量化回调处理（幂等，并追加全部命中的宠物名称标签）
  *
  * @author FaFa Team
  * @since 4.0
@@ -76,6 +80,8 @@ public class MediaApplicationService {
         Long operatorId = getCurrentUserId();
         Long userId = operatorId;
         FaFaProperties.Media mediaConfig = faFaProperties.getMedia();
+        Pet assignedPet = null;
+        List<Long> candidatePetIds = List.of();
 
         if (files == null || files.isEmpty()) {
             throw new BusinessException(ErrorCode.PARAM_INVALID, "上传文件不能为空");
@@ -83,46 +89,86 @@ public class MediaApplicationService {
         if (files.size() > mediaConfig.getBatchMaxCount()) {
             throw new BusinessException(ErrorCode.MEDIA_FILE_COUNT_EXCEEDED);
         }
+
+//        todo member
         if (petId != null) {
             petAccessApplicationService.require(operatorId, petId, PetPermission.CREATE_RECORD);
-            userId = petApplicationService.getPetDomain(petId).getUserId();
+            assignedPet = petApplicationService.getPetDomain(petId);
+            userId = assignedPet.getUserId();
+        } else {
+            List<Pet> userPets = petApplicationService.getUserPetDomains(userId);
+            if (userPets.size() == 1) {
+                assignedPet = userPets.getFirst();
+            } else if (userPets.size() > 1) {
+                candidatePetIds = userPets.stream().map(Pet::getId).toList();
+            }
         }
         LocalDateTime effectiveTakenAt = takenAt != null ? takenAt : LocalDateTime.now();
 
         List<String> uploadedUrls = new ArrayList<>();
         try {
-            // 1. OSS 上传（事务内先行，失败直接终止）
-            List<MediaAsset> assets = new ArrayList<>();
-            long totalSize = 0;
-            for (MultipartFile file : files) {
-                MediaType mediaType = resolveMediaType(file);
-                validateFileSize(file, mediaType, mediaConfig);
-                String url = storageService.upload(file, STORAGE_FOLDER);
-                uploadedUrls.add(url);
-                totalSize += file.getSize();
-
-                assets.add(MediaAsset.create(userId, mediaType, url, file.getOriginalFilename(),
-                        file.getSize(), file.getContentType(), tags, petId, effectiveTakenAt, operatorId, LocalDateTime.now()));
+            // 1. 预校验全部文件（类型与大小，任一不合法立即终止，避免浪费已上传文件）
+            int count = files.size();
+            MediaType[] mediaTypes = new MediaType[count];
+            for (int i = 0; i < count; i++) {
+                MultipartFile file = files.get(i);
+                mediaTypes[i] = resolveMediaType(file);
+                validateFileSize(file, mediaTypes[i], mediaConfig);
             }
 
-            // 2. 存储配额原子增量（失败抛 STORAGE_QUOTA_EXCEEDED → 整批回滚）
+            // 2. 虚拟线程并行上传（对象存储为阻塞 IO，接口耗时由 n 次之和降为最慢一次）
+            String[] urls = new String[count];
+            try (ExecutorService uploadExecutor = Executors.newVirtualThreadPerTaskExecutor()) {
+                List<Future<String>> futures = new ArrayList<>(count);
+                for (MultipartFile file : files) {
+                    futures.add(uploadExecutor.submit(() -> storageService.upload(file, STORAGE_FOLDER)));
+                }
+                for (int i = 0; i < count; i++) {
+                    urls[i] = joinUpload(futures.get(i));
+                    uploadedUrls.add(urls[i]);
+                }
+            }
+
+            // 3. 组装领域对象（顺序与入参一致）
+            List<MediaAsset> assets = new ArrayList<>(count);
+            long totalSize = 0;
+            for (int i = 0; i < count; i++) {
+                MultipartFile file = files.get(i);
+                MediaAsset asset = MediaAsset.create(userId, mediaTypes[i], urls[i], file.getOriginalFilename(),
+                        file.getSize(), file.getContentType(), tags,
+                        assignedPet == null ? null : assignedPet.getId(), effectiveTakenAt,
+                        operatorId, LocalDateTime.now());
+                if (assignedPet != null) {
+                    asset.addTags(List.of(assignedPet.getName()));
+                }
+                assets.add(asset);
+                totalSize += file.getSize();
+            }
+
+            // 4. 存储配额原子增量（失败抛 STORAGE_QUOTA_EXCEEDED → 整批回滚）
             quotaApplicationService.increaseStorage(userId, totalSize);
 
-            // 3. 落库 + 打标联动
+            // 5. 落库 + 打标联动
             List<MediaDTO> result = new ArrayList<>();
-            List<MediaAsset> mediaToAnalyze = new ArrayList<>();
+            List<AnalysisTask> mediaToAnalyze = new ArrayList<>();
             for (MediaAsset asset : assets) {
                 MediaAsset saved = mediaAssetRepository.save(asset);
-                mediaToAnalyze.add(saved);
+                mediaToAnalyze.add(new AnalysisTask(saved, candidatePetIds));
                 result.add(toDTO(saved));
             }
             if (tags != null && !tags.isEmpty()) {
-                userTagRepository.upsertAndTouch(userId, assets.get(0).getTags(), null, LocalDateTime.now());
+                userTagRepository.upsertAndTouch(userId, tags, null, LocalDateTime.now());
             }
 
-            // 4. AFTER_COMMIT 分发照片/视频 AI 分析
+//            如果只有一个宠物就打上一个宠物名称tag
+            if (assignedPet != null) {
+                userTagRepository.upsertAndTouch(userId, List.of(assignedPet.getName()),
+                        TagCategory.PET, LocalDateTime.now());
+            }
+
+            // 6. AFTER_COMMIT 分发照片/视频 AI 分析（虚拟线程异步执行，不阻塞接口返回）
             if (!mediaToAnalyze.isEmpty()) {
-                registerAfterCommit(() -> mediaToAnalyze.forEach(this::dispatchMediaAnalysis));
+                registerAfterCommit(() -> dispatchAnalysisAsync(mediaToAnalyze));
             }
 
             log.info("素材上传成功: userId={}, count={}, totalSize={}", userId, files.size(), totalSize);
@@ -141,13 +187,17 @@ public class MediaApplicationService {
     public PageDTO<MediaDTO> search(Long petId, List<String> tags, LocalDate startDate,
                                     LocalDate endDate, int page, int size) {
         Long userId = getCurrentUserId();
+        String petTagName = null;
         if (petId != null) {
             petAccessApplicationService.require(userId, petId, PetPermission.READ_RECORD);
-            userId = petApplicationService.getPetDomain(petId).getUserId();
+            Pet pet = petApplicationService.getPetDomain(petId);
+            userId = pet.getUserId();
+            petTagName = pet.getName();
         }
         int offset = (page - 1) * size;
-        List<MediaAsset> assets = mediaAssetRepository.search(userId, petId, tags, startDate, endDate, offset, size);
-        long total = mediaAssetRepository.countSearch(userId, petId, tags, startDate, endDate);
+        List<MediaAsset> assets = mediaAssetRepository.search(userId, petTagName, tags,
+                startDate, endDate, offset, size);
+        long total = mediaAssetRepository.countSearch(userId, petTagName, tags, startDate, endDate);
         return PageDTO.of(assets.stream().map(this::toDTO).toList(), total, page, size);
     }
 
@@ -182,11 +232,25 @@ public class MediaApplicationService {
         // 1. 配额获取（VIP 不限；普通用户 INCR 超限抛 AI_SEARCH_QUOTA_EXCEEDED）
         quotaApplicationService.tryAcquireAiSearch(userId);
 
+        Long resolvedPetId = command.petId();
+        List<SemanticSearchGateway.PetCandidate> petCandidates = List.of();
+        if (resolvedPetId == null) {
+            List<Pet> userPets = petApplicationService.getUserPetDomains(userId);
+            if (userPets.size() == 1) {
+                // 单宠物无需调用大模型做名称匹配，直接作为检索条件。
+                resolvedPetId = userPets.getFirst().getId();
+            } else if (userPets.size() > 1) {
+                petCandidates = userPets.stream()
+                        .map(pet -> new SemanticSearchGateway.PetCandidate(pet.getId(), pet.getName()))
+                        .toList();
+            }
+        }
+
         List<SemanticSearchGateway.SearchHit> hits;
         try {
             // 2. 网关检索
-            hits = semanticSearchGateway.search(userId, command.query(), command.petId(),
-                    command.startDate(), command.endDate(), limit);
+            hits = semanticSearchGateway.search(userId, command.query(), resolvedPetId,
+                    petCandidates, command.startDate(), command.endDate(), limit);
         } catch (Exception ex) {
             // 网关失败：回滚本次计数（失败请求不占额度）
             quotaApplicationService.releaseAiSearch(userId);
@@ -242,7 +306,9 @@ public class MediaApplicationService {
         MediaAsset asset = loadOwnedMedia(id);
         asset.requestAnalysis(LocalDateTime.now());
         MediaAsset saved = mediaAssetRepository.save(asset);
-        registerAfterCommit(() -> dispatchMediaAnalysis(saved));
+        List<Long> candidatePetIds = candidatePetIdsFor(saved);
+        registerAfterCommit(() -> Thread.ofVirtual().name("media-analysis-", 0)
+                .start(() -> dispatchMediaAnalysis(saved, candidatePetIds)));
         return toDTO(saved);
     }
 
@@ -276,10 +342,16 @@ public class MediaApplicationService {
     @Transactional
     public MediaDTO confirmPet(Long id, ConfirmPetCommand command) {
         MediaAsset asset = loadOwnedMedia(id);
+        Pet pet = null;
         if (command.petId() != null) {
-            petApplicationService.checkPetOwnership(command.petId());
+            pet = petApplicationService.checkPetOwnership(command.petId());
         }
         asset.confirmPet(command.petId());
+        if (pet != null) {
+            asset.addTags(List.of(pet.getName()));
+            userTagRepository.upsertAndTouch(asset.getUserId(), List.of(pet.getName()),
+                    TagCategory.PET, LocalDateTime.now());
+        }
         return toDTO(mediaAssetRepository.save(asset));
     }
 
@@ -297,20 +369,21 @@ public class MediaApplicationService {
 
         String fileUrl = asset.getFileUrl();
         Long mediaId = asset.getId();
-        registerAfterCommit(() -> {
+        registerAfterCommit(() -> Thread.ofVirtual().name("media-cleanup-", 0).start(() -> {
             try {
                 storageService.delete(fileUrl);
             } catch (Exception ex) {
                 log.error("删除 OSS 对象失败（不阻断）: mediaId={}, url={}", mediaId, fileUrl, ex);
             }
             aiTaskDispatcher.deleteMediaVector(mediaId);
-        });
+        }));
 
         log.info("素材删除成功: mediaId={}, userId={}", id, asset.getUserId());
     }
 
     /**
-     * AI 分析回调处理（幂等：不存在/已删 → MEDIA_NOT_FOUND；已终态跳过）
+     * embedding 回调处理（幂等：不存在/已删 → MEDIA_NOT_FOUND；已终态跳过）。
+     * Python 返回的所有达阈值宠物都转换为名称标签，MySQL media_asset.tags 是业务事实来源。
      */
     @Transactional
     public void handleAnalysisCallback(PhotoAnalysisCallback callback) {
@@ -318,9 +391,32 @@ public class MediaApplicationService {
                 .filter(a -> !a.isDeleted())
                 .orElseThrow(() -> new BusinessException(ErrorCode.MEDIA_NOT_FOUND));
 
+        if (asset.getStatus().isTerminal()) {
+            return;
+        }
+
         if (callback.success()) {
-            asset.markAnalysisCompleted(callback.description(), callback.aiTags(),
-                    callback.recognizedPetId(), callback.recognitionScore());
+            Map<Long, Pet> petsById = petApplicationService.getUserPetDomains(asset.getUserId()).stream()
+                    .collect(Collectors.toMap(Pet::getId, Function.identity()));
+            List<Long> recognizedPetIds = callback.recognizedPetIds() == null
+                    ? List.of()
+                    : callback.recognizedPetIds().stream()
+                    .filter(java.util.Objects::nonNull)
+                    .distinct()
+                    .filter(petsById::containsKey)
+                    .toList();
+            List<String> petNames = recognizedPetIds.stream()
+                    .map(petsById::get)
+                    .map(Pet::getName)
+                    .toList();
+
+            if (!asset.markVectorizationCompleted(recognizedPetIds, callback.recognitionScore(), LocalDateTime.now())) {
+                return;
+            }
+            asset.addTags(petNames);
+            if (!petNames.isEmpty()) {
+                userTagRepository.upsertAndTouch(asset.getUserId(), petNames, TagCategory.PET, LocalDateTime.now());
+            }
         } else {
             asset.markAnalysisFailed(callback.errorMessage());
         }
@@ -386,20 +482,60 @@ public class MediaApplicationService {
         }
     }
 
-    /** 视频使用预签名 URL，避免百炼无法访问私有对象存储；照片仍由 Python 转传图片 Base64。 */
-    private void dispatchMediaAnalysis(MediaAsset asset) {
+    /** 视频使用预签名 URL，永久 OSS 地址单独传递并写入 Qdrant。 */
+    private void dispatchMediaAnalysis(MediaAsset asset, List<Long> candidatePetIds) {
         try {
             String analysisUrl = asset.getMediaType() == MediaType.VIDEO
                     ? storageService.generatePresignedUrl(
                     asset.getFileUrl(), faFaProperties.getAi().getMediaUrlExpireSeconds())
                     : asset.getFileUrl();
             aiTaskDispatcher.dispatchMediaAnalysis(
-                    asset.getId(), asset.getUserId(), analysisUrl, asset.getMediaType().getCode(),
-                    asset.getTags(), asset.getPetId(), asset.getTakenAt());
+                    asset.getId(), asset.getUserId(), asset.getFileUrl(), analysisUrl,
+                    asset.getMediaType().getCode(), asset.getTags(), asset.getPetId(),
+                    candidatePetIds, asset.getTakenAt(), asset.getCreatedAt());
         } catch (Exception ex) {
             log.error("素材 AI 分析地址准备失败: mediaId={}, mediaType={}",
                     asset.getId(), asset.getMediaType(), ex);
         }
+    }
+
+    /**
+     * 等待并行上传结果，失败时还原原始异常抛给调用方
+     */
+    private String joinUpload(Future<String> future) {
+        try {
+            return future.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("素材上传被中断", e);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            if (cause instanceof RuntimeException runtimeEx) {
+                throw runtimeEx;
+            }
+            throw new IllegalStateException("素材上传失败", cause);
+        }
+    }
+
+    /**
+     * 异步分发素材 AI 分析（虚拟线程执行，避免同步 HTTP 调用阻塞上传接口返回）
+     */
+    private void dispatchAnalysisAsync(List<AnalysisTask> mediaToAnalyze) {
+        Thread.ofVirtual().name("media-analysis-", 0).start(() ->
+                mediaToAnalyze.forEach(task -> dispatchMediaAnalysis(task.asset(), task.candidatePetIds())));
+    }
+
+    /** 多宠物上传时把当前用户的全部有效宠物作为 Python 匹配候选。 */
+    private List<Long> candidatePetIdsFor(MediaAsset asset) {
+        if (asset.getPetId() != null) {
+            return List.of();
+        }
+        return petApplicationService.getUserPetDomains(asset.getUserId()).stream()
+                .map(Pet::getId)
+                .toList();
+    }
+
+    private record AnalysisTask(MediaAsset asset, List<Long> candidatePetIds) {
     }
 
     /**

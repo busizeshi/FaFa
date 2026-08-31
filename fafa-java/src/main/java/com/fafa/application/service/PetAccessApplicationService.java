@@ -22,7 +22,9 @@ import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.Set;
 
-/** 宠物空间统一授权入口，所有协同接口和后续跨模块改造复用此服务。 */
+/**
+ * 宠物空间统一授权入口，所有协同接口和后续跨模块改造复用此服务。
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -34,18 +36,22 @@ public class PetAccessApplicationService {
 
     public PetAccessDecision currentAccess(Long operatorId, Long petId) {
         Pet pet = petRepository.findById(petId).orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
-        if (pet.getUserId().equals(operatorId)) return ownerDecision(petId, operatorId);
+
+//        主人拥有一切权力
+        if (pet.getUserId().equals(operatorId))
+            return ownerDecision(petId, operatorId);
         if (!properties.getCollaboration().isEnabled()) {
             return denied(petId, operatorId, "none", "unavailable", "协同功能未开放");
         }
-
         PetMember member = memberRepository.findByPetIdAndUserId(petId, operatorId).orElse(null);
-        if (member == null) return denied(petId, operatorId, "none", "missing", "成员不存在");
+        if (member == null)
+            return denied(petId, operatorId, "none", "missing", "成员不存在");
         LocalDateTime now = LocalDateTime.now();
         if (!member.isActiveAt(now)) {
             boolean expired = member.getRole() == PetMemberRole.CAREGIVER
                     && member.getStatus() == PetMemberStatus.ACTIVE;
-            if (expired) expireMember(member, now);
+            if (expired)
+                expireMember(member, now);
             String status = expired
                     ? PetMemberStatus.EXPIRED.getCode() : member.getStatus().getCode();
             String reason = expired ? "临时照护权限已过期" : "成员关系不可用";
@@ -56,22 +62,28 @@ public class PetAccessApplicationService {
     }
 
     public void require(Long operatorId, Long petId, PetPermission permission) {
+
+//        非主人且非协同
         if (!properties.getCollaboration().isEnabled() && !isOwner(operatorId, petId)) {
             throw new BusinessException(ErrorCode.COLLABORATION_FEATURE_UNAVAILABLE);
         }
         PetAccessDecision decision = currentAccess(operatorId, petId);
-        if (decision.has(permission)) return;
-        if ("expired".equals(decision.status())) throw new BusinessException(ErrorCode.COLLABORATION_CAREGIVER_EXPIRED);
+        if (decision.has(permission))
+            return;
+        if ("expired".equals(decision.status()))
+            throw new BusinessException(ErrorCode.COLLABORATION_CAREGIVER_EXPIRED);
         throw new BusinessException(ErrorCode.COLLABORATION_PERMISSION_DENIED);
     }
 
     public void requireOwner(Long operatorId, Long petId) {
         Pet pet = petRepository.findById(petId).orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
-        if (!pet.getUserId().equals(operatorId)) throw new BusinessException(ErrorCode.COLLABORATION_MEMBER_MANAGEMENT_FORBIDDEN);
+        if (!pet.getUserId().equals(operatorId))
+            throw new BusinessException(ErrorCode.COLLABORATION_MEMBER_MANAGEMENT_FORBIDDEN);
     }
 
     public void requireCollaborationEnabled() {
-        if (!properties.getCollaboration().isEnabled()) throw new BusinessException(ErrorCode.COLLABORATION_FEATURE_UNAVAILABLE);
+        if (!properties.getCollaboration().isEnabled())
+            throw new BusinessException(ErrorCode.COLLABORATION_FEATURE_UNAVAILABLE);
     }
 
     private boolean isOwner(Long userId, Long petId) {

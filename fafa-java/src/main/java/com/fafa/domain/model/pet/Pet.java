@@ -56,7 +56,7 @@ public class Pet {
      */
     public static Pet register(Long userId, String name, PetType type, String breed,
                                Gender gender, LocalDate birthDate, boolean neutered,
-                               LocalDate adoptDate) {
+                               LocalDate adoptDate,BigDecimal weight) {
         if (userId == null || userId <= 0) {
             throw new IllegalArgumentException("User ID is required");
         }
@@ -71,7 +71,7 @@ public class Pet {
         }
 
         return new Pet(null, userId, name, type, breed, gender, birthDate, 
-                      neutered, adoptDate, null, null, null, null, 0, false);
+                      neutered, adoptDate, weight, null, null, null, 0, false);
     }
 
     /**

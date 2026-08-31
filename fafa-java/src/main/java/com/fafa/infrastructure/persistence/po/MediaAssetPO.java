@@ -23,7 +23,7 @@ public class MediaAssetPO {
 
     private Long operatorId;
 
-    /** 归属宠物ID（用户指定或AI识别判定，待用户确认） */
+    /** 单宠物兼容归属ID；多宠物归属以 tags 中的宠物名称为准 */
     private Long petId;
 
     /** 媒体类型: photo/video */
@@ -41,12 +41,12 @@ public class MediaAssetPO {
     /** 标签名数组（JSON 文本） */
     private String tags;
 
-    /** AI分析状态: pending/processing/completed/failed/skipped */
+    /** embedding 处理状态: pending/processing/completed/failed/skipped */
     private String status;
 
     private String aiDescription;
 
-    /** AI生成标签（JSON 文本） */
+    /** 历史 AI 标签字段（当前 embedding 链路不生成，JSON 文本） */
     private String aiTags;
 
     /** 宠物识别相似度（cosine 0~1；手动指定归属时为 NULL） */

@@ -99,25 +99,53 @@ CREATE TABLE IF NOT EXISTS `reminder_notification_delivery` (
   KEY `idx_reminder_delivery_pet` (`pet_id`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='共享提醒成员投递幂等记录';
 
-ALTER TABLE `medical_visit`
-  ADD COLUMN IF NOT EXISTS `operator_id` BIGINT DEFAULT NULL COMMENT '实际操作人' AFTER `pet_id`;
-ALTER TABLE `medication_plan`
-  ADD COLUMN IF NOT EXISTS `operator_id` BIGINT DEFAULT NULL COMMENT '实际操作人' AFTER `pet_id`;
-ALTER TABLE `media_asset`
-  ADD COLUMN IF NOT EXISTS `operator_id` BIGINT DEFAULT NULL COMMENT '实际上传/操作人' AFTER `pet_id`;
-ALTER TABLE `food_card`
-  ADD COLUMN IF NOT EXISTS `operator_id` BIGINT DEFAULT NULL COMMENT '确认或维护人' AFTER `pet_id`;
-ALTER TABLE `food_transition_plan`
-  ADD COLUMN IF NOT EXISTS `operator_id` BIGINT DEFAULT NULL COMMENT '实际操作人' AFTER `pet_id`;
-ALTER TABLE `feeding_plan`
-  ADD COLUMN IF NOT EXISTS `operator_id` BIGINT DEFAULT NULL COMMENT '实际操作人' AFTER `pet_id`;
-ALTER TABLE `expense_record`
-  ADD COLUMN IF NOT EXISTS `operator_id` BIGINT DEFAULT NULL COMMENT '实际操作人' AFTER `pet_id`;
-ALTER TABLE `pet_report`
-  ADD COLUMN IF NOT EXISTS `operator_id` BIGINT DEFAULT NULL COMMENT '手动生成或确认人，系统生成可为空' AFTER `pet_id`;
-ALTER TABLE `content_draft`
-  ADD COLUMN IF NOT EXISTS `operator_id` BIGINT DEFAULT NULL COMMENT '手动生成或编辑人' AFTER `pet_id`;
+-- MySQL 8.0 不支持 ADD COLUMN IF NOT EXISTS / CREATE INDEX IF NOT EXISTS（该语法仅 MariaDB 支持），
+-- 以下通过 information_schema 判断 + 动态 SQL 实现幂等。
 
-CREATE INDEX IF NOT EXISTS `idx_media_asset_operator` ON `media_asset` (`operator_id`, `created_at`);
-CREATE INDEX IF NOT EXISTS `idx_accessible_operator_medical_visit` ON `medical_visit` (`operator_id`, `updated_at`);
-CREATE INDEX IF NOT EXISTS `idx_accessible_operator_expense` ON `expense_record` (`operator_id`, `updated_at`);
+SET @sql = (SELECT IF(COUNT(*)=0, 'ALTER TABLE `medical_visit` ADD COLUMN `operator_id` BIGINT DEFAULT NULL COMMENT ''实际操作人'' AFTER `pet_id`', 'SELECT 1')
+            FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='medical_visit' AND COLUMN_NAME='operator_id');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'ALTER TABLE `medication_plan` ADD COLUMN `operator_id` BIGINT DEFAULT NULL COMMENT ''实际操作人'' AFTER `pet_id`', 'SELECT 1')
+            FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='medication_plan' AND COLUMN_NAME='operator_id');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'ALTER TABLE `media_asset` ADD COLUMN `operator_id` BIGINT DEFAULT NULL COMMENT ''实际上传/操作人'' AFTER `pet_id`', 'SELECT 1')
+            FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='media_asset' AND COLUMN_NAME='operator_id');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'ALTER TABLE `food_card` ADD COLUMN `operator_id` BIGINT DEFAULT NULL COMMENT ''确认或维护人'' AFTER `pet_id`', 'SELECT 1')
+            FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='food_card' AND COLUMN_NAME='operator_id');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'ALTER TABLE `food_transition_plan` ADD COLUMN `operator_id` BIGINT DEFAULT NULL COMMENT ''实际操作人'' AFTER `pet_id`', 'SELECT 1')
+            FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='food_transition_plan' AND COLUMN_NAME='operator_id');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'ALTER TABLE `feeding_plan` ADD COLUMN `operator_id` BIGINT DEFAULT NULL COMMENT ''实际操作人'' AFTER `pet_id`', 'SELECT 1')
+            FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='feeding_plan' AND COLUMN_NAME='operator_id');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'ALTER TABLE `expense_record` ADD COLUMN `operator_id` BIGINT DEFAULT NULL COMMENT ''实际操作人'' AFTER `pet_id`', 'SELECT 1')
+            FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='expense_record' AND COLUMN_NAME='operator_id');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'ALTER TABLE `pet_report` ADD COLUMN `operator_id` BIGINT DEFAULT NULL COMMENT ''手动生成或确认人，系统生成可为空'' AFTER `pet_id`', 'SELECT 1')
+            FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='pet_report' AND COLUMN_NAME='operator_id');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'ALTER TABLE `content_draft` ADD COLUMN `operator_id` BIGINT DEFAULT NULL COMMENT ''手动生成或编辑人'' AFTER `pet_id`', 'SELECT 1')
+            FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='content_draft' AND COLUMN_NAME='operator_id');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'CREATE INDEX `idx_media_asset_operator` ON `media_asset` (`operator_id`, `created_at`)', 'SELECT 1')
+            FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='media_asset' AND INDEX_NAME='idx_media_asset_operator');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'CREATE INDEX `idx_accessible_operator_medical_visit` ON `medical_visit` (`operator_id`, `updated_at`)', 'SELECT 1')
+            FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='medical_visit' AND INDEX_NAME='idx_accessible_operator_medical_visit');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = (SELECT IF(COUNT(*)=0, 'CREATE INDEX `idx_accessible_operator_expense` ON `expense_record` (`operator_id`, `updated_at`)', 'SELECT 1')
+            FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='expense_record' AND INDEX_NAME='idx_accessible_operator_expense');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;

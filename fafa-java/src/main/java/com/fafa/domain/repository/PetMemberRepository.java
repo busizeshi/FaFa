@@ -8,10 +8,16 @@ import java.util.Optional;
 
 public interface PetMemberRepository {
     PetMember save(PetMember member);
+
     Optional<PetMember> findById(Long memberId);
+
     Optional<PetMember> findByPetIdAndUserId(Long petId, Long userId);
+
     Optional<PetMember> findForUpdateByPetIdAndUserId(Long petId, Long userId);
+
     List<PetMember> findByPetId(Long petId);
+
     int countActiveByPetId(Long petId, LocalDateTime now);
+
     void expireDue(LocalDateTime now);
 }

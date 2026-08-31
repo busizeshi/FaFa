@@ -20,6 +20,7 @@ class Purpose(str, Enum):
 
     CHAT_LIGHT = "chat_light"            # 轻量对话 / 意图识别 / 标签生成
     CHAT_DEEP = "chat_deep"              # 复杂推理 / Agent 编排 / 报告生成
+    MEDIA_QUERY = "media_query"          # 素材检索时间与宠物名称结构化抽取
     VISION = "vision"                    # 图像理解（照片描述、包装识别、病历 OCR）
     EMBED_MULTIMODAL = "embed_multimodal"  # 多模态嵌入（照片与三视图，1024 维）
     EMBED_TEXT = "embed_text"            # 文本嵌入（事件、日记）
@@ -36,6 +37,7 @@ def _model_name(purpose: Purpose) -> str:
     mapping = {
         Purpose.CHAT_LIGHT: settings.model_chat_light,
         Purpose.CHAT_DEEP: settings.model_chat_deep,
+        Purpose.MEDIA_QUERY: settings.model_media_query,
         Purpose.VISION: settings.model_vision,
         Purpose.EMBED_MULTIMODAL: settings.model_embed_multimodal,
         Purpose.EMBED_TEXT: settings.model_embed_text,

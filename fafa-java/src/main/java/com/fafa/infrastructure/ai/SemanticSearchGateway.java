@@ -26,7 +26,15 @@ public interface SemanticSearchGateway {
      * @return 命中结果（mediaId + score，按相关度降序）
      */
     List<SearchHit> search(Long userId, String query, Long petId,
+                           List<PetCandidate> petCandidates,
                            LocalDate startDate, LocalDate endDate, int limit);
+
+    /**
+     * 多宠物检索时供 Python 进行名称模糊匹配的受限候选集。
+     * 宠物 ID 仅能从该列表中选择，避免模型输出越权的过滤条件。
+     */
+    record PetCandidate(Long petId, String name) {
+    }
 
     /**
      * 检索命中项

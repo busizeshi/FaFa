@@ -12,13 +12,13 @@ import java.util.Objects;
 /**
  * 媒体素材（聚合根）
  *
- * 一行 = 一个照片或视频素材 + AI 分析状态 + 宠物归属识别。
+ * 一行 = 一个照片或视频素材 + 向量化状态 + 宠物归属标签。
  *
  * 业务规则（见 phase4-implementation-plan.md 4.2）：
- * 1. photo/video 落库 status=pending（等 AI 回调）
- * 2. tags 为标签名快照：去重去空、≤10 个、单个 ≤32 字符；标签定义删除不影响快照
+ * 1. photo/video 落库 status=pending（等 embedding 回调）
+ * 2. 用户提交的 tags 去重去空、≤10 个；自动追加的宠物名称不受总数上限影响
  * 3. 上传指定 petId → recognitionConfirmed=true、recognitionScore=null（用户明确归属）
- * 4. AI 识别归属回填仅当「petId 为空且未确认」；用户已指定归属不覆盖
+ * 4. 多宠物识别结果以宠物名称 tag 为准；单个匹配结果可兼容性回填 petId
  * 5. 已终态（completed/failed/skipped）时重复回调幂等跳过
  *
  * @author FaFa Team
@@ -27,17 +27,17 @@ import java.util.Objects;
 @Getter
 public class MediaAsset {
 
-    /** 素材标签数量上限 */
+    /** 用户手工提交的素材标签数量上限；自动宠物标签不受此限制 */
     public static final int MAX_TAG_COUNT = 10;
     /** 单个标签最大长度（素材 tags 快照口径） */
     public static final int MAX_TAG_LENGTH = 32;
-    /** AI 描述最大长度 */
+    /** 历史 AI 描述字段最大长度（当前 embedding 链路不生成描述） */
     public static final int MAX_AI_DESCRIPTION_LENGTH = 1000;
 
     private Long id;
     private final Long userId;
     private final Long operatorId;
-    /** 当前归属宠物（可空；识别回填待确认 / 用户指定即确认） */
+    /** 单宠物兼容字段；多宠物归属以 tags 中的宠物名称为准 */
     private Long petId;
     private final MediaType mediaType;
     private final String fileUrl;
@@ -148,11 +148,12 @@ public class MediaAsset {
     }
 
     /**
-     * AI 分析回调成功
+     * 历史视觉分析回调兼容入口；新的 embedding 回调使用 markVectorizationCompleted。
      *
      * 幂等：已终态直接跳过。识别归属仅在「petId 为空且未确认」时回填（confirmed 保持 false 待确认）；
      * 用户已指定归属则只更新相似度，不覆盖归属。
      */
+    @Deprecated
     public void markAnalysisCompleted(String description, List<String> aiTags,
                                       Long recognizedPetId, BigDecimal score) {
         if (status.isTerminal()) {
@@ -169,6 +170,35 @@ public class MediaAsset {
         if (petId == null && !recognitionConfirmed && recognizedPetId != null) {
             this.petId = recognizedPetId;
         }
+    }
+
+    /**
+     * embedding 向量化完成并返回宠物匹配结果。
+     *
+     * <p>多个匹配结果不能写入现有单值 petId 字段，因此由应用层把所有匹配宠物名称追加到 tags；
+     * 只有恰好一个结果时才回填 petId，兼容旧的详情和权限逻辑。方法返回是否实际发生状态变更，
+     * 用于防止重复回调重复增加标签使用次数。</p>
+     */
+    public boolean markVectorizationCompleted(List<Long> recognizedPetIds,
+                                              BigDecimal score,
+                                              LocalDateTime now) {
+        if (status.isTerminal()) {
+            return false;
+        }
+        List<Long> normalizedIds = recognizedPetIds == null
+                ? List.of()
+                : recognizedPetIds.stream().filter(Objects::nonNull).distinct().toList();
+        if (petId == null && !recognitionConfirmed && normalizedIds.size() == 1) {
+            this.petId = normalizedIds.getFirst();
+            this.recognitionConfirmed = true;
+        }
+        this.status = MediaAnalysisStatus.COMPLETED;
+        this.aiDescription = null;
+        this.aiTags = null;
+        this.recognitionScore = score;
+        this.errorMessage = null;
+        this.updatedAt = now;
+        return true;
     }
 
     /**
@@ -215,11 +245,55 @@ public class MediaAsset {
      * 编辑标签与拍摄时间（takenAt 为 null 表示不修改）
      */
     public void updateInfo(List<String> tags, LocalDateTime takenAt, LocalDateTime now) {
-        this.tags = normalizeTags(tags);
+        // 编辑请求可能带回已存在的自动宠物标签，不能因总数超过手工标签上限而丢失归属。
+        this.tags = normalizeTagsWithoutCount(tags);
         if (takenAt != null) {
             this.takenAt = takenAt;
         }
         this.updatedAt = now;
+    }
+
+    /**
+     * 追加系统自动标签（例如宠物名称）。自动标签允许超过用户手工标签的数量上限，仍校验单个长度。
+     */
+    public void addTags(List<String> tags) {
+        List<String> additions = normalizeTagsWithoutCount(tags);
+        if (additions.isEmpty()) {
+            return;
+        }
+        LinkedHashSet<String> merged = new LinkedHashSet<>(this.tags == null ? List.of() : this.tags);
+        merged.addAll(additions);
+        this.tags = new ArrayList<>(merged);
+    }
+
+    /**
+     * 替换素材中的一个标签，供宠物改名后的异步迁移使用。
+     */
+    public boolean replaceTag(String oldTag, String newTag, LocalDateTime now) {
+        if (oldTag == null || newTag == null) {
+            return false;
+        }
+        String oldValue = oldTag.trim();
+        String newValue = newTag.trim();
+        if (oldValue.isEmpty() || newValue.isEmpty() || oldValue.equals(newValue)
+                || this.tags == null || this.tags.isEmpty()) {
+            return false;
+        }
+        boolean changed = false;
+        List<String> replaced = new ArrayList<>();
+        for (String tag : this.tags) {
+            if (oldValue.equals(tag)) {
+                replaced.add(newValue);
+                changed = true;
+            } else {
+                replaced.add(tag);
+            }
+        }
+        if (changed) {
+            this.tags = new ArrayList<>(new LinkedHashSet<>(replaced));
+            this.updatedAt = now;
+        }
+        return changed;
     }
 
     /**
@@ -245,6 +319,14 @@ public class MediaAsset {
      * 标签规范化：去空、trim、去重（保序）、数量与长度校验
      */
     private static List<String> normalizeTags(List<String> tags) {
+        List<String> normalized = normalizeTagsWithoutCount(tags);
+        if (normalized.size() > MAX_TAG_COUNT) {
+            throw new IllegalArgumentException("标签数量不能超过 " + MAX_TAG_COUNT + " 个");
+        }
+        return normalized;
+    }
+
+    private static List<String> normalizeTagsWithoutCount(List<String> tags) {
         if (tags == null || tags.isEmpty()) {
             return new ArrayList<>();
         }
@@ -261,9 +343,6 @@ public class MediaAsset {
                 throw new IllegalArgumentException("标签长度不能超过 " + MAX_TAG_LENGTH + " 字符: " + trimmed);
             }
             normalized.add(trimmed);
-        }
-        if (normalized.size() > MAX_TAG_COUNT) {
-            throw new IllegalArgumentException("标签数量不能超过 " + MAX_TAG_COUNT + " 个");
         }
         return new ArrayList<>(normalized);
     }

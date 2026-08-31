@@ -1,92 +1,176 @@
-/**
- * 首页：后端联调测试
- *
- * 调用受保护接口验证登录态：
- * - GET /user/me     当前用户信息
- * - GET /api/pets    宠物列表
- * - POST /auth/logout 登出
- */
-const { request } = require('../../utils/request');
+const config = require('../../utils/config');
+const { normalizeBaseUrl, request } = require('../../utils/request');
+
+function getConfiguredBaseUrl() {
+  const savedBaseUrl = wx.getStorageSync(config.storageKeys.baseUrl);
+  return normalizeBaseUrl(savedBaseUrl || config.defaultBaseUrl);
+}
+
+function formatResponse(value) {
+  return JSON.stringify(value, null, 2);
+}
+
+function formatLoginRequest(code) {
+  return formatResponse({ code });
+}
 
 Page({
   data: {
-    userId: '',
-    userInfo: null,
-    pets: [],
-    loading: false
+    baseUrl: getConfiguredBaseUrl(),
+    loginPath: config.loginPath,
+    code: '',
+    requestBody: formatLoginRequest(''),
+    token: wx.getStorageSync(config.storageKeys.token) || '',
+    loginResult: null,
+    loginResponseText: '',
+    isLoadingCode: false,
+    isLoggingIn: false,
+    statusType: 'idle',
+    statusText: '准备获取 code',
   },
 
-  onShow() {
-    this.setData({ userId: wx.getStorageSync('userId') || '' });
-    this.loadAll();
+  onLoad() {
+    this.refreshCode();
   },
 
-  loadAll() {
-    if (this.data.loading) return;
-    this.setData({ loading: true });
-
-    const p1 = request({ url: '/user/me' })
-      .then((data) => this.setData({ userInfo: data }))
-      .catch(() => {});
-
-    const p2 = request({ url: '/api/pets' })
-      .then((data) => this.setData({ pets: data || [] }))
-      .catch(() => {});
-
-    Promise.all([p1, p2]).then(() => this.setData({ loading: false }));
+  onBaseUrlInput(event) {
+    this.setData({ baseUrl: event.detail.value });
   },
 
-  refresh() {
-    this.loadAll();
+  saveBaseUrl(event) {
+    const shouldShowToast = typeof event !== 'boolean' || event;
+    const baseUrl = normalizeBaseUrl(this.data.baseUrl);
+    if (!/^https?:\/\//i.test(baseUrl)) {
+      wx.showToast({ title: '请输入 http:// 或 https:// 地址', icon: 'none' });
+      return false;
+    }
+
+    wx.setStorageSync(config.storageKeys.baseUrl, baseUrl);
+    this.setData({ baseUrl });
+    if (shouldShowToast) {
+      wx.showToast({ title: '地址已保存', icon: 'success' });
+    }
+    return true;
   },
 
-  openAssistant() {
-    const petId = this.data.pets.length ? this.data.pets[0].id : '';
-    wx.navigateTo({ url: '/pages/chat/chat?petId=' + petId });
+  refreshCode() {
+    if (this.data.isLoadingCode) {
+      return;
+    }
+
+    this.setData({
+      code: '',
+      requestBody: formatLoginRequest(''),
+      loginResult: null,
+      loginResponseText: '',
+      isLoadingCode: true,
+      statusType: 'loading',
+      statusText: '正在获取新的 code',
+    });
+
+    wx.login({
+      timeout: config.loginTimeoutMs,
+      success: (result) => this.handleLoginCode(result),
+      fail: (error) => this.handleCodeError(error),
+      complete: () => this.setData({ isLoadingCode: false }),
+    });
   },
 
-  openMedical() {
-    const petId = this.data.pets.length ? this.data.pets[0].id : '';
-    wx.navigateTo({ url: '/pages/medical/medical?petId=' + petId });
+  handleLoginCode(result) {
+    if (!result || !result.code) {
+      this.handleCodeError({ errMsg: '微信未返回有效 code' });
+      return;
+    }
+
+    this.setData({
+      code: result.code,
+      requestBody: formatLoginRequest(result.code),
+      statusType: 'success',
+      statusText: 'code 已生成，可以复制或登录',
+    });
   },
 
-  openFood() {
-    const petId = this.data.pets.length ? this.data.pets[0].id : '';
-    wx.navigateTo({ url: '/pages/food/index?petId=' + petId });
+  handleCodeError(error) {
+    const message = error && error.errMsg ? error.errMsg : '获取 code 失败';
+    this.setData({ statusType: 'error', statusText: message });
+    wx.showToast({ title: message, icon: 'none' });
   },
 
-  openFeedingPlan() {
-    const petId = this.data.pets.length ? this.data.pets[0].id : '';
-    wx.navigateTo({ url: '/pages/feeding-plan/today?petId=' + petId });
+  login() {
+    if (!this.data.code || this.data.isLoggingIn || !this.saveBaseUrl(false)) {
+      return;
+    }
+
+    this.setData({
+      isLoggingIn: true,
+      statusType: 'loading',
+      statusText: '正在调用登录接口',
+      loginResponseText: '',
+      loginResult: null,
+    });
+
+    request({
+      url: config.loginPath,
+      method: 'POST',
+      data: { code: this.data.code },
+      useToken: false,
+    }).then((result) => this.handleLoginSuccess(result))
+      .catch((error) => this.handleLoginError(error))
+      .then(() => this.setData({ isLoggingIn: false }));
   },
 
-  openExpense() {
-    const petId = this.data.pets.length ? this.data.pets[0].id : '';
-    wx.navigateTo({ url: '/pages/expense/index?petId=' + petId });
+  handleLoginSuccess(result) {
+    const loginData = result && result.data;
+    if (!result || result.code !== 0 || !loginData || !loginData.token) {
+      throw new Error((result && result.message) || '登录响应格式异常');
+    }
+
+    wx.setStorageSync(config.storageKeys.token, loginData.token);
+    this.setData({
+      token: loginData.token,
+      loginResult: loginData,
+      loginResponseText: formatResponse(result),
+      statusType: 'success',
+      statusText: '登录成功，token 已保存',
+    });
+    wx.showToast({ title: '登录成功', icon: 'success' });
   },
 
-  openReport() {
-    const petId = this.data.pets.length ? this.data.pets[0].id : '';
-    wx.navigateTo({ url: '/pages/report/index?petId=' + petId });
+  handleLoginError(error) {
+    const message = error && error.message ? error.message : '登录请求失败';
+    this.setData({
+      loginResponseText: formatResponse({ error: message }),
+      statusType: 'error',
+      statusText: '登录失败',
+    });
+    wx.showToast({ title: message, icon: 'none' });
   },
 
-  openCollaboration() {
-    const petId = this.data.pets.length ? this.data.pets[0].id : '';
-    wx.navigateTo({ url: '/pages/collaboration/index?petId=' + petId });
+  copyCode() {
+    this.copyText(this.data.code, 'code 已复制');
   },
 
-  openEmergencyCard() {
-    const petId = this.data.pets.length ? this.data.pets[0].id : '';
-    wx.navigateTo({ url: '/pages/emergency-card/index?petId=' + petId });
+  copyLoginBody() {
+    this.copyText(this.data.requestBody, '请求体已复制');
   },
 
-  logout() {
-    request({ url: '/auth/logout', method: 'POST' })
-      .catch(() => {})
-      .then(() => {
-        wx.removeStorageSync('token');
-        wx.removeStorageSync('userId');
-        wx.reLaunch({ url: '/pages/login/login' });
-      });
-  }
+  copyToken() {
+    this.copyText(this.data.token, 'token 已复制');
+  },
+
+  copyAuthorization() {
+    this.copyText(`Authorization: ${this.data.token}`, '请求头已复制');
+  },
+
+  copyText(text, successTitle) {
+    if (!text) {
+      wx.showToast({ title: '暂无可复制内容', icon: 'none' });
+      return;
+    }
+
+    wx.setClipboardData({
+      data: text,
+      success: () => wx.showToast({ title: successTitle, icon: 'success' }),
+    });
+  },
 });

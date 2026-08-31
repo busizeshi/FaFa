@@ -45,7 +45,7 @@ public class ReportFactAssembler {
         facts.put("medications", medicationFacts(petId, start, end));
         facts.put("healthAlerts", healthAlertFacts(petId));
         facts.put("expenses", expenseFacts(userId, petId, start, end));
-        facts.put("media", mediaFacts(userId, petId, start, end));
+        facts.put("media", mediaFacts(userId, petId, pet.getName(), start, end));
         return facts;
     }
 
@@ -130,8 +130,9 @@ public class ReportFactAssembler {
         return map("count", records.size(), "totalAmount", total, "currency", "CNY", "records", records);
     }
 
-    private List<Map<String, Object>> mediaFacts(Long userId, Long petId, LocalDate start, LocalDate end) {
-        return mediaAssetRepository.search(userId, petId, null, start, end, 0,
+    private List<Map<String, Object>> mediaFacts(Long userId, Long petId, String petName,
+                                                 LocalDate start, LocalDate end) {
+        return mediaAssetRepository.search(userId, petName, null, start, end, 0,
                         properties.getReport().getMaxMediaCount()).stream()
                 .map(item -> map("id", item.getId(), "mediaType", item.getMediaType().getCode(),
                         "fileName", item.getFileName(), "takenAt", item.getTakenAt(), "tags", item.getTags(),

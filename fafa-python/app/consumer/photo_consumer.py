@@ -54,16 +54,21 @@ def _handle_message(msg):
             user_id = data["userId"]
             taken_at_value = data.get("takenAt")
             taken_at = datetime.fromisoformat(taken_at_value) if taken_at_value else None
+            uploaded_at_value = data.get("uploadedAt")
+            uploaded_at = datetime.fromisoformat(uploaded_at_value) if uploaded_at_value else None
             logger.info("收到素材分析消息: msg_id={}, media_id={}, user_id={}", msg_id, media_id, user_id)
             asyncio.run(photo_analysis_service.analyze(
                 user_id=user_id,
                 photo_id=media_id,
                 url=data["url"],
+                file_url=data.get("fileUrl") or data.get("file_url"),
                 media_type=data.get("mediaType", "photo"),
                 tags=data.get("tags"),
                 pet_id=data.get("petId"),
+                candidate_pet_ids=data.get("candidatePetIds") or data.get("candidate_pet_ids"),
                 message_id=data.get("messageId") or msg_id,
                 taken_at=taken_at,
+                uploaded_at=uploaded_at,
                 trace_id=data.get("traceId"),
             ))
             logger.info("素材分析消息消费成功: msg_id={}, media_id={}", msg_id, media_id)

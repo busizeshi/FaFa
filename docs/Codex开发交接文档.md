@@ -53,7 +53,7 @@ D:\dev\Java\FaFa\
 
 关键边界：
 - 小程序**只与 fafa-java 通信**；fafa-python 不对外暴露（8000 端口任何环境不得暴露公网）。
-- 重 AI 负载（照片视觉理解、向量化）走 RocketMQ 异步；轻 AI 负载（语义检索、对话）走同步 HTTP。
+- 重 AI 负载（照片/视频向量化、宠物三视图匹配）走 RocketMQ 异步；轻 AI 负载（语义检索、对话）走同步 HTTP。
 - 服务间认证：内网隔离 + `X-Internal-Token` 静态令牌（Java→Python、Python→Java 双向携带）。
 
 ---
@@ -323,7 +323,7 @@ Phase 4 实施文档：[docs/dev/phase4-implementation-plan.md](./dev/phase4-imp
 10. ✅ 回调接线：`CallbackController` 校验内部令牌后调用 `MediaApplicationService.handleAnalysisCallback(...)`，成功/失败回调均幂等处理
 11. ✅ 手动事件 CRUD：`EventRecordApplicationService` / `EventRecordController` 支持 manual 事件创建、编辑、删除，提醒事件只读；tags 联动热度字典
 12. ✅ 宠物集成：创建宠物自动生成宠物名标签；删除宠物清空素材归属但保留素材
-13. ✅ Python 摄入链路：视觉理解、图片下载与 Data URI、Qdrant `fafa_media` upsert、三视图相似度识别、Java 回调重试、语义检索、向量幂等删除、RocketMQ 订阅
+13. ✅ Python 摄入链路：照片/视频 qwen3-vl-embedding、Qdrant `fafa_media` upsert、三视图相似度识别（多宠物全量命中）、Java 回调重试、语义检索、向量幂等删除、RocketMQ 订阅
 14. ✅ Phase 4 领域测试：Java 测试总数 107 个全绿；Python 模块语法检查通过
 
 ### 7.2 Phase 4 待办（按实施文档第 14 节顺序）
@@ -340,7 +340,7 @@ Phase 4 实施文档：[docs/dev/phase4-implementation-plan.md](./dev/phase4-imp
 
 ### 7.3 Phase 4 关键设计决策（接续者先理解再动手）
 
-- **素材归属**：`media_asset` 用「当前归属 `pet_id` + 确认标志 `recognition_confirmed`」双字段。用户上传时指定 → 直接确认；AI 识别出疑似归属 → 待确认（待确认列表）；用户修正/清除 → 置确认状态。识别相似度 `recognition_score`（0~1，用户手动指定为 NULL）。
+- **素材归属**：`media_asset.tags` 是宠物归属业务事实，支持同一媒体追加多个宠物名称；单宠物兼容保留 `pet_id`。多宠物识别不进入待确认流程，全部达到阈值的宠物都写入 tags；宠物改名通过异步任务迁移媒体 tags。
 - **AI 分析状态机**：`pending → processing → completed/failed`，由回调驱动，Java 不维护中间态；重复回调幂等（已终态直接跳过）。照片和视频均进入 AI 分析，视频向量化要求百炼可访问的对象存储 URL。
 - **删除四步链路**：先删库（逻辑删除）→ 释放存储配额 → 删对象存储文件（失败记日志不阻断）→ 删 Qdrant 向量（HTTP 直调幂等）。
 - **配额机制**：存储走 `user_quota_usage` 原子 SQL（`increaseWithinLimit` 带 `used + delta <= limit` 条件防超发）；AI 检索走 Redis `INCR` 计数 + 月 TTL，第 N+1 次超限回滚并抛错；失败请求不占额度（`tryAcquire` 成功后才放行、失败 `release`）。配置在 [FaFaProperties.java](../fafa-java/src/main/java/com/fafa/infrastructure/config/FaFaProperties.java) 的 `fafa.media` / `fafa.quota`（普通用户存储 2GB、AI 检索 10 次/月、VIP 不限、单批 20 个、图片 10MB/视频 50MB）。
@@ -355,21 +355,21 @@ Phase 4 实施文档：[docs/dev/phase4-implementation-plan.md](./dev/phase4-imp
 | Java→Python | `POST /api/photos/search` | 语义检索（query + petId? + 时间范围 + limit） |
 | Java→Python | `DELETE /api/vector/{embedding_id}` | 删除素材向量（point = uuid5("media_{id}")） |
 | 小程序→Java | `POST /api/photos/{id}/reanalyze` | 重置历史素材状态并重新投递照片/视频 AI 分析 |
-| Python→Java | `POST /api/callback/photo-analysis` | 回写结果（media_id/success/description/ai_tags/recognized_pet_id/recognition_score/error_message） |
+| Python→Java | `POST /api/callback/photo-analysis` | 回写结果（media_id/success/recognized_pet_ids/recognition_score/error_message） |
 
 - 消息体字段 camelCase（Java 序列化）；Python 消费端做 camelCase→snake_case 映射。
-- `/api/photos/analyze` 请求字段包含 `user_id/photo_id/url/media_type/tags/pet_id/taken_at/message_id`；`taken_at` 用于 Qdrant 时间范围过滤。
+- `/api/photos/analyze` 请求字段包含 `user_id/photo_id/url/file_url/media_type/tags/pet_id/candidate_pet_ids/taken_at/message_id`；`url` 可为视频临时预签名地址，`file_url` 是写入 Qdrant 的 OSS 永久引用，`taken_at` 用于时间范围过滤。
 - 回调/请求均携带 `X-Internal-Token`。
 - MQ Topic：`fafa_photo_analysis_topic`（tag=photo，消息含 messageId 幂等键）；**既有 `fafa_pet_photo_vectorization` topic 不动**（三视图链路已稳定）。
 
 ### 7.5 关键验收标准（Phase 4，来自实施文档第 15 节）
 
-- 照片上传 → Qdrant `fafa_media` 可查 point → 回调后 MySQL 状态/描述/疑似归属更新
-- 三视图相似度 ≥0.85 判定归属，可确认/修正
+- 照片/视频上传 → Qdrant `fafa_media` 可查 point → 回调后 MySQL 状态/最高匹配分数/宠物名称 tags 更新
+- 三视图相似度达到配置阈值时全部命中宠物都会追加名称 tags，不保留待确认项
 - 语义检索：自然语言 + 宠物/时间过滤叠加；普通用户第 11 次被拒、VIP 不限
 - 存储配额：普通用户超 2GB 上传被拒；删除后配额恢复
-- 视频上传 → qwen-vl 视频描述/标签 + qwen3-vl-embedding 向量化 → 回调 Java → 语义检索正常
-- 宠物创建自动生成宠物名标签；宠物删除素材归属清空、素材保留
+- 视频上传 → qwen3-vl-embedding 向量化 → 回调 Java → 语义检索正常
+- 宠物创建自动生成宠物名标签；同一用户宠物名称唯一；改名异步迁移媒体标签；删除后保留历史 tags 快照、素材保留
 - 手动事件创建/编辑/删除 + tags 联动；提醒生成事件不可改
 
 ### 7.6 Phase 6 已实现内容与联调重点

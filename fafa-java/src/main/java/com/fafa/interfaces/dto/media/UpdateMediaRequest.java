@@ -16,7 +16,7 @@ import java.util.List;
 @Schema(description = "编辑素材请求")
 public class UpdateMediaRequest {
 
-    @Schema(description = "标签列表（全量替换，≤10个、单个≤32字符）", example = "[\"晒太阳\", \"阳台\"]")
+    @Schema(description = "标签列表（全量替换，单个≤32字符；系统自动宠物标签可使总数超过10个）", example = "[\"晒太阳\", \"阳台\"]")
     private List<String> tags;
 
     @Schema(description = "拍摄时间（传 null 表示不修改）", example = "2026-08-20T15:30:00")

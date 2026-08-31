@@ -1,63 +1,41 @@
-/**
- * 请求封装
- *
- * 统一处理：
- * 1. 自动携带登录 token（Authorization 头，与 sa-token 约定一致）
- * 2. 解析后端统一响应结构 Result { code, message, data }：code=0 成功
- * 3. 401 会话失效 → 清理本地登录态并跳转登录页
- * 4. 错误统一 toast 提示
- */
 const config = require('./config');
 
-/**
- * 发起请求
- * @param {Object} options { url, method, data, header }
- * @returns {Promise<any>} resolve 出后端 data 字段
- */
-function request(options) {
-  const token = wx.getStorageSync('token');
+function normalizeBaseUrl(value) {
+  return String(value || '').trim().replace(/\/+$/, '');
+}
+
+function getBaseUrl() {
+  const savedBaseUrl = wx.getStorageSync(config.storageKeys.baseUrl);
+  return normalizeBaseUrl(savedBaseUrl || config.defaultBaseUrl);
+}
+
+function request({ url, method = 'GET', data, useToken = true }) {
+  const token = wx.getStorageSync(config.storageKeys.token);
+  const header = { 'Content-Type': 'application/json' };
+
+  if (useToken && token) {
+    header.Authorization = token;
+  }
 
   return new Promise((resolve, reject) => {
     wx.request({
-      url: config.baseUrl + options.url,
-      method: options.method || 'GET',
-      data: options.data,
-      timeout: 15000,
-      header: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: token } : {}),
-        ...(options.header || {})
-      },
-      success(res) {
-        if (res.statusCode === 200) {
-          const body = res.data;
-          if (body && body.code === 0) {
-            resolve(body.data);
-          } else {
-            const msg = (body && body.message) || '请求失败';
-            wx.showToast({ title: msg, icon: 'none' });
-            reject(new Error(msg));
-          }
-        } else if (res.statusCode === 401) {
-          // 会话失效：清理登录态并回到登录页
-          wx.removeStorageSync('token');
-          wx.removeStorageSync('userId');
-          wx.reLaunch({ url: '/pages/login/login' });
-          const msg = '登录已过期，请重新登录';
-          wx.showToast({ title: msg, icon: 'none' });
-          reject(new Error(msg));
-        } else {
-          const msg = 'HTTP ' + res.statusCode;
-          wx.showToast({ title: msg, icon: 'none' });
-          reject(new Error(msg));
+      url: `${getBaseUrl()}${url}`,
+      method,
+      data,
+      timeout: config.requestTimeoutMs,
+      header,
+      success(response) {
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          reject(new Error(`HTTP ${response.statusCode}`));
+          return;
         }
+        resolve(response.data);
       },
-      fail(err) {
-        wx.showToast({ title: '网络异常，请确认后端服务已启动', icon: 'none' });
-        reject(err);
-      }
+      fail(error) {
+        reject(new Error(error.errMsg || '网络请求失败'));
+      },
     });
   });
 }
 
-module.exports = { request };
+module.exports = { normalizeBaseUrl, request };

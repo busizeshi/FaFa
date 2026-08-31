@@ -8,7 +8,7 @@
 
 ## 1. 阶段目标与范围
 
-Phase 4 实现素材管理闭环与成长档案写入侧补齐：照片/视频上传与对象存储、用户标签体系、AI 视觉理解与向量化（Java↔Python 异步链路首次落地）、宠物个体识别（三视图相似度匹配）、双通道检索（确定性条件 + AI 语义检索）、会员配额机制首次真正落地（存储空间 + AI 检索月次数）。
+Phase 4 实现素材管理闭环与成长档案写入侧补齐：照片/视频上传与对象存储、用户标签体系、embedding 向量化（Java↔Python 异步链路首次落地）、宠物个体识别（三视图相似度匹配）、双通道检索（确定性条件 + AI 语义检索）、会员配额机制首次真正落地（存储空间 + AI 检索月次数）。
 
 **核心价值**：
 - 照片是养宠用户最高频的记录载体，素材库是「宠物数字档案」的视觉底座
@@ -22,8 +22,8 @@ Phase 4 实现素材管理闭环与成长档案写入侧补齐：照片/视频�
 |------|------|------|
 | 素材上传 | 照片批量上传（复用同一组 tags）+ 视频上传（存储型） | `media_asset` 表 + 上传接口 + StorageService 复用 |
 | 标签体系 | 标签 CRUD、打标（上传/编辑）、宠物创建自动建宠物名标签 | `user_tag` 表（早期已建，本阶段启用） |
-| AI 理解 | qwen-vl 生成描述与标签 + qwen3-vl-embedding 向量化入 Qdrant | Python photo_service + Java↔Python 异步链路 |
-| 个体识别 | 素材向量 vs 宠物三视图向量相似度匹配，阈值判定归属，「疑似属于」待确认 | Python 识别 + `recognition_confirmed` 确认流 |
+| AI 处理 | 仅使用 qwen3-vl-embedding 向量化入 Qdrant，不生成视觉描述/AI 标签 | Python photo_service + Java↔Python 异步链路 |
+| 个体识别 | 素材向量 vs 宠物三视图向量相似度匹配，所有达到阈值的宠物名称写入 tags | Python 识别 + Java 标签回写 |
 | 确定性检索 | 宠物/标签/时间范围分页查询（不限次） | media_asset MySQL 查询 |
 | 语义检索 | 自然语言 + 叠加确定性条件，按相关度返回（会员月限额） | Qdrant 向量检索 + Redis 配额计数 |
 | 配额机制 | 存储空间限额（2GB/20GB）+ AI 检索月限额（10 次/不限），用量查询 | `user_quota_usage` 启用 + Redis 计数 |
@@ -32,14 +32,14 @@ Phase 4 实现素材管理闭环与成长档案写入侧补齐：照片/视频�
 
 ### 1.2 本阶段不做什么（明确边界）
 
-- 视频 AI 理解与向量化使用 qwen-vl + qwen3-vl-embedding；视频 URL 需通过对象存储预签名地址提供给百炼，视频视觉描述使用受控抽帧参数
+- 视频向量化使用 qwen3-vl-embedding；视频 URL 通过对象存储预签名地址提供给百炼，不调用 qwen-vl 做视觉描述
 - **不做**事件文本的向量化——技术文档 5.5 仅规划 `fafa_media`/`fafa_pet_profiles` 两个集合，事件文本向量无集合规划且消费方是 Phase 5 Agent，本阶段只做事件 CRUD 与 tags 打通
 - **不做**时间轴聚合后端接口——产品 7.3 明确「前端维护时间轴，自动聚合所有内容」；后端各模块按时间查询接口已齐（照片/事件/记录/提醒历史），无需专门聚合端点
 - **不做**AI 检索结果的 LLM 归纳文案（如「这些照片多拍摄于去年 7-8 月」）——本阶段返回确定性统计摘要（时间分布），LLM 归纳随 Phase 5 对话能力接入
 - **不做**素材备注/相册分组/收藏——产品设计未提及，留待用户反馈
 - **不做**分析失败自动重试接口——失败展示 error_message，用户可重新上传；重试队列依赖 MQ 死信治理，当前规模人工兜底
 - **不做**Qdrant 向量与 MySQL 的一致性对账任务——删除素材时向量删除失败仅记日志，残留 point 在 Java 侧按 `is_deleted` 二次过滤天然免疫；对账任务待数据量上来后评估
-- **不做**宠物重命名时同步更新其名下标签——标签是用户独立资产；宠物名标签仅在创建时自动生成一次，用户可自行管理
+- **不做**新增归属关系表——多宠物归属直接使用 `media_asset.tags` 中的宠物名称；宠物重命名由异步任务迁移媒体标签
 
 ---
 
@@ -55,15 +55,16 @@ Phase 4 实现素材管理闭环与成长档案写入侧补齐：照片/视频�
 - 打标动作（上传素材/编辑素材/创建事件）时，对请求中每个 tag：不存在则创建（count=1），存在则 count+1 并刷新 last_used_at
 - 取消打标**不回退**计数——语义是「历史使用热度」而非精确引用计数（幂等性差但实现零成本，列表排序目的下足够）
 
-### 2.2 宠物归属采用「当前归属 + 确认标志」双字段
+### 2.2 宠物归属以名称标签为业务事实
 
-产品 3.1 要求识别结果以「疑似属于：豆包」展示，用户可确认或修正。设计上不引入独立的 `recognized_pet_id` 字段，而用：
+当前版本不保留“待确认识别”流程，也不新增归属关系表。用户上传未指定宠物时：单宠物直接追加名称标签；多宠物由 Python 对每只宠物的三视图取最高相似度，所有达到配置阈值的宠物都追加名称标签，未达阈值不追加。
 
-- `pet_id`：当前归属（上传时用户指定 → 直接 confirmed=1；或 AI 识别回填 → confirmed=0 待确认）
-- `recognition_confirmed`：归属是否已定（用户确认识别结果或修正归属后置 1）
-- `recognition_score`：识别相似度（用户手动指定归属时为 NULL）
+- `tags`：媒体归属标签，支持同一媒体对应多个宠物；宠物改名异步迁移该用户的媒体标签
+- `pet_id`：保留为单宠物兼容字段，单个自动匹配或用户指定时可回填；多命中时为空
+- `recognition_score`：本次匹配的最高相似度；用户明确指定宠物时为空
+- `recognition_confirmed`：保留历史字段，新自动识别不进入待确认列表
 
-「疑似属于」的展示判定：`pet_id IS NOT NULL AND recognition_confirmed = 0`。修正归属 = confirm 接口传新 petId，确认 = confirm 接口传原 petId，两者同一端点。
+确定性查询按宠物名称 tag 精确匹配；语义查询优先按 Qdrant payload 的 `pet_ids` 数组过滤，并兼容历史 point 的单值 `pet_id`。
 
 ### 2.3 AI 分析状态机：回调驱动，Java 不维护中间态
 
@@ -72,7 +73,7 @@ photo/video: pending（落库即此态）──回调──→ completed / faile
         processing（枚举保留，本阶段不流转，预留 MQ 积压可观测场景）
 ```
 
-前端对 pending 展示「分析中」占位（对齐技术文档 7.4「小程序对待处理状态展示占位描述，回调完成后刷新」）。重复回调幂等：已终态（completed/failed）的素材直接跳过。
+前端对 pending 展示「向量化中」占位，回调完成后刷新。重复回调幂等：已终态（completed/failed）的素材直接跳过；成功回调不产生待确认项。
 
 ### 2.4 分阶段计划文档 Phase 4 仅有概要行（无详细章节）
 
@@ -100,7 +101,7 @@ photo/video: pending（落库即此态）──回调──→ completed / faile
 **Qdrant（无 MySQL 变更，既有集合规划）**：`fafa_media`（素材向量）+ `fafa_pet_profiles`（三视图向量，Phase 1 已用）。素材 point 规则：
 
 - embedding_id：`media_{mediaId}` → point id 由 uuid5 确定性生成（幂等 upsert，沿用 core/qdrant.py 机制）
-- payload：`media_id`、`user_id`、`pet_id`（可空）、`media_type`、`tags`（数组）、`taken_ts`（拍摄时间毫秒时间戳，供范围过滤）
+- payload：`media_id`、`user_id`、`file_url`（OSS 永久引用）、`pet_id`（单宠物兼容字段）、`pet_ids`（多宠物 ID 数组）、`media_type`、`tags`（数组）、`taken_ts`（拍摄时间毫秒时间戳，供范围过滤）
 
 ---
 
@@ -161,9 +162,9 @@ public class MediaAsset {
     public static MediaAsset restore(...);   // 仓储反序列化
 
     // 行为
-    /** AI 分析回调成功：置 completed，回填描述/AI标签；识别归属仅在「用户未确认且无归属」时回填（confirmed 保持 0 待确认） */
-    public void markAnalysisCompleted(String description, List<String> aiTags,
-                                      Long recognizedPetId, BigDecimal score);
+    /** 向量化回调成功：置 completed；Java 根据全部命中的宠物 ID 追加宠物名称 tags */
+    public boolean markVectorizationCompleted(List<Long> recognizedPetIds,
+                                              BigDecimal score, LocalDateTime now);
     /** AI 分析回调失败：置 failed，记录原因（终态，可重复回调幂等跳过） */
     public void markAnalysisFailed(String errorMessage);
     /** 确认/修正归属：confirmed 置 1；petId 传 null 表示清除归属（清除后 confirmed 复位 0） */
@@ -224,10 +225,10 @@ public interface MediaAssetRepository {
     Optional<MediaAsset> findById(Long id);
     MediaAsset save(MediaAsset asset);
     void deleteById(Long id);                                   // 逻辑删除
-    Page<MediaAsset> search(Long userId, Long petId, List<String> tags,
+    Page<MediaAsset> search(Long userId, String petTagName, List<String> tags,
                             LocalDate startDate, LocalDate endDate, Pageable pageable);  // 确定性检索（tags 任一命中）
     List<MediaAsset> findByIds(Long userId, List<Long> ids);    // 语义检索结果批量补全（含归属过滤）
-    List<MediaAsset> findUnconfirmed(Long userId, int limit);   // 待确认列表（pet_id 非空且 confirmed=0）
+    List<MediaAsset> findUnconfirmed(Long userId, int limit);   // 历史兼容查询；新链路不产生待确认项
     int clearPetReference(Long petId);                           // 宠物删除级联（批量置空归属）
 }
 ```
@@ -336,7 +337,7 @@ public void delete(Long id) {
 ```java
 /** 幂等：media 不存在/已删 → 404（Python 记日志）；已终态 → 跳过 */
 public void handleAnalysisCallback(PhotoAnalysisCallback callback) {
-    // success=true  → markAnalysisCompleted(description, aiTags, recognizedPetId, score)
+    // success=true  → markVectorizationCompleted(recognizedPetIds, score, now)，再追加全部宠物名称 tags
     // success=false → markAnalysisFailed(errorMessage)
 }
 ```
@@ -372,8 +373,8 @@ application/dto/quota/   QuotaDTO（storage used/limit + aiSearch used/limit + i
 |------|------|------|
 | POST | `/api/photos/upload` | 批量上传（multipart：files[] + tags(逗号/JSON) + petId? + takenAt?），单批 ≤ 20 |
 | GET | `/api/photos` | 确定性检索：petId?/tags?/startDate?/endDate?/page/size |
-| GET | `/api/photos/pending-recognition` | 识别待确认列表（疑似归属 + score） |
-| GET | `/api/photos/{id}` | 详情（含 AI 描述/识别状态） |
+| GET | `/api/photos/pending-recognition` | 历史待确认列表（兼容接口，新链路不产生） |
+| GET | `/api/photos/{id}` | 详情（含 tags、向量化状态/识别分数） |
 | POST | `/api/photos/{id}/reanalyze` | 重置状态并重新投递照片/视频 AI 分析 |
 | PATCH | `/api/photos/{id}` | 编辑 tags / takenAt |
 | POST | `/api/photos/{id}/confirm-pet` | 确认或修正归属（body petId 可空=清除） |
@@ -404,15 +405,13 @@ application/dto/quota/   QuotaDTO（storage used/limit + aiSearch used/limit + i
 {
   "media_id": 123,
   "success": true,
-  "description": "一只英短蓝猫趴在阳台地板上晒太阳",
-  "ai_tags": ["猫", "晒太阳", "阳台"],
-  "recognized_pet_id": 5,
+  "recognized_pet_ids": [5, 6],
   "recognition_score": 0.91,
   "error_message": null
 }
 ```
 
-契约扩展说明：技术文档 7.3 契约骨架为「photo_id、描述、识别出的 pet_id、tags」，本阶段按「字段级定义随开发细化」补充 `success`/`recognition_score`/`error_message`（失败回调与成功回调同端点，避免双契约）。
+契约说明：成功回调只传全部达到阈值的 `recognized_pet_ids` 和最高 `recognition_score`；Java 负责校验宠物归属并将宠物名称追加到 `media_asset.tags`。`description`/`ai_tags` 不再由该链路生成；失败回调仍使用同一端点。
 
 ---
 
@@ -435,21 +434,21 @@ sequenceDiagram
     Note over J: AFTER_COMMIT
     J->>P: dispatchMediaAnalysis（dev HTTP / prod RocketMQ）
     P-->>J: 202 已受理（立即返回，BackgroundTasks 执行）
-    P->>P: qwen-vl 描述与标签 + qwen3-vl-embedding 1024 维
-    P->>Q: upsert fafa_media（point=uuid5("media_{id}")）
-    P->>Q: query_points fafa_pet_profiles（filter user_id）取最高分
-    P->>P: score ≥ 阈值(0.85) → 判定归属
+    P->>P: qwen3-vl-embedding 1024 维
+    P->>Q: upsert fafa_media（永久 file_url + pet_ids）
+    P->>Q: query_points fafa_pet_profiles（filter user_id + candidate pet_ids）
+    P->>P: 每只宠物三视图取最高分，保留全部 score ≥ 配置阈值
     P->>J: POST /api/callback/photo-analysis
-    J->>J: 更新 status/AI 字段/疑似归属
+    J->>J: 更新 status/score，并追加全部宠物名称 tags
 ```
 
 **AiTaskDispatcher 接口扩展**（既有接口追加，两实现同步）：
 
 ```java
-/** 分发素材 AI 分析任务（照片；视频不调用） */
-void dispatchMediaAnalysis(Long mediaId, Long userId, String url,
+/** 分发素材 embedding 任务（照片/视频） */
+void dispatchMediaAnalysis(Long mediaId, Long userId, String sourceUrl, String analysisUrl,
                            String mediaType, List<String> tags, Long petId,
-                           LocalDateTime takenAt);
+                           List<Long> candidatePetIds, LocalDateTime takenAt);
 /** 删除素材向量（轻量幂等，两环境均 HTTP 直调） */
 void deleteMediaVector(Long mediaId);
 ```
@@ -466,7 +465,7 @@ Java `SemanticSearchGateway`（infrastructure/ai 新增端口 + Http 实现，�
 { "results": [ { "media_id": 123, "score": 0.87 }, { "media_id": 45, "score": 0.79 } ] }
 ```
 
-- Python 侧：qwen3-vl-embedding 融合文本向量（百炼原生多模态接口）→ Qdrant `query_points`（filter: user_id 必带；pet_id/taken_ts 范围可选；score ≥ 0.3 阈值过滤，limit 截断）
+- Python 侧：qwen3-vl-embedding 生成文本向量 → Qdrant `query_points`（filter: user_id 必带；pet_ids/taken_ts 范围可选；score ≥ 0.3 阈值过滤，limit 截断）
 - Java 侧按 media_id 批量补全 + 归属/删除二次过滤（免疫 Qdrant 残留 point）
 
 ### 8.3 失败处理矩阵（对齐技术文档 7.5）
@@ -475,7 +474,7 @@ Java `SemanticSearchGateway`（infrastructure/ai 新增端口 + Http 实现，�
 |------|------|
 | Python analyze 不可用（dev HTTP） | dispatch 记 ERROR 日志不阻断上传；素材停留 pending（不重试，人工兜底） |
 | MQ 分发失败（prod） | 同上记日志；消息未发出即丢失，素材停留 pending |
-| qwen-vl / embedding 调用失败 | Python 内部不回调失败（可重试错误交 MQ 重试；HTTP 场景直接放弃）→ 素材停留 pending；**确定性错误**（图损坏/下载 404）回调 failed |
+| embedding 调用失败 | Python 内部不回调失败（可重试错误交 MQ 重试；HTTP 场景直接放弃）→ 素材停留 pending；**确定性错误**（图损坏/下载 404）回调 failed |
 | 回调 Java 失败 | Python httpx 重试 3 次（间隔 1s/2s/4s）；最终失败仅记日志（Qdrant 已落，业务状态缺失人工补偿） |
 | 语义检索 Python 超时/5xx | Java 网关抛基础设施异常 → AI 检索计数回滚（不占额度）→ 用户重试 |
 | 消息重复投递 | Python 按 media_id 幂等（Qdrant upsert 幂等 + 回调幂等） |
@@ -484,7 +483,7 @@ Java `SemanticSearchGateway`（infrastructure/ai 新增端口 + Http 实现，�
 
 | 模块 | 改造 |
 |------|------|
-| `app/service/photo_service.py` | 实现 `analyze()`：下载校验 → qwen-vl（llm.py VISION，内网 URL 复用 dashscope_client 的 Base64 转传）生成描述+标签 → qwen3-vl-embedding → upsert fafa_media → `query_points` fafa_pet_profiles 识别（阈值配置）→ 回调 Java（重试 3 次） |
+| `app/service/photo_service.py` | 实现 `analyze()`：照片/视频调用 qwen3-vl-embedding → upsert fafa_media（永久 file_url、pet_ids）→ `query_points` fafa_pet_profiles（每只宠物三视图取最高分，返回全部达阈值结果）→ 回调 Java（重试 3 次） |
 | `app/api/photos.py` | `/analyze` 实现：参数校验 → BackgroundTasks 执行 analyze → 202 受理；`/search` 实现：qwen3-vl-embedding 融合文本嵌入 → Qdrant `query_points`（含 pet/time 过滤）→ 返回 media_id+score |
 | `app/api/vector.py` | `DELETE /{embedding_id}` 实现：按 uuid5 point id 删除（幂等，不存在即成功） |
 | `app/consumer/photo_consumer.py` | 订阅扩展：同一 PushConsumer 追加订阅 `fafa_photo_analysis_topic`，handler 按 topic 分发到 photo_service.analyze（消息体 camelCase→snake_case，messageId 判重） |
@@ -557,22 +556,22 @@ fafa:
 |---|------|------|
 | R1 | 单批上传 ≤ 20 个文件；单 photo ≤ 10MB、单 video ≤ 50MB（配置） | 应用 |
 | R2 | 上传 photo/video 落库 status=pending，均进入 AI 分析链路 | 领域 |
-| R3 | 上传指定 petId → recognition_confirmed=1、score=null；未指定 → 等 AI 识别回填（confirmed=0） | 领域 |
+| R3 | 上传指定宠物或用户仅有一只宠物 → 直接追加宠物名称 tag；多宠物才匹配，成功结果直接追加全部命中名称 tag | 应用 |
 | R4 | 存储配额检查+扣减原子（SQL 条件更新）；批量上传整批一事务，配额不足整批失败 | 应用/仓储 |
 | R5 | OSS 上传先于事务；配额/落库失败必须清理已上传 OSS 对象 | 应用 |
 | R6 | AI 分发必须 AFTER_COMMIT（禁事务内分发） | 应用 |
 | R7 | 回调幂等：media 不存在/已删 → 404；已终态跳过 | 应用 |
-| R8 | 识别归属回填仅当「petId 为空且未确认」；用户已指定归属不覆盖 | 领域 |
-| R9 | 识别相似度 ≥ 0.85 判定归属（Python 配置）；未达阈值 recognized_pet_id=null | Python |
+| R8 | 多宠物识别不保留待确认；所有达到阈值的结果都保留，未达阈值不追加宠物 tag | Python/应用 |
+| R9 | 识别相似度 ≥ 配置阈值判定命中；每只宠物三视图取最高分，可同时命中多只 | Python |
 | R10 | 语义检索：VIP 不限；普通 INCR 超限 DECR 回滚；网关失败 DECR 回滚 | 应用 |
 | R11 | 语义检索结果必须 Java 侧二次过滤（user_id + is_deleted） | 仓储 |
 | R12 | 删除顺序：逻辑删库+配额释放（事务）→ AFTER_COMMIT 删 OSS + 删 Qdrant（失败记日志不阻断） | 应用 |
 | R13 | 标签打标：tag 不存在自动创建（≤50 字符）；usage_count+1、last_used_at 刷新；取消打标不回退 | 仓储 |
 | R14 | 标签物理删除不影响 media_asset.tags / event_record.tags 快照 | 仓储 |
-| R15 | 宠物创建成功自动建 category=pet 标签（宠物名）；重命名不联动 | 应用 |
-| R16 | 宠物删除：素材 pet_id 批量置空（confirmed 复位 0，素材保留）；三视图向量清理（既有） | 应用 |
+| R15 | 宠物创建成功自动建 category=pet 标签（宠物名）；同一用户有效宠物名称不得重复；重命名异步迁移媒体 tags | 应用 |
+| R16 | 宠物删除：素材单值 pet_id 批量置空，历史 tags 快照保留；三视图向量清理（既有） | 应用 |
 | R17 | 手动事件 eventDate ≤ 今天；仅 source=manual 可编辑/删除 | 领域 |
-| R18 | tags ≤ 10 个、单个 ≤ 32 字符（素材）/标签名 ≤ 50 字符（user_tag 列宽） | 领域 |
+| R18 | 用户手工 tags ≤ 10 个、单个 ≤ 32 字符；自动追加宠物名称不受总数上限影响 | 领域 |
 | R19 | 确定性检索 tags 多选为 OR 语义（JSON_OVERLAPS） | 仓储 |
 | R20 | 语义检索 score ≥ 0.3 阈值过滤（Python 配置）+ limit ≤ 100 | Python |
 
@@ -603,7 +602,7 @@ EVENT_RECORD_NOT_MODIFIABLE(40011, "提醒生成的事件不可编辑或删除")
 
 | 测试类 | 覆盖点 |
 |--------|--------|
-| MediaAssetTest | create 必填/大小/类型校验；tags 去重去空与上限；photo/video→pending；指定 petId→confirmed=1/score=null；markAnalysisCompleted 回填规则（空归属回填+confirmed 保持 0 / 已确认不覆盖 / 终态幂等）；markFailed；confirmPet 确认/修正/清除（清除后 confirmed 复位）；updateInfo；clearPetReference |
+| MediaAssetTest | create 必填/大小/类型校验；tags 去重去空与上限；photo/video→pending；指定 petId→confirmed=1/score=null；markVectorizationCompleted 多宠物结果/终态幂等；markFailed；confirmPet 确认/修正/清除（清除后 confirmed 复位）；updateInfo；clearPetReference |
 | UserTagTest | create 名称 trim/非空/长度校验；touch 计数与时间刷新；category 枚举合法值 |
 | EventRecordTest（扩展） | createManual 必填/eventDate≤今天/tags 与 materialUrls 上限；updateManual；manual 记录 updateManual/deleteManual 通过、reminder 记录拒绝（NOT_MODIFIABLE） |
 | MediaEnumsTest | MediaType/MediaAnalysisStatus/TagCategory fromCode 与非法值 |
@@ -616,11 +615,11 @@ Python 侧：photo_service 核心编排以联调验证为主（现有仓库无 p
 ## 13. 前端对接要点（信息同步，非本阶段后端交付）
 
 - 上传页：顶部 tags 多选 chips + 新建标签输入框；**批量上传 tags 区只出现一次应用到全部**（产品 3.1）
-- 素材列表：pending 态展示「分析中」占位描述，轮询或下拉刷新等待回调完成
-- 识别结果：待确认列表「疑似属于：豆包（相似度 91%）」→ 确认 / 修正（换宠物）/ 忽略
+- 素材列表：pending 态展示「向量化中」占位，轮询或下拉刷新等待回调完成；完成后展示宠物名称 tags
+- 多宠物识别结果：所有达到阈值的宠物名称均展示为 tags，不进入待确认流程；`confirm-pet` 仅作为历史/手动修正兼容能力
 - 检索页：搜索框自然语言 + 下方筛选 chips（宠物/标签/时间范围）；普通检索不限次，AI 检索次数余量展示（GET /api/quota）
 - 配额触达：40005/40006 温和提示升级会员（不打断操作，产品 1.3）；「我的」页存储/AI 检索用量进度条
-- 视频上传后生成 AI 描述、标签和向量，列表与语义检索均可命中
+- 视频上传后生成 qwen3-vl-embedding 向量，列表按 tags、语义检索均可命中；本链路不生成视觉描述或 AI 标签
 
 ---
 
@@ -660,8 +659,8 @@ Python 侧：photo_service 核心编排以联调验证为主（现有仓库无 p
 - [ ] consumer 扩展订阅 fafa_photo_analysis_topic（Linux 环境验证）
 
 **关键功能（联调）**：
-- [ ] 照片上传 → Qdrant fafa_media 可查 point → 回调后 MySQL 状态/描述/疑似归属更新
-- [ ] 三视图相似度识别：≥0.85 判定归属并可确认/修正
+- [ ] 照片/视频上传 → Qdrant fafa_media 可查 point → 回调后 MySQL 状态/识别分数/宠物名称 tags 更新
+- [ ] 三视图相似度识别：达到可配置阈值的全部宠物均追加名称 tags，不进入待确认流程
 - [ ] 语义检索：自然语言 + 宠物/时间过滤叠加，按相关度返回；普通用户第 11 次被拒、VIP 不限
 - [ ] 存储配额：普通用户超 2GB 上传被拒并提示升级；删除后配额恢复
 - [ ] 视频上传/检索正常，完成 AI 描述、标签、向量化和回调

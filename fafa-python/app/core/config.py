@@ -7,6 +7,7 @@
 
 from functools import lru_cache
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -30,14 +31,14 @@ class Settings(BaseSettings):
     # 模型映射：用途 -> 模型名（换模型只改配置，不改代码）
     model_chat_light: str = "qwen-flash"
     model_chat_deep: str = "qwen-plus"
+    # 素材检索的时间与宠物名称抽取必须使用 qwen-turbo，避免和通用轻量对话耦合。
+    model_media_query: str = "qwen-turbo"
     model_vision: str = "qwen-vl-plus"
     model_embed_multimodal: str = "qwen3-vl-embedding"
     # 纯文本向量模型保留给文本专用场景；素材跨模态检索使用 model_embed_multimodal。
     model_embed_text: str = "text-embedding-v4"
-    # 视频向量化与视觉描述参数；视频 Embedding 由百炼原生接口按 URL 拉取。
+    # 视频 embedding 参数；视频由百炼原生接口按 URL 拉取。
     video_embedding_fps: float = 1.0
-    video_vision_fps: float = 2.0
-    video_vision_inline_max_bytes: int = 7_500_000
 
     # Qdrant 向量数据库
     qdrant_url: str = "http://192.168.1.14:6333"
@@ -59,8 +60,8 @@ class Settings(BaseSettings):
     rocketmq_namesrv: str = ""
 
     # Phase 4 素材分析与语义检索
-    recognition_threshold: float = 0.85
-    search_score_threshold: float = 0.30
+    recognition_threshold: float = Field(default=0.85, ge=0.0, le=1.0)
+    search_score_threshold: float = Field(default=0.30, ge=0.0, le=1.0)
     callback_retry: int = 3
 
     # Phase 7 食品包装识别
