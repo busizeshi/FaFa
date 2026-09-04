@@ -32,47 +32,57 @@ public class FoodCardController {
 
     private final FoodCardApplicationService service;
 
+//    todo 需要增加视觉扫描的接口，用来一键识别宠物粮食外包装解析为食品卡
+
     @PostMapping
-    @Operation(summary = "创建食品卡")
+    @Operation(summary = "创建食品卡", description = "为指定宠物创建一张食品管理卡，食品卡默认处于 active（使用中）状态")
     public Result<FoodCardDTO> create(@Valid @RequestBody SaveFoodCardRequest request) {
         return Result.ok(service.create(toCommand(request)));
     }
 
     @GetMapping
-    @Operation(summary = "查询食品卡列表")
-    public Result<List<FoodCardDTO>> list(@RequestParam Long petId,
-                                          @RequestParam(required = false) String status) {
+    @Operation(summary = "查询食品卡列表", description = "按更新时间倒序返回指定宠物的食品卡列表，逻辑删除的食品卡不会返回")
+    public Result<List<FoodCardDTO>> list(
+            @Parameter(description = "所属宠物ID", required = true, example = "1")
+            @RequestParam Long petId,
+            @Parameter(description = "食品卡状态筛选：active=使用中，archived=已归档；不传表示不按状态筛选", example = "active")
+            @RequestParam(required = false) String status) {
         return Result.ok(service.list(petId, status));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "查询食品卡详情")
-    public Result<FoodCardDTO> get(@Parameter(description = "食品卡ID") @PathVariable Long id) {
+    public Result<FoodCardDTO> get(
+            @Parameter(description = "食品卡ID", required = true, example = "1") @PathVariable Long id) {
         return Result.ok(service.get(id));
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "更新食品卡")
-    public Result<FoodCardDTO> update(@PathVariable Long id,
+    @Operation(summary = "更新食品卡", description = "全量更新食品卡信息，petId 必须与路径中的食品卡所属宠物一致")
+    public Result<FoodCardDTO> update(
+            @Parameter(description = "食品卡ID", required = true, example = "1") @PathVariable Long id,
                                       @Valid @RequestBody SaveFoodCardRequest request) {
         return Result.ok(service.update(id, toCommand(request)));
     }
 
     @PatchMapping("/{id}/archive")
     @Operation(summary = "归档食品卡")
-    public Result<FoodCardDTO> archive(@PathVariable Long id) {
+    public Result<FoodCardDTO> archive(
+            @Parameter(description = "食品卡ID", required = true, example = "1") @PathVariable Long id) {
         return Result.ok(service.archive(id));
     }
 
     @PostMapping("/{id}/activate")
     @Operation(summary = "恢复食品卡")
-    public Result<FoodCardDTO> activate(@PathVariable Long id) {
+    public Result<FoodCardDTO> activate(
+            @Parameter(description = "食品卡ID", required = true, example = "1") @PathVariable Long id) {
         return Result.ok(service.activate(id));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除食品卡", description = "逻辑删除")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(
+            @Parameter(description = "食品卡ID", required = true, example = "1") @PathVariable Long id) {
         service.delete(id);
         return Result.ok();
     }

@@ -10,6 +10,7 @@ import com.fafa.application.service.ExpenseStatisticsApplicationService;
 import com.fafa.common.Result;
 import com.fafa.interfaces.dto.expense.SaveExpenseRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -45,33 +46,37 @@ public class ExpenseController {
 
     @GetMapping
     @Operation(summary = "分页查询开支")
-    public Result<PageDTO<ExpenseDTO>> list(@RequestParam Long petId,
-                                            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    public Result<PageDTO<ExpenseDTO>> list(
+                                            @Parameter(description = "宠物ID", required = true, example = "1") @RequestParam Long petId,
+                                            @Parameter(description = "统计开始日期", required = true, example = "2026-08-01") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                                             LocalDate startDate,
-                                            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                            @Parameter(description = "统计结束日期", required = true, example = "2026-08-31") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                                             LocalDate endDate,
-                                            @RequestParam(required = false) String category,
-                                            @RequestParam(defaultValue = "1") int page,
-                                            @RequestParam(defaultValue = "20") int size) {
+                                            @Parameter(description = "分类过滤条件，可选", example = "food") @RequestParam(required = false) String category,
+                                            @Parameter(description = "页码，从1开始", example = "1") @RequestParam(defaultValue = "1") int page,
+                                            @Parameter(description = "每页记录数", example = "20") @RequestParam(defaultValue = "20") int size) {
         return Result.ok(expenseService.list(petId, startDate, endDate, category, page, size));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "查询开支详情")
-    public Result<ExpenseDTO> get(@PathVariable Long id) {
+    public Result<ExpenseDTO> get(
+            @Parameter(description = "开支记录ID", required = true, example = "1") @PathVariable Long id) {
         return Result.ok(expenseService.get(id));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新手工开支")
-    public Result<ExpenseDTO> update(@PathVariable Long id,
+    public Result<ExpenseDTO> update(
+                                     @Parameter(description = "开支记录ID", required = true, example = "1") @PathVariable Long id,
                                      @Valid @RequestBody SaveExpenseRequest request) {
         return Result.ok(expenseService.update(id, toCommand(request)));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除手工开支")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(
+            @Parameter(description = "开支记录ID", required = true, example = "1") @PathVariable Long id) {
         expenseService.delete(id);
         return Result.ok();
     }
@@ -84,9 +89,10 @@ public class ExpenseController {
 
     @GetMapping("/statistics")
     @Operation(summary = "查询开支统计")
-    public Result<ExpenseStatisticsDTO> statistics(@RequestParam Long petId,
-                                                   @RequestParam(defaultValue = "month") String period,
-                                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    public Result<ExpenseStatisticsDTO> statistics(
+                                                   @Parameter(description = "宠物ID", required = true, example = "1") @RequestParam Long petId,
+                                                   @Parameter(description = "统计周期：month=月，year=年", example = "month") @RequestParam(defaultValue = "month") String period,
+                                                   @Parameter(description = "统计周期锚点日期", required = true, example = "2026-08-31") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                                                    LocalDate anchorDate) {
         return Result.ok(statisticsService.statistics(petId, period, anchorDate));
     }

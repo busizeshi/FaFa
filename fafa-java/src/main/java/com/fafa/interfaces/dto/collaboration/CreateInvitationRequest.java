@@ -9,7 +9,7 @@ import lombok.Data;
 @Schema(description = "创建宠物空间邀请请求")
 public class CreateInvitationRequest {
     @NotBlank(message = "邀请角色不能为空")
-    @Schema(description = "member/caregiver", example = "caregiver")
+    @Schema(description = "邀请角色：member=成员，caregiver=照护者", example = "caregiver")
     private String role;
 
     @Min(value = 1, message = "邀请有效天数必须大于0")

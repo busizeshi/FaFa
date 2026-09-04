@@ -6,6 +6,7 @@ import com.fafa.common.Result;
 import com.fafa.interfaces.dto.food.SaveFoodTransitionRequest;
 import com.fafa.interfaces.dto.food.UpdateFoodReactionRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,33 +38,38 @@ public class FoodTransitionController {
 
     @GetMapping
     @Operation(summary = "查询换粮计划")
-    public Result<List<FoodTransitionDTO>> list(@RequestParam Long petId,
-                                                @RequestParam(required = false) String status) {
+    public Result<List<FoodTransitionDTO>> list(
+                                                @Parameter(description = "宠物ID", required = true, example = "1") @RequestParam Long petId,
+                                                @Parameter(description = "计划状态过滤：draft=草稿，active=进行中，completed=已完成，cancelled=已取消", example = "active") @RequestParam(required = false) String status) {
         return Result.ok(service.list(petId, status));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "查询换粮详情")
-    public Result<FoodTransitionDTO> get(@PathVariable Long id) {
+    public Result<FoodTransitionDTO> get(
+            @Parameter(description = "换粮计划ID", required = true, example = "1") @PathVariable Long id) {
         return Result.ok(service.get(id));
     }
 
     @PutMapping("/{id}/reaction")
     @Operation(summary = "记录每日换粮反应")
-    public Result<FoodTransitionDTO> updateReaction(@PathVariable Long id,
+    public Result<FoodTransitionDTO> updateReaction(
+                                                     @Parameter(description = "换粮计划ID", required = true, example = "1") @PathVariable Long id,
                                                      @Valid @RequestBody UpdateFoodReactionRequest request) {
         return Result.ok(service.updateReaction(id, request));
     }
 
     @PostMapping("/{id}/complete")
     @Operation(summary = "完成换粮计划")
-    public Result<FoodTransitionDTO> complete(@PathVariable Long id) {
+    public Result<FoodTransitionDTO> complete(
+            @Parameter(description = "换粮计划ID", required = true, example = "1") @PathVariable Long id) {
         return Result.ok(service.complete(id));
     }
 
     @PostMapping("/{id}/cancel")
     @Operation(summary = "取消换粮计划")
-    public Result<FoodTransitionDTO> cancel(@PathVariable Long id) {
+    public Result<FoodTransitionDTO> cancel(
+            @Parameter(description = "换粮计划ID", required = true, example = "1") @PathVariable Long id) {
         return Result.ok(service.cancel(id));
     }
 }

@@ -1,6 +1,7 @@
 package com.fafa.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 /**
@@ -11,12 +12,16 @@ import lombok.Getter;
  * @since 1.0
  */
 @Getter
+@Schema(description = "统一接口响应结构")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Result<T> {
 
     /** 业务状态码，0 表示成功，非 0 为错误码 */
+    @Schema(description = "业务状态码，0 表示成功，非 0 表示失败", example = "0")
     private final int code;
+    @Schema(description = "响应消息，通常用于描述本次请求的处理结果", example = "操作成功")
     private final String message;
+    @Schema(description = "业务数据；无业务数据时该字段为空，具体结构由接口定义")
     private final T data;
 
     private Result(int code, String message, T data) {

@@ -125,6 +125,7 @@ public class PetController {
     @Operation(summary = "调整宠物排序", description = "调整宠物展示顺序")
     public Result<Void> adjustSortOrder(
         @Parameter(description = "宠物ID") @PathVariable Long id,
+        @Parameter(description = "展示排序值，数值越小越靠前", required = true, example = "1")
         @RequestParam("sortOrder") Integer sortOrder
     ) {
         petApplicationService.adjustSortOrder(id, sortOrder);

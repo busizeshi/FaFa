@@ -1,5 +1,6 @@
 package com.fafa.application.dto.record;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 /**
@@ -8,8 +9,9 @@ import java.util.List;
  * @author FaFa Team
  * @since 2.0
  */
+@Schema(description = "每日状态维度选项")
 public record DimensionOptionDTO(
-    String code,
-    String label
+    @Schema(description = "选项编码", example = "normal") String code,
+    @Schema(description = "选项名称", example = "正常") String label
 ) {
 }

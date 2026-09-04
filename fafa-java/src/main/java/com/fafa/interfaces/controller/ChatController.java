@@ -36,18 +36,18 @@ public class ChatController {
     @GetMapping("/sessions")
     @Operation(summary = "查询 AI 会话列表")
     public Result<PageDTO<ChatSessionDTO>> listSessions(
-            @RequestParam(required = false) Long petId,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @Parameter(description = "宠物过滤条件；不传表示查询全部会话", example = "1") @RequestParam(required = false) Long petId,
+            @Parameter(description = "页码，从1开始", example = "1") @RequestParam(defaultValue = "1") int page,
+            @Parameter(description = "每页会话数", example = "20") @RequestParam(defaultValue = "20") int size) {
         return Result.ok(chatApplicationService.listSessions(petId, page, size));
     }
 
     @GetMapping("/sessions/{sessionId}/messages")
     @Operation(summary = "查询 AI 会话消息")
     public Result<List<ChatMessageDTO>> listMessages(
-            @PathVariable Long sessionId,
-            @RequestParam(required = false) Long beforeId,
-            @RequestParam(defaultValue = "50") int limit) {
+            @Parameter(description = "会话ID", required = true, example = "1") @PathVariable Long sessionId,
+            @Parameter(description = "消息游标；只返回该消息之前的记录，不传表示从最新消息开始", example = "100") @RequestParam(required = false) Long beforeId,
+            @Parameter(description = "最多返回的消息条数", example = "50") @RequestParam(defaultValue = "50") int limit) {
         return Result.ok(chatApplicationService.listMessages(sessionId, beforeId, limit));
     }
 
@@ -62,7 +62,8 @@ public class ChatController {
 
     @DeleteMapping("/sessions/{sessionId}")
     @Operation(summary = "删除 AI 会话")
-    public Result<Void> deleteSession(@PathVariable Long sessionId) {
+    public Result<Void> deleteSession(
+            @Parameter(description = "会话ID", required = true, example = "1") @PathVariable Long sessionId) {
         chatApplicationService.deleteSession(sessionId);
         return Result.ok();
     }
@@ -70,8 +71,8 @@ public class ChatController {
     @GetMapping("/recommendations")
     @Operation(summary = "查询 AI 推荐问题")
     public Result<RecommendationDTO> recommendations(
-            @RequestParam(required = false) Long petId,
-            @RequestParam(defaultValue = "6") int limit) {
+            @Parameter(description = "宠物过滤条件；不传表示通用推荐", example = "1") @RequestParam(required = false) Long petId,
+            @Parameter(description = "最多返回的推荐问题数", example = "6") @RequestParam(defaultValue = "6") int limit) {
         return Result.ok(chatRecommendationService.getRecommendations(petId, limit));
     }
 }

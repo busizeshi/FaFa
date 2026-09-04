@@ -1,10 +1,12 @@
 package com.fafa.interfaces.controller;
 
+import com.fafa.application.dto.emergency.EmergencyCardDTO;
 import com.fafa.application.dto.emergency.EmergencyProfileDTO;
 import com.fafa.application.service.EmergencyCardApplicationService;
 import com.fafa.common.Result;
 import com.fafa.interfaces.dto.emergency.UpdateEmergencyProfileRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +21,13 @@ public class EmergencyCardController {
 
     @GetMapping("/emergency-profile")
     @Operation(summary = "查询应急资料")
-    public Result<?> getProfile(@PathVariable Long petId) { return Result.ok(emergencyService.getProfile(petId)); }
+    public Result<EmergencyProfileDTO> getProfile(
+            @Parameter(description = "宠物ID", required = true, example = "1") @PathVariable Long petId) { return Result.ok(emergencyService.getProfile(petId)); }
 
     @PutMapping("/emergency-profile")
     @Operation(summary = "更新应急资料")
-    public Result<EmergencyProfileDTO> updateProfile(@PathVariable Long petId,
+    public Result<EmergencyProfileDTO> updateProfile(
+                                                     @Parameter(description = "宠物ID", required = true, example = "1") @PathVariable Long petId,
                                                      @Valid @RequestBody UpdateEmergencyProfileRequest request) {
         return Result.ok(emergencyService.update(petId, new EmergencyProfileDTO(petId, request.getBloodType(), request.getAllergies(),
                 request.getChronicConditions(), request.getEmergencyContactName(), request.getEmergencyContactPhone(),
@@ -33,5 +37,6 @@ public class EmergencyCardController {
 
     @GetMapping("/emergency-card")
     @Operation(summary = "读取应急信息卡")
-    public Result<?> card(@PathVariable Long petId) { return Result.ok(emergencyService.card(petId)); }
+    public Result<EmergencyCardDTO> card(
+            @Parameter(description = "宠物ID", required = true, example = "1") @PathVariable Long petId) { return Result.ok(emergencyService.card(petId)); }
 }

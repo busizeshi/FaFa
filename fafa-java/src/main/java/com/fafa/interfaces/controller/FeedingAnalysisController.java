@@ -4,6 +4,7 @@ import com.fafa.application.dto.feeding.FeedingAnalysisDTO;
 import com.fafa.application.service.FeedingAnalysisApplicationService;
 import com.fafa.common.Result;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -25,10 +26,11 @@ public class FeedingAnalysisController {
 
     @GetMapping
     @Operation(summary = "查询动态喂养分析")
-    public Result<FeedingAnalysisDTO> get(@RequestParam Long petId,
-                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    public Result<FeedingAnalysisDTO> get(
+                                          @Parameter(description = "宠物ID", required = true, example = "1") @RequestParam Long petId,
+                                          @Parameter(description = "分析开始日期", required = true, example = "2026-08-01") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                                           LocalDate startDate,
-                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                          @Parameter(description = "分析结束日期", required = true, example = "2026-08-31") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                                           LocalDate endDate) {
         return Result.ok(service.analyze(petId, startDate, endDate));
     }

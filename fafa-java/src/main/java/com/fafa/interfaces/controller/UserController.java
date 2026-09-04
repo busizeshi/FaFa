@@ -10,6 +10,7 @@ import com.fafa.interfaces.dto.user.UpdateProfileRequest;
 import com.fafa.interfaces.dto.user.UserInfoResponse;
 import com.fafa.interfaces.dto.user.VipInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +54,8 @@ public class UserController {
 
     @Operation(summary = "上传头像", description = "上传用户头像图片")
     @PostMapping("/avatar")
-    public Result<UserInfoResponse> uploadAvatar(@RequestParam("file") MultipartFile file) {
+    public Result<UserInfoResponse> uploadAvatar(
+            @Parameter(description = "用户头像图片文件", required = true) @RequestParam("file") MultipartFile file) {
         UserInfoDTO dto = userApplicationService.uploadAvatar(file);
         return Result.ok(UserAssembler.toUserInfoResponse(dto));
     }
@@ -67,14 +69,16 @@ public class UserController {
 
     @Operation(summary = "升级为会员", description = "开通或续费会员")
     @PostMapping("/vip/upgrade")
-    public Result<UserInfoResponse> upgradeToVip(@RequestParam("days") int days) {
+    public Result<UserInfoResponse> upgradeToVip(
+            @Parameter(description = "会员有效期天数", required = true, example = "30") @RequestParam("days") int days) {
         UserInfoDTO dto = userApplicationService.upgradeToVip(days);
         return Result.ok(UserAssembler.toUserInfoResponse(dto));
     }
 
     @Operation(summary = "续费会员")
     @PostMapping("/vip/renew")
-    public Result<UserInfoResponse> renewVip(@RequestParam("days") int days) {
+    public Result<UserInfoResponse> renewVip(
+            @Parameter(description = "续费会员有效期天数", required = true, example = "30") @RequestParam("days") int days) {
         UserInfoDTO dto = userApplicationService.renewVip(days);
         return Result.ok(UserAssembler.toUserInfoResponse(dto));
     }

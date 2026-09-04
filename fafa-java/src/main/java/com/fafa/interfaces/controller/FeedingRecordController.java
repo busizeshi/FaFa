@@ -39,7 +39,7 @@ public class FeedingRecordController {
     @PutMapping("/{id}")
     @Operation(summary = "修改喂食记录")
     public Result<FeedingRecordDTO> update(
-            @Parameter(description = "记录ID") @PathVariable Long id,
+            @Parameter(description = "记录ID", required = true, example = "1") @PathVariable Long id,
             @Valid @RequestBody SaveFeedingRequest request
     ) {
         return Result.ok(feedingRecordApplicationService.update(id, toCommand(request)));
@@ -47,7 +47,7 @@ public class FeedingRecordController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除喂食记录", description = "逻辑删除")
-    public Result<Void> delete(@Parameter(description = "记录ID") @PathVariable Long id) {
+    public Result<Void> delete(@Parameter(description = "记录ID", required = true, example = "1") @PathVariable Long id) {
         feedingRecordApplicationService.delete(id);
         return Result.ok();
     }
@@ -55,8 +55,8 @@ public class FeedingRecordController {
     @GetMapping
     @Operation(summary = "当天喂食列表", description = "按时间升序")
     public Result<List<FeedingRecordDTO>> listByDate(
-            @Parameter(description = "宠物ID") @RequestParam Long petId,
-            @Parameter(description = "日期") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+            @Parameter(description = "宠物ID", required = true, example = "1") @RequestParam Long petId,
+            @Parameter(description = "日期", required = true, example = "2026-08-20") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
         return Result.ok(feedingRecordApplicationService.listByDate(petId, date));
     }
@@ -64,9 +64,9 @@ public class FeedingRecordController {
     @GetMapping("/range")
     @Operation(summary = "范围列表", description = "按时间升序，范围不超过366天")
     public Result<List<FeedingRecordDTO>> listByRange(
-            @Parameter(description = "宠物ID") @RequestParam Long petId,
-            @Parameter(description = "开始日期") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @Parameter(description = "结束日期") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+            @Parameter(description = "宠物ID", required = true, example = "1") @RequestParam Long petId,
+            @Parameter(description = "开始日期", required = true, example = "2026-08-01") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(description = "结束日期", required = true, example = "2026-08-31") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
         return Result.ok(feedingRecordApplicationService.listByRange(petId, startDate, endDate));
     }

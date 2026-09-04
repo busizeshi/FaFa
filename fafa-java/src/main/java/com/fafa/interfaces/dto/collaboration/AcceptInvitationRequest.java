@@ -9,6 +9,7 @@ import lombok.Data;
 @Schema(description = "接受宠物空间邀请请求")
 public class AcceptInvitationRequest {
     @NotNull(message = "邀请ID不能为空")
+    @Schema(description = "待接受的邀请ID", example = "1")
     private Long invitationId;
 
     @NotBlank(message = "邀请凭证不能为空")

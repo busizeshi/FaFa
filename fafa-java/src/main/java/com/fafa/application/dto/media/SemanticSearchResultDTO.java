@@ -1,5 +1,6 @@
 package com.fafa.application.dto.media;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 /**
@@ -10,8 +11,9 @@ import java.util.List;
  * @author FaFa Team
  * @since 4.0
  */
+@Schema(description = "素材语义检索结果")
 public record SemanticSearchResultDTO(
-    List<MediaDTO> media,
-    String summary
+    @Schema(description = "按相关度降序排列的命中素材") List<MediaDTO> media,
+    @Schema(description = "检索结果摘要") String summary
 ) {
 }

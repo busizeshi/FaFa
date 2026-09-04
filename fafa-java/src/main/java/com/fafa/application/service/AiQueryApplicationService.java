@@ -6,6 +6,7 @@ import com.fafa.common.ErrorCode;
 import com.fafa.domain.model.event.EventRecord;
 import com.fafa.domain.model.food.FoodCard;
 import com.fafa.domain.model.feeding.FeedingPlan;
+import com.fafa.domain.model.feeding.FeedingPlanItem;
 import com.fafa.domain.model.pet.Pet;
 import com.fafa.domain.model.record.*;
 import com.fafa.domain.model.reminder.ReminderCompletion;
@@ -18,8 +19,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 /**
  * Agent 只读数据应用服务。
@@ -119,25 +118,25 @@ public class AiQueryApplicationService {
     }
 
     /** AI 只读查询食品卡，返回字段保持可审计的事实结构。 */
-    public Map<String, Object> getFoodInfo(Long userId, Long petId, String status) {
+    public AiFoodQueryDTO getFoodInfo(Long userId, Long petId, String status) {
         ownedPet(userId, petId);
-        List<Map<String, Object>> records = foodCardRepository.findByUserIdAndPetId(userId, petId, status)
+        List<AiFoodQueryDTO.FoodFactDTO> records = foodCardRepository.findByUserIdAndPetId(userId, petId, status)
                 .stream().map(this::toFoodFact).toList();
-        return Map.of("records", records, "count", records.size());
+        return new AiFoodQueryDTO(records, records.size());
     }
 
     /** AI 只读查询喂食计划。 */
-    public Map<String, Object> getFeedingPlans(Long userId, Long petId, String status) {
+    public AiFeedingPlanQueryDTO getFeedingPlans(Long userId, Long petId, String status) {
         ownedPet(userId, petId);
-        List<Map<String, Object>> records = feedingPlanRepository.findByPetId(userId, petId, status)
+        List<AiFeedingPlanQueryDTO.PlanFactDTO> records = feedingPlanRepository.findByPetId(userId, petId, status)
                 .stream().map(this::toPlanFact).toList();
-        return Map.of("records", records, "count", records.size());
+        return new AiFeedingPlanQueryDTO(records, records.size());
     }
 
     /** AI 只读查询开支事实，不暴露任何写入能力。 */
-    public Map<String, Object> getExpenses(Long userId, Long petId, LocalDate start, LocalDate end) {
+    public AiExpenseQueryDTO getExpenses(Long userId, Long petId, LocalDate start, LocalDate end) {
         List<ExpenseDTO> records = expenseApplicationService.listForUser(userId, petId, start, end);
-        return Map.of("records", records, "count", records.size());
+        return new AiExpenseQueryDTO(records, records.size());
     }
 
     /** AI 只读查询开支统计。 */
@@ -191,30 +190,24 @@ public class AiQueryApplicationService {
     private String code(Vomiting value) { return value == null ? null : value.getCode(); }
     private String code(Urination value) { return value == null ? null : value.getCode(); }
 
-    private Map<String, Object> toFoodFact(FoodCard food) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("id", food.getId());
-        result.put("name", food.getName());
-        result.put("brand", food.getBrand());
-        result.put("foodType", food.getFoodType().getCode());
-        result.put("status", food.getStatus().getCode());
-        result.put("proteinPercent", food.getProteinPercent());
-        result.put("fatPercent", food.getFatPercent());
-        result.put("energyKcal", food.getEnergyKcal());
-        result.put("energyUnit", food.getEnergyUnit());
-        return result;
+    private AiFoodQueryDTO.FoodFactDTO toFoodFact(FoodCard food) {
+        return new AiFoodQueryDTO.FoodFactDTO(food.getId(), food.getName(), food.getBrand(),
+                food.getFoodType().getCode(), food.getStatus().getCode(), food.getProteinPercent(),
+                food.getFatPercent(), food.getEnergyKcal(), food.getEnergyUnit());
     }
 
-    private Map<String, Object> toPlanFact(FeedingPlan plan) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("id", plan.getId());
-        result.put("name", plan.getName());
-        result.put("startDate", plan.getStartDate());
-        result.put("endDate", plan.getEndDate());
-        result.put("status", plan.getStatus().getCode());
-        result.put("dailyTargetAmount", plan.getDailyTargetAmount());
-        result.put("dailyTargetCalories", plan.getDailyTargetCalories());
-        result.put("items", plan.getItems());
-        return result;
+    private AiFeedingPlanQueryDTO.PlanFactDTO toPlanFact(FeedingPlan plan) {
+        List<AiFeedingPlanQueryDTO.ItemFactDTO> items = plan.getItems().stream()
+                .map(this::toPlanItemFact)
+                .toList();
+        return new AiFeedingPlanQueryDTO.PlanFactDTO(plan.getId(), plan.getName(), plan.getStartDate(),
+                plan.getEndDate(), plan.getStatus().getCode(), plan.getDailyTargetAmount(),
+                plan.getDailyTargetCalories(), items);
+    }
+
+    private AiFeedingPlanQueryDTO.ItemFactDTO toPlanItemFact(FeedingPlanItem item) {
+        return new AiFeedingPlanQueryDTO.ItemFactDTO(item.id(), item.itemKey(), item.foodId(), item.mealTime(),
+                item.amount(), item.unit(), item.percentage(), item.cycleType(), item.cycleValue(),
+                item.nutritionSnapshot(), item.sortOrder());
     }
 }

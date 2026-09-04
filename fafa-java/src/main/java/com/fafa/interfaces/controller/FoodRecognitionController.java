@@ -8,6 +8,7 @@ import com.fafa.interfaces.dto.food.ConfirmFoodRecognitionRequest;
 import com.fafa.interfaces.dto.food.CreateFoodRecognitionRequest;
 import com.fafa.interfaces.dto.food.RejectFoodRecognitionRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,20 +36,23 @@ public class FoodRecognitionController {
 
     @GetMapping("/{id}")
     @Operation(summary = "查询识别任务")
-    public Result<FoodRecognitionDTO> get(@PathVariable Long id) {
+    public Result<FoodRecognitionDTO> get(
+            @Parameter(description = "食品识别任务ID", required = true, example = "1") @PathVariable Long id) {
         return Result.ok(service.get(id));
     }
 
     @PostMapping("/{id}/confirm")
     @Operation(summary = "确认识别结果")
-    public Result<FoodCardDTO> confirm(@PathVariable Long id,
+    public Result<FoodCardDTO> confirm(
+                                       @Parameter(description = "食品识别任务ID", required = true, example = "1") @PathVariable Long id,
                                        @Valid @RequestBody ConfirmFoodRecognitionRequest request) {
         return Result.ok(service.confirm(id, request));
     }
 
     @PostMapping("/{id}/reject")
     @Operation(summary = "拒绝识别结果")
-    public Result<Void> reject(@PathVariable Long id,
+    public Result<Void> reject(
+                               @Parameter(description = "食品识别任务ID", required = true, example = "1") @PathVariable Long id,
                                @Valid @RequestBody(required = false) RejectFoodRecognitionRequest request) {
         service.reject(id, request == null ? null : request.getReason());
         return Result.ok();

@@ -1,5 +1,6 @@
 package com.fafa.interfaces.controller;
 
+import com.fafa.application.dto.collaboration.AcceptInvitationDTO;
 import com.fafa.application.service.PetInvitationApplicationService;
 import com.fafa.common.Result;
 import com.fafa.interfaces.dto.collaboration.AcceptInvitationRequest;
@@ -18,7 +19,7 @@ public class PetInvitationController {
 
     @PostMapping("/accept")
     @Operation(summary = "接受宠物空间邀请")
-    public Result<?> accept(@Valid @RequestBody AcceptInvitationRequest request) {
+    public Result<AcceptInvitationDTO> accept(@Valid @RequestBody AcceptInvitationRequest request) {
         return Result.ok(invitationService.accept(request.getInvitationId(), request.getToken()));
     }
 }

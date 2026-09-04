@@ -8,6 +8,7 @@ import com.fafa.common.Result;
 import com.fafa.interfaces.dto.feeding.FeedingRecommendationRequest;
 import com.fafa.interfaces.dto.feeding.SaveFeedingPlanRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,40 +47,46 @@ public class FeedingPlanController {
 
     @GetMapping
     @Operation(summary = "查询喂食计划列表")
-    public Result<List<FeedingPlanDTO>> list(@RequestParam Long petId,
-                                             @RequestParam(required = false) String status) {
+    public Result<List<FeedingPlanDTO>> list(
+                                             @Parameter(description = "宠物ID", required = true, example = "1") @RequestParam Long petId,
+                                             @Parameter(description = "计划状态过滤：draft=草稿，active=进行中，paused=暂停，completed=已完成，cancelled=已取消", example = "active") @RequestParam(required = false) String status) {
         return Result.ok(service.list(petId, status));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "查询喂食计划详情")
-    public Result<FeedingPlanDTO> get(@PathVariable Long id) {
+    public Result<FeedingPlanDTO> get(
+            @Parameter(description = "喂食计划ID", required = true, example = "1") @PathVariable Long id) {
         return Result.ok(service.get(id));
     }
 
     @GetMapping("/{id}/today")
     @Operation(summary = "查询指定日期喂食清单")
-    public Result<FeedingChecklistDTO> today(@PathVariable Long id,
-                                             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    public Result<FeedingChecklistDTO> today(
+                                             @Parameter(description = "喂食计划ID", required = true, example = "1") @PathVariable Long id,
+                                             @Parameter(description = "清单日期", required = true, example = "2026-08-20") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                                              LocalDate date) {
         return Result.ok(service.today(id, date));
     }
 
     @PostMapping("/{id}/pause")
     @Operation(summary = "暂停喂食计划")
-    public Result<FeedingPlanDTO> pause(@PathVariable Long id) {
+    public Result<FeedingPlanDTO> pause(
+            @Parameter(description = "喂食计划ID", required = true, example = "1") @PathVariable Long id) {
         return Result.ok(service.pause(id));
     }
 
     @PostMapping("/{id}/resume")
     @Operation(summary = "恢复喂食计划")
-    public Result<FeedingPlanDTO> resume(@PathVariable Long id) {
+    public Result<FeedingPlanDTO> resume(
+            @Parameter(description = "喂食计划ID", required = true, example = "1") @PathVariable Long id) {
         return Result.ok(service.resume(id));
     }
 
     @PostMapping("/{id}/complete")
     @Operation(summary = "完成喂食计划")
-    public Result<FeedingPlanDTO> complete(@PathVariable Long id) {
+    public Result<FeedingPlanDTO> complete(
+            @Parameter(description = "喂食计划ID", required = true, example = "1") @PathVariable Long id) {
         return Result.ok(service.complete(id));
     }
 }

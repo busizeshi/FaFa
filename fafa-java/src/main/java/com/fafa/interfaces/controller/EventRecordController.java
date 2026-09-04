@@ -45,7 +45,7 @@ public class EventRecordController {
     @PutMapping("/{id}")
     @Operation(summary = "编辑手动事件", description = "提醒完成生成的事件不可编辑")
     public Result<EventRecordDTO> update(
-            @Parameter(description = "事件ID") @PathVariable Long id,
+            @Parameter(description = "事件ID", required = true, example = "1") @PathVariable Long id,
             @Valid @RequestBody UpdateEventRequest request
     ) {
         return Result.ok(eventRecordApplicationService.updateManual(id, new UpdateEventCommand(
@@ -55,7 +55,7 @@ public class EventRecordController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除手动事件", description = "提醒完成生成的事件不可删除")
-    public Result<Void> delete(@Parameter(description = "事件ID") @PathVariable Long id) {
+    public Result<Void> delete(@Parameter(description = "事件ID", required = true, example = "1") @PathVariable Long id) {
         eventRecordApplicationService.deleteManual(id);
         return Result.ok();
     }
@@ -63,9 +63,9 @@ public class EventRecordController {
     @GetMapping
     @Operation(summary = "事件记录范围查询", description = "日期升序，范围不超过366天")
     public Result<List<EventRecordDTO>> listByRange(
-            @Parameter(description = "宠物ID") @RequestParam Long petId,
-            @Parameter(description = "开始日期") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @Parameter(description = "结束日期") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+            @Parameter(description = "宠物ID", required = true, example = "1") @RequestParam Long petId,
+            @Parameter(description = "开始日期", required = true, example = "2026-08-01") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(description = "结束日期", required = true, example = "2026-08-31") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
         return Result.ok(eventRecordApplicationService.listByPetAndRange(petId, startDate, endDate));
     }

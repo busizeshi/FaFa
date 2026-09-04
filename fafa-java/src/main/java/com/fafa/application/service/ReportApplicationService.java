@@ -3,6 +3,7 @@ package com.fafa.application.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fafa.application.dto.chat.AiReportQueryDTO;
 import com.fafa.application.dto.report.*;
 import com.fafa.application.port.ReportGenerationGateway;
 import com.fafa.common.BusinessException;
@@ -21,9 +22,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -104,18 +103,14 @@ public class ReportApplicationService {
         reportRepository.save(report);
     }
 
-    public List<Map<String, Object>> readForAgent(Long userId, Long petId, String periodType, int limit) {
+    public List<AiReportQueryDTO.ReportFactDTO> readForAgent(Long userId, Long petId, String periodType, int limit) {
         ownedPet(userId, petId);
         int safeLimit = Math.min(Math.max(limit, 1), 12);
         return reportRepository.findByUserIdAndPetId(userId, petId, 0, safeLimit).stream()
                 .filter(report -> periodType == null || periodType.equals(report.getPeriodType().getCode()))
-                .map(report -> {
-                    Map<String, Object> item = new LinkedHashMap<>();
-                    item.put("id", report.getId()); item.put("periodType", report.getPeriodType().getCode());
-                    item.put("periodStart", report.getPeriodStart()); item.put("periodEnd", report.getPeriodEnd());
-                    item.put("status", report.getStatus()); item.put("content", parse(report.getContentJson()));
-                    return item;
-                }).toList();
+                .map(report -> new AiReportQueryDTO.ReportFactDTO(report.getId(), report.getPeriodType().getCode(),
+                        report.getPeriodStart(), report.getPeriodEnd(), report.getStatus(), parse(report.getContentJson())))
+                .toList();
     }
 
     private ReportPeriod resolvePeriod(String type, LocalDate anchorDate) {

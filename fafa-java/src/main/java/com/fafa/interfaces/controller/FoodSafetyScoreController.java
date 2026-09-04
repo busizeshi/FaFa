@@ -4,6 +4,7 @@ import com.fafa.application.dto.food.FoodSafetyScoreDTO;
 import com.fafa.application.service.FoodSafetyScoreApplicationService;
 import com.fafa.common.Result;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +23,8 @@ public class FoodSafetyScoreController {
 
     @GetMapping("/{id}/safety-score")
     @Operation(summary = "查询食品配方提示分")
-    public Result<FoodSafetyScoreDTO> get(@PathVariable Long id) {
+    public Result<FoodSafetyScoreDTO> get(
+            @Parameter(description = "食品卡ID", required = true, example = "1") @PathVariable Long id) {
         return Result.ok(service.get(id));
     }
 }
