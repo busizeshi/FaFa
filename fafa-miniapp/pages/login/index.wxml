@@ -1,0 +1,12 @@
+<view class="login-page">
+  <image class="login-cover" src="../../images/login-cover-anime.jpg" mode="aspectFill" />
+  <view class="login-content">
+    <view class="brand-mark">FaFa</view>
+    <text class="login-title">把每份陪伴，
+都好好记录</text>
+    <text class="login-copy">照护、健康与成长，和家人一起慢慢收藏。</text>
+    <view wx:if="{{error}}" class="error-banner login-error">{{error}}</view>
+    <button class="primary-button login-button" loading="{{loading}}" disabled="{{loading}}" bindtap="onLogin">微信快捷登录</button>
+    <view class="privacy-line"><text>继续即表示你已阅读并同意</text><text class="privacy-link" bindtap="onPrivacyTap">《隐私保护指引》</text></view>
+  </view>
+</view>

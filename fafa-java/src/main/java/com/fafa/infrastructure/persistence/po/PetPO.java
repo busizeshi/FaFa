@@ -47,6 +47,9 @@ public class PetPO {
 
     private String sidePhotoUrl;
 
+    /** 三视图向量化状态: pending/processing/completed/failed */
+    private String vectorizationStatus;
+
     private Integer sortOrder;
 
     @TableField("is_deleted")

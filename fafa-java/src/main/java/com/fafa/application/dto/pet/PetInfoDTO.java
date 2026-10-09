@@ -1,11 +1,16 @@
 package com.fafa.application.dto.pet;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * 宠物信息DTO
+ * <p>
+ * photos 为按位序排列的三张照片（位1=头像、位2=正面照、位3=侧面照）；
+ * vectorizationStatus 为三视图向量化状态：pending/processing/completed/failed。
  *
  * @author FaFa Team
  * @since 1.0
@@ -32,15 +37,19 @@ public record PetInfoDTO(
     LocalDate adoptDate,
     @Schema(description = "当前体重（kg）", example = "4.5")
     BigDecimal weight,
-    @Schema(description = "头像URL")
+    @Schema(description = "头像URL（即位1照片）")
     String avatarUrl,
-    @Schema(description = "正面照URL")
+    @Schema(description = "正面照URL（即位2照片）")
     String frontPhotoUrl,
-    @Schema(description = "侧面照URL")
+    @Schema(description = "侧面照URL（即位3照片）")
     String sidePhotoUrl,
+    @Schema(description = "按位序排列的三张照片URL数组：[头像, 正面, 侧面]")
+    List<String> photos,
+    @Schema(description = "三视图向量化状态：pending/processing/completed/failed", example = "pending")
+    String vectorizationStatus,
     @Schema(description = "排序序号", example = "1")
     Integer sortOrder,
-    @Schema(description = "是否已上传正面照和侧面照", example = "true")
+    @Schema(description = "三张照片是否齐全", example = "true")
     Boolean hasProfilePhotos
 ) {
 }

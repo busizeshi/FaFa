@@ -4,12 +4,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
- * 创建宠物请求
+ * 创建宠物请求（multipart/form-data）
+ * <p>
+ * photos 为按位序上传的三张照片（位1=头像、位2=正面照、位3=侧面照），创建宠物时必传。
  *
  * @author FaFa Team
  * @since 1.0
@@ -45,4 +49,7 @@ public class CreatePetRequest {
 
     @Schema(description = "当前体重（kg）", example = "4.5")
     private BigDecimal weight;
+
+    @Schema(description = "按位序上传的三张照片：位1=头像，位2=正面照，位3=侧面照")
+    private List<MultipartFile> photos;
 }

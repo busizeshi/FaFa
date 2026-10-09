@@ -36,7 +36,6 @@ public interface UserTagRepository {
      * 单语句原子完成，避免先查后写竞态。
      *
      * @param category 新插入行的分类（用户手动标签传 null，宠物名自动标签传 PET）
-     * @return 打标后的标签列表
      */
-    List<UserTag> upsertAndTouch(Long userId, List<String> tagNames, TagCategory category, LocalDateTime now);
+    void upsertAndTouch(Long userId, List<String> tagNames, TagCategory category, LocalDateTime now);
 }

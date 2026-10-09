@@ -1,0 +1,15 @@
+<view class="chat-page">
+  <view class="chat-heading"><view class="assistant-badge">F</view><view class="chat-intro"><view class="chat-title">FaFa 宠物助手</view><view class="chat-subtitle">{{pet ? '正在陪你了解 ' + pet.name : '记录、照护和日常问题都可以聊聊'}}</view></view><text class="chat-more" bindtap="goPets">···</text></view>
+  <view class="disclaimer">AI 回答仅作日常参考，不能替代兽医诊断。出现急症请及时就医。</view>
+  <view wx:if="{{error}}" class="error-banner chat-error">{{error}}<text wx:if="{{failedMessage}}" class="retry-link" bindtap="onRetry">　使用原请求重试</text></view>
+  <scroll-view class="message-list" scroll-y scroll-into-view="{{scrollTarget}}" scroll-with-animation>
+    <view wx:if="{{loading}}" class="chat-loading">正在准备对话…</view>
+    <view wx:elif="{{!messages.length}}" class="welcome-message"><view class="welcome-orb">✦</view><view class="welcome-title">今天想了解什么？</view><view class="welcome-copy">结合 {{pet ? pet.name : '宠物'}} 的记录，整理一些实用建议。</view></view>
+    <view wx:for="{{messages}}" wx:key="id" id="message-{{index + 1}}" class="message-row {{item.role === 'user' ? 'message-user' : 'message-ai'}}"><view class="message-bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-ai'}}">{{item.text}}<text wx:if="{{item.failed}}" class="failed-label">发送未确认</text></view></view>
+    <view wx:if="{{sending}}" class="message-row message-ai"><view class="message-bubble bubble-ai typing">正在整理回答…</view></view>
+  </scroll-view>
+  <view class="chat-bottom">
+    <scroll-view wx:if="{{recommendations.length && !messages.length}}" class="suggestions" scroll-x><view class="suggestion" wx:for="{{recommendations}}" wx:key="index" data-text="{{item}}" bindtap="onSuggestion">{{item}}</view></scroll-view>
+    <view class="composer"><textarea class="chat-input" value="{{input}}" placeholder="说说你和它最近的日常…" maxlength="8000" auto-height bindinput="onInput" /><button class="send-button {{sending || !input ? 'send-disabled' : ''}}" disabled="{{sending || !input}}" bindtap="onSend">{{sending ? '…' : '↑'}}</button></view>
+  </view>
+</view>

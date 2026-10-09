@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -71,12 +70,11 @@ public class UserTagRepositoryImpl implements UserTagRepository {
     }
 
     @Override
-    public List<UserTag> upsertAndTouch(Long userId, List<String> tagNames, TagCategory category, LocalDateTime now) {
+    public void upsertAndTouch(Long userId, List<String> tagNames, TagCategory category, LocalDateTime now) {
         if (tagNames == null || tagNames.isEmpty()) {
-            return List.of();
+            return;
         }
         String categoryCode = category == null ? null : category.getCode();
-        List<UserTag> result = new ArrayList<>();
         for (String rawName : new LinkedHashSet<>(tagNames)) {
             String tagName = rawName == null ? null : rawName.trim();
             if (tagName == null || tagName.isBlank()) {
@@ -84,9 +82,7 @@ public class UserTagRepositoryImpl implements UserTagRepository {
             }
             // 原子 upsert：不存在插入（count=1），存在计数+1
             userTagMapper.upsertAndTouch(userId, tagName, categoryCode, now);
-            findByUserIdAndName(userId, tagName).ifPresent(result::add);
         }
-        return result;
     }
 
     /**

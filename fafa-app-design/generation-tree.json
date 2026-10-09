@@ -1,0 +1,1119 @@
+{
+  "root": {
+    "nodeId": "gen-project-shell",
+    "kind": "project-shell",
+    "pageIds": [
+      "page-home-sage",
+      "page-login",
+      "page-pet-create",
+      "page-pet-detail",
+      "page-pet-tags",
+      "page-daily-checkin",
+      "page-daily-history",
+      "page-weight-record",
+      "page-weight-trend",
+      "page-feeding-today",
+      "page-plan-list",
+      "page-plan-create",
+      "page-feeding-analysis",
+      "page-food-library",
+      "page-food-detail",
+      "page-food-transition",
+      "page-food-recognition",
+      "page-album",
+      "page-album-upload",
+      "page-photo-detail",
+      "page-photo-search",
+      "page-chat",
+      "page-ai-reports",
+      "page-ai-report-detail",
+      "page-medical-records",
+      "page-medical-create",
+      "page-medication-plan",
+      "page-health-alerts",
+      "page-reminders",
+      "page-reminder-create",
+      "page-growth-timeline",
+      "page-family-members",
+      "page-expense-book",
+      "page-expense-create",
+      "page-membership",
+      "page-me",
+      "page-profile-edit",
+      "page-pet-list"
+    ],
+    "output": "partials/project-shell.html",
+    "sharedRegions": [
+      {
+        "regionId": "bottom-tab-navigation",
+        "description": "共享底部标签导航（首页 / 相册 / 聊天 / 我的），全部颜色取 --fafa-* 语义令牌，随各页内联风格 CSS 自动换肤；仅 4 个 Tab 根页引入本片段，二级页面使用顶部应用栏返回",
+        "placement": "flow-bottom",
+        "heightPx": 64
+      }
+    ],
+    "privateRegions": [],
+    "mutableSlots": [
+      {
+        "slotId": "nav-active-key",
+        "description": "底部导航当前高亮项；由 4 个 Tab 根页在引入片段时保持 aria-current 与 is-active 于各自标签（home/album/chat/me）",
+        "values": {
+          "page-home-sage": "home",
+          "page-album": "album",
+          "page-chat": "chat",
+          "page-me": "me"
+        }
+      }
+    ],
+    "status": "generated",
+    "children": [
+      {
+        "nodeId": "gen-page-home-sage",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-home-sage"
+        ],
+        "output": "pages/home-sage.html",
+        "sharedRegions": [
+          "bottom-tab-navigation"
+        ],
+        "privateRegions": [
+          {
+            "regionId": "greeting-header",
+            "description": "顶部问候区：时段问候语、主人称呼、通知入口"
+          },
+          {
+            "regionId": "pet-overview-cards",
+            "description": "宠物概览卡：宠物照片、名字、体重趋势与健康状态徽标"
+          },
+          {
+            "regionId": "today-status",
+            "description": "今日概览：已喂食/待喂食、饮水量、运动量等关键指标"
+          },
+          {
+            "regionId": "quick-actions",
+            "description": "快捷入口：体重记录、拍照记素材、就医记录、花费记账"
+          },
+          {
+            "regionId": "ai-agent-entry",
+            "description": "AI 助手入口卡：一句话唤起 FaFa 助手对话"
+          },
+          {
+            "regionId": "today-timeline",
+            "description": "今日待办与喂食计划时间线（提醒事项）"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "generated",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-login",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-login"
+        ],
+        "output": "pages/login.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "auth-hero",
+            "description": "品牌氛围区：产品标识、宠物插画与价值主张"
+          },
+          {
+            "regionId": "login-primary-action",
+            "description": "微信一键登录主按钮（单按钮 1 步登录）"
+          },
+          {
+            "regionId": "login-agreement",
+            "description": "协议勾选与用户协议/隐私政策链接"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-pet-create",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-pet-create"
+        ],
+        "output": "pages/pet-create.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "create-photo-trio",
+            "description": "三张照片位：头像/正面/侧面，每张必传"
+          },
+          {
+            "regionId": "create-basic-form",
+            "description": "类型/性别/名称表单与就地校验（重名报错态）"
+          },
+          {
+            "regionId": "create-submit",
+            "description": "创建档案提交与向量化状态提示（pending 起步）"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-pet-detail",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-pet-detail"
+        ],
+        "output": "pages/pet-detail.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "detail-profile",
+            "description": "头像与基础信息卡、编辑入口"
+          },
+          {
+            "regionId": "detail-vector-status",
+            "description": "向量化状态徽标（completed/pending/failed 可重试）"
+          },
+          {
+            "regionId": "detail-tags",
+            "description": "标签区与「管理标签」入口"
+          },
+          {
+            "regionId": "detail-shortcuts",
+            "description": "日常/喂养/就医/相册快捷区"
+          },
+          {
+            "regionId": "detail-danger",
+            "description": "删除宠物级联确认（素材保留/提醒清除/标签保留）"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-pet-tags",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-pet-tags"
+        ],
+        "output": "pages/pet-tags.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "tags-category-tabs",
+            "description": "6 大类分组切换"
+          },
+          {
+            "regionId": "tags-list",
+            "description": "标签 chips 与使用次数（usageCount 只增）"
+          },
+          {
+            "regionId": "tags-actions",
+            "description": "新建/改名/删除操作与留快照说明"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-daily-checkin",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-daily-checkin"
+        ],
+        "output": "pages/daily-checkin.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "checkin-dimensions",
+            "description": "6 维度打卡组；猫排尿必填 + 急症红条提示，狗无排尿项"
+          },
+          {
+            "regionId": "checkin-quick",
+            "description": "一键正常（1 步）/ 同上次复制（2 步，不复制备注）"
+          },
+          {
+            "regionId": "checkin-escape",
+            "description": "没看到/没注意逃生档（算已填不算异常）"
+          },
+          {
+            "regionId": "checkin-submit",
+            "description": "提交与同日 upsert 说明"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-daily-history",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-daily-history"
+        ],
+        "output": "pages/daily-history.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "history-day-summary",
+            "description": "当日六维度状态徽标汇总"
+          },
+          {
+            "regionId": "history-abnormal",
+            "description": "异常项高亮与趋势提示"
+          },
+          {
+            "regionId": "history-weight-entry",
+            "description": "体重区块与记录体重入口"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-weight-record",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-weight-record"
+        ],
+        "output": "pages/weight-record.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "weight-input",
+            "description": "体重输入 ≥0.01kg 与校验"
+          },
+          {
+            "regionId": "weight-context",
+            "description": "上次体重与变化参考"
+          },
+          {
+            "regionId": "weight-sync-note",
+            "description": "同事务同步档案体重说明徽标"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-weight-trend",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-weight-trend"
+        ],
+        "output": "pages/weight-trend.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "trend-chart",
+            "description": "折线图：默认 90 天、上限 366，范围切换"
+          },
+          {
+            "regionId": "trend-changes",
+            "description": "逐条变化列表（latest 逐条 change）"
+          },
+          {
+            "regionId": "trend-observations",
+            "description": "体重观察与喂养建议卡"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-feeding-today",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-feeding-today"
+        ],
+        "output": "pages/feeding-today.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "today-plan-list",
+            "description": "计划项×当日记录联查清单（最早一条标记、已删除粮票显示「已删除食品」）"
+          },
+          {
+            "regionId": "today-record-cta",
+            "description": "喂哺打卡：时间 ≤now+5min、同人同日同项幂等"
+          },
+          {
+            "regionId": "today-status-chips",
+            "description": "待喂/已喂状态与类型（main_food/snack/can/other）"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-plan-list",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-plan-list"
+        ],
+        "output": "pages/plan-list.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "plan-cards",
+            "description": "计划卡列表：active/paused/completed 三态"
+          },
+          {
+            "regionId": "plan-ops",
+            "description": "暂停/恢复/完成操作"
+          },
+          {
+            "regionId": "plan-create-entry",
+            "description": "新建计划入口"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-plan-create",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-plan-create"
+        ],
+        "output": "pages/plan-create.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "create-pet-picker",
+            "description": "选宠物与每日目标量"
+          },
+          {
+            "regionId": "create-suggestion",
+            "description": "建议预览：amount=目标÷餐次 + 解释/警示常量"
+          },
+          {
+            "regionId": "create-items",
+            "description": "1-12 项配置，保存即 active"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-feeding-analysis",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-feeding-analysis"
+        ],
+        "output": "pages/feeding-analysis.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "analysis-stats",
+            "description": "java_stats 统计卡（混合单位只统计先出现者）"
+          },
+          {
+            "regionId": "analysis-observations",
+            "description": "3 条观察与单位提示"
+          },
+          {
+            "regionId": "analysis-completion",
+            "description": "计划完成率恒 null → 显「暂无」"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-food-library",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-food-library"
+        ],
+        "output": "pages/food-library.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "library-filters",
+            "description": "粮票 6 类型筛选"
+          },
+          {
+            "regionId": "library-cards",
+            "description": "粮票卡与营养完整度 x/5 徽标"
+          },
+          {
+            "regionId": "library-guard",
+            "description": "归档/删除被启用计划引用拦截提示（40014）"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-food-detail",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-food-detail"
+        ],
+        "output": "pages/food-detail.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "detail-nutrition",
+            "description": "营养 5 字段与完整度"
+          },
+          {
+            "regionId": "detail-safety",
+            "description": "安全分 4 维×25；任一 unknown 总分 null + missingFields + 固定免责声明"
+          },
+          {
+            "regionId": "detail-plan-refs",
+            "description": "被喂养计划引用标识"
+          },
+          {
+            "regionId": "detail-transition-entry",
+            "description": "开始换粮入口"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-food-transition",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-food-transition"
+        ],
+        "output": "pages/food-transition.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "transition-setup",
+            "description": "3-30 天新旧粮设置"
+          },
+          {
+            "regionId": "transition-steps",
+            "description": "逐日比例步进，合计恰 100%，日期连续"
+          },
+          {
+            "regionId": "transition-reactions",
+            "description": "反应记录单槽后写覆盖"
+          },
+          {
+            "regionId": "transition-ops",
+            "description": "完成/取消操作与 completed 拦截"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-food-recognition",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-food-recognition"
+        ],
+        "output": "pages/food-recognition.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "recognition-upload",
+            "description": "拍照/上传区与配额 5/50 提示"
+          },
+          {
+            "regionId": "recognition-progress",
+            "description": "识别进度（7 态状态机；幂等键防重复扣）"
+          },
+          {
+            "regionId": "recognition-confirm",
+            "description": "结果确认入库（confirm 幂等；草稿 7 天惰性过期）"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-album",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-album"
+        ],
+        "output": "pages/album.html",
+        "sharedRegions": [
+          "bottom-tab-navigation"
+        ],
+        "privateRegions": [
+          {
+            "regionId": "album-grid",
+            "description": "素材网格与按宠物筛选"
+          },
+          {
+            "regionId": "album-batch",
+            "description": "批量选择 ≤20 与 AI 归属徽标（恰好 1 只才自动写）"
+          },
+          {
+            "regionId": "album-actions",
+            "description": "上传素材主按钮与 AI 找图入口"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-album-upload",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-album-upload"
+        ],
+        "output": "pages/album-upload.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "upload-picker",
+            "description": "批量上传与 20 张计数器"
+          },
+          {
+            "regionId": "upload-attribution",
+            "description": "AI 自动归属预览与人工兜底选择"
+          },
+          {
+            "regionId": "upload-meta",
+            "description": "标签/备注与上传进度态"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-photo-detail",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-photo-detail"
+        ],
+        "output": "pages/photo-detail.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "photo-viewer",
+            "description": "大图浏览与基本信息"
+          },
+          {
+            "regionId": "photo-meta",
+            "description": "归属宠物/标签/来源/时间"
+          },
+          {
+            "regionId": "photo-ops",
+            "description": "编辑标签与删除级联说明"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-photo-search",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-photo-search"
+        ],
+        "output": "pages/photo-search.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "search-input",
+            "description": "语义搜索输入与示例 chips"
+          },
+          {
+            "regionId": "search-quota",
+            "description": "配额 10 次/会员不限；空查询不耗配额"
+          },
+          {
+            "regionId": "search-results",
+            "description": "结果网格与检索历史"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-chat",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-chat"
+        ],
+        "output": "pages/chat.html",
+        "sharedRegions": [
+          "bottom-tab-navigation"
+        ],
+        "privateRegions": [
+          {
+            "regionId": "chat-thread",
+            "description": "AI 助手对话流与消息卡"
+          },
+          {
+            "regionId": "chat-input",
+            "description": "输入 ≤8000 字计数与 45 秒超时提示（90001）"
+          },
+          {
+            "regionId": "chat-shortcuts",
+            "description": "快捷指令与 recordDraft 落记录确认卡（置信 0.80，1 步确认）"
+          },
+          {
+            "regionId": "chat-report-entry",
+            "description": "报告池入口"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-ai-reports",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-ai-reports"
+        ],
+        "output": "pages/ai-reports.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "reports-pool",
+            "description": "报告卡列表与共享池 3/10 计数"
+          },
+          {
+            "regionId": "reports-status",
+            "description": "生成中/失败态"
+          },
+          {
+            "regionId": "reports-entry",
+            "description": "生成新报告入口"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-ai-report-detail",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-ai-report-detail"
+        ],
+        "output": "pages/ai-report-detail.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "report-body",
+            "description": "结构化报告正文（健康概览/建议/异常）"
+          },
+          {
+            "regionId": "report-meta",
+            "description": "类型/日期/共享池说明"
+          },
+          {
+            "regionId": "report-actions",
+            "description": "保存报告与建议就医入口"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-medical-records",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-medical-records"
+        ],
+        "output": "pages/medical-records.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "records-list",
+            "description": "就医记录列表"
+          },
+          {
+            "regionId": "records-bills",
+            "description": "医疗账单只读徽标（同事务生成、不可改删）"
+          },
+          {
+            "regionId": "records-create-entry",
+            "description": "记一次就医入口"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-medical-create",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-medical-create"
+        ],
+        "output": "pages/medical-create.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "create-form",
+            "description": "日期/机构/诊断/金额表单与就地校验"
+          },
+          {
+            "regionId": "create-bill-preview",
+            "description": "提交后只读账单预览（自动生成）"
+          },
+          {
+            "regionId": "create-medication-link",
+            "description": "关联用药计划引导"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-medication-plan",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-medication-plan"
+        ],
+        "output": "pages/medication-plan.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "medication-list",
+            "description": "用药计划卡：剂量/频次/周期"
+          },
+          {
+            "regionId": "medication-adherence",
+            "description": "依从打卡与进度"
+          },
+          {
+            "regionId": "medication-derive",
+            "description": "MEDICATION 提醒只能由用药计划派生说明"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-health-alerts",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-health-alerts"
+        ],
+        "output": "pages/health-alerts.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "alerts-list",
+            "description": "预警列表与等级色"
+          },
+          {
+            "regionId": "alerts-dedup",
+            "description": "指纹去重折叠说明（重复预警合并展示）"
+          },
+          {
+            "regionId": "alerts-urgent",
+            "description": "红色预警 24h 处理窗口倒计时"
+          },
+          {
+            "regionId": "alerts-resolve",
+            "description": "处理 3 步：查看→确认处理→记录措施"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-reminders",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-reminders"
+        ],
+        "output": "pages/reminders.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "reminders-groups",
+            "description": "9 类提醒分组与今日待办"
+          },
+          {
+            "regionId": "reminders-item-ops",
+            "description": "2 步完成：点击→确认"
+          },
+          {
+            "regionId": "reminders-create-entry",
+            "description": "新建提醒入口"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-reminder-create",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-reminder-create"
+        ],
+        "output": "pages/reminder-create.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "create-type",
+            "description": "9 类提醒类型选择"
+          },
+          {
+            "regionId": "create-config",
+            "description": "宠物/时间/重复规则配置"
+          },
+          {
+            "regionId": "create-templates",
+            "description": "模板 chips 快速创建（2 步完成）"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-growth-timeline",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-growth-timeline"
+        ],
+        "output": "pages/growth-timeline.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "timeline-stream",
+            "description": "里程碑/精选素材/提醒完成混排时间线"
+          },
+          {
+            "regionId": "timeline-months",
+            "description": "按月份分组"
+          },
+          {
+            "regionId": "timeline-share",
+            "description": "邀请家人共创入口"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-family-members",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-family-members"
+        ],
+        "output": "pages/family-members.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "members-list",
+            "description": "成员卡与角色徽标（owner/member/caregiver）"
+          },
+          {
+            "regionId": "members-invite",
+            "description": "邀请 2 步流程与令牌 30 分钟倒计时"
+          },
+          {
+            "regionId": "members-quota",
+            "description": "成员配额 0/5 计数"
+          },
+          {
+            "regionId": "members-perms",
+            "description": "协作者权限说明（可记喂养/日常）"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-expense-book",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-expense-book"
+        ],
+        "output": "pages/expense-book.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "expense-summary",
+            "description": "月度汇总与 6 分类占比"
+          },
+          {
+            "regionId": "expense-list",
+            "description": "流水列表与医疗账单只读徽标"
+          },
+          {
+            "regionId": "expense-create-entry",
+            "description": "记一笔入口"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-expense-create",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-expense-create"
+        ],
+        "output": "pages/expense-create.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "create-amount",
+            "description": "金额输入（>0 且 ≤1000000.00）"
+          },
+          {
+            "regionId": "create-category",
+            "description": "6 分类 chips 与宠物关联"
+          },
+          {
+            "regionId": "create-submit",
+            "description": "一步保存"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-membership",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-membership"
+        ],
+        "output": "pages/membership.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "membership-plans",
+            "description": "会员方案卡：月 32 / 季 95 / 年 366"
+          },
+          {
+            "regionId": "membership-benefits",
+            "description": "权益对比表"
+          },
+          {
+            "regionId": "quota-panel",
+            "description": "配额表（limit=-1 显示「不限」）"
+          },
+          {
+            "regionId": "quota-usage",
+            "description": "当前用量进度条"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-me",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-me"
+        ],
+        "output": "pages/me.html",
+        "sharedRegions": [
+          "bottom-tab-navigation"
+        ],
+        "privateRegions": [
+          {
+            "regionId": "me-profile-card",
+            "description": "用户卡：头像/昵称（displayName 兜底）"
+          },
+          {
+            "regionId": "me-pets-entry",
+            "description": "我的宠物管理入口"
+          },
+          {
+            "regionId": "me-services",
+            "description": "家庭成员/记账本/会员入口"
+          },
+          {
+            "regionId": "me-settings",
+            "description": "个人资料与配额管理设置"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-profile-edit",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-profile-edit"
+        ],
+        "output": "pages/profile-edit.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "edit-avatar",
+            "description": "头像上传（multipart 参数名 file）"
+          },
+          {
+            "regionId": "edit-fields",
+            "description": "5 字段表单：nickname≤50/phone 正则/gender/age 0-150/city≤50"
+          },
+          {
+            "regionId": "edit-submit",
+            "description": "保存与错误码就地提示（1001/1002/1004）"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-pet-list",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-pet-list"
+        ],
+        "output": "pages/pet-list.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          {
+            "regionId": "petlist-cards",
+            "description": "宠物卡列表与当前宠物切换"
+          },
+          {
+            "regionId": "petlist-create",
+            "description": "创建入口与配额 2/999"
+          },
+          {
+            "regionId": "petlist-entry",
+            "description": "进入宠物详情"
+          }
+        ],
+        "mutableSlots": [],
+        "status": "planned",
+        "children": []
+      }
+    ]
+  }
+}

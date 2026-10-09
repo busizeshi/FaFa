@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用药计划</title>
+    <style id="theme-vars">
+/* ============================================================
+   FaFa · Warm Sage visual system
+   保留原有新魏字体、字号和线性图标；以暖色辅助和轻透表面增加层次
+   ============================================================ */
+:root {
+  /* 品牌绿：保留原有鼠尾草主色 */
+  --fafa-primary: #5C9E71;
+  --fafa-primary-foreground: #FFFFFF;
+  --fafa-primary-action: #3E7A52;
+  --fafa-primary-action-hover: #326946;
+  --fafa-primary-soft: #E6F2E8;
+  --fafa-primary-soft-2: #D4EAD9;
+  --fafa-primary-soft-foreground: #3E7A52;
+  --fafa-primary-tint-border: #C5DFC9;
+
+  /* 页面与文字 */
+  --fafa-background: #FAFBF7;
+  --fafa-foreground: #293A31;
+  --fafa-card: #FFFFFF;
+  --fafa-card-foreground: #293A31;
+  --fafa-muted: #EEF4EC;
+  --fafa-muted-foreground: #65796B;
+  --fafa-border: #E2E9DF;
+  --fafa-input: #FFFFFF;
+  --fafa-ring: #5C9E71;
+
+  /* 辅助色：健康绿、影像雾蓝、AI 薰衣草紫、日常杏橘与暖金 */
+  --fafa-accent-coral: #D97B61;
+  --fafa-accent-coral-soft: #FFF0EA;
+  --fafa-accent-amber: #B77B24;
+  --fafa-accent-amber-soft: #FFF4DE;
+  --fafa-accent-sky: #4E88A2;
+  --fafa-accent-sky-soft: #EAF4F8;
+  --fafa-accent-lavender: #7869A6;
+  --fafa-accent-lavender-soft: #F1EDFA;
+  --fafa-accent-mint: #468B79;
+  --fafa-accent-mint-soft: #E8F4EF;
+
+  /* 玻璃表面：不支持 backdrop-filter 时仍有足够不透明度 */
+  --fafa-glass-surface: rgba(255, 255, 255, 0.86);
+  --fafa-glass-surface-strong: rgba(255, 255, 255, 0.94);
+  --fafa-glass-border: rgba(255, 255, 255, 0.88);
+  --fafa-gradient-canvas:
+    radial-gradient(ellipse at 7% 0%, rgba(244, 194, 138, 0.17), transparent 36%),
+    radial-gradient(ellipse at 100% 23%, rgba(140, 197, 179, 0.15), transparent 40%),
+    #FAFBF7;
+  --fafa-gradient-ai: linear-gradient(128deg, #E8F4E7 0%, #E9F4F2 54%, #F1ECF8 100%);
+  --fafa-gradient-sunshine: linear-gradient(135deg, #F4D58A 0%, #F2AD82 53%, #E9967E 100%);
+  --fafa-gradient-action: linear-gradient(135deg, #4B8D63 0%, #3E7A52 100%);
+  --fafa-gradient-action-hover: linear-gradient(135deg, #3E7A52 0%, #326946 100%);
+
+  /* 圆角刻度：保留现有 4 / 8 / 12 / full 规范 */
+  --fafa-radius-sm: 4px;
+  --fafa-radius-md: 8px;
+  --fafa-radius-lg: 12px;
+  --fafa-radius-full: 9999px;
+
+  /* 轻量层次：浅灰绿投影与玻璃高光 */
+  --fafa-shadow-sm: 0 2px 6px rgba(41, 58, 49, 0.045);
+  --fafa-shadow-md: 0 8px 20px rgba(41, 58, 49, 0.075);
+  --fafa-shadow-card: 0 5px 18px rgba(54, 78, 63, 0.055), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  /* 字体保持 fafa-app-design 原有设计，不在本轮替换或嵌入字体文件 */
+  --fafa-font-sans: "STXinwei", "华文新魏", "KaiTi", "楷体", "STKaiti", "华文楷体",
+    "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  background: var(--fafa-background);
+  color: var(--fafa-foreground);
+  font-family: var(--fafa-font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--fafa-background);
+    --color-foreground: var(--fafa-foreground);
+    --color-card: var(--fafa-card);
+    --color-card-foreground: var(--fafa-card-foreground);
+    --color-primary: var(--fafa-primary);
+    --color-primary-foreground: var(--fafa-primary-foreground);
+    --color-muted: var(--fafa-muted);
+    --color-muted-foreground: var(--fafa-muted-foreground);
+    --color-border: var(--fafa-border);
+    --color-input: var(--fafa-input);
+    --color-ring: var(--fafa-ring);
+    --radius-sm: var(--fafa-radius-sm);
+    --radius-md: var(--fafa-radius-md);
+    --radius-lg: var(--fafa-radius-lg);
+  }
+  @layer base {
+    body { background: var(--fafa-background); color: var(--fafa-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--fafa-background); }
+      .text-background { color: var(--fafa-background); }
+      .border-background { border-color: var(--fafa-background); }
+      .ring-background { --tw-ring-color: var(--fafa-background); }
+      .bg-foreground { background-color: var(--fafa-foreground); }
+      .text-foreground { color: var(--fafa-foreground); }
+      .border-foreground { border-color: var(--fafa-foreground); }
+      .ring-foreground { --tw-ring-color: var(--fafa-foreground); }
+      .bg-card { background-color: var(--fafa-card); }
+      .text-card { color: var(--fafa-card); }
+      .border-card { border-color: var(--fafa-card); }
+      .ring-card { --tw-ring-color: var(--fafa-card); }
+      .bg-card-foreground { background-color: var(--fafa-card-foreground); }
+      .text-card-foreground { color: var(--fafa-card-foreground); }
+      .border-card-foreground { border-color: var(--fafa-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--fafa-card-foreground); }
+      .bg-primary { background-color: var(--fafa-primary); }
+      .text-primary { color: var(--fafa-primary); }
+      .border-primary { border-color: var(--fafa-primary); }
+      .ring-primary { --tw-ring-color: var(--fafa-primary); }
+      .bg-primary-foreground { background-color: var(--fafa-primary-foreground); }
+      .text-primary-foreground { color: var(--fafa-primary-foreground); }
+      .border-primary-foreground { border-color: var(--fafa-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--fafa-primary-foreground); }
+      .bg-muted { background-color: var(--fafa-muted); }
+      .text-muted { color: var(--fafa-muted); }
+      .border-muted { border-color: var(--fafa-muted); }
+      .ring-muted { --tw-ring-color: var(--fafa-muted); }
+      .bg-muted-foreground { background-color: var(--fafa-muted-foreground); }
+      .text-muted-foreground { color: var(--fafa-muted-foreground); }
+      .border-muted-foreground { border-color: var(--fafa-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--fafa-muted-foreground); }
+      .bg-border { background-color: var(--fafa-border); }
+      .text-border { color: var(--fafa-border); }
+      .border-border { border-color: var(--fafa-border); }
+      .ring-border { --tw-ring-color: var(--fafa-border); }
+      .bg-input { background-color: var(--fafa-input); }
+      .text-input { color: var(--fafa-input); }
+      .border-input { border-color: var(--fafa-input); }
+      .ring-input { --tw-ring-color: var(--fafa-input); }
+      .bg-ring { background-color: var(--fafa-ring); }
+      .text-ring { color: var(--fafa-ring); }
+      .border-ring { border-color: var(--fafa-ring); }
+      .ring-ring { --tw-ring-color: var(--fafa-ring); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+    <style id="fafa-visual-polish">
+/* FaFa Warm Sage · glass and semantic color layer
+   Keep the existing page DOM, spacing, line-icon shapes and interaction hooks intact. */
+html {
+  background: var(--fafa-background);
+}
+html body {
+  background: var(--fafa-gradient-canvas) !important;
+  color: var(--fafa-foreground);
+}
+html body .page-frame {
+  background: transparent !important;
+}
+
+/* Apple-like translucent headers and the existing four-item tab bar.
+   Opaque fallback surfaces above stay readable where blur is unavailable. */
+html body .appbar,
+html body [data-mobile-nav="global"] {
+  background: var(--fafa-glass-surface) !important;
+  border-color: var(--fafa-glass-border) !important;
+  box-shadow: 0 5px 18px rgba(45, 68, 54, 0.045);
+}
+html body .appbar {
+  border-bottom-color: rgba(205, 221, 207, 0.72) !important;
+}
+html body [data-mobile-nav="global"] {
+  border-top-color: rgba(205, 221, 207, 0.72) !important;
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html body .appbar,
+  html body [data-mobile-nav="global"] {
+    -webkit-backdrop-filter: blur(18px) saturate(1.18);
+    backdrop-filter: blur(18px) saturate(1.18);
+  }
+}
+
+/* Card edges retain the original thin-line language with a quiet lift. */
+html body .page-frame .page-main [class*="-card"] {
+  border-color: var(--fafa-border);
+  box-shadow: var(--fafa-shadow-card);
+}
+html body .page-frame .page-main .ai-card {
+  background: var(--fafa-gradient-ai) !important;
+  border-color: rgba(197, 223, 201, 0.86) !important;
+  box-shadow: 0 10px 26px rgba(69, 117, 87, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+html body .page-frame .ai-avatar {
+  background: linear-gradient(135deg, #68A77A, #8EBFC0 58%, #9F91C7) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 10px rgba(76, 130, 99, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* Home quick actions: four calm semantic colors instead of four identical mint icons. */
+html body .page-frame .qa-item:nth-child(1) .qa-icon {
+  color: var(--fafa-accent-mint);
+  background: linear-gradient(145deg, #E8F4EF, #D9EEE4);
+}
+html body .page-frame .qa-item:nth-child(2) .qa-icon {
+  color: var(--fafa-accent-sky);
+  background: linear-gradient(145deg, #EDF6FA, #DFEEF5);
+}
+html body .page-frame .qa-item:nth-child(3) .qa-icon {
+  color: var(--fafa-accent-coral);
+  background: linear-gradient(145deg, #FFF3EC, #FBE5D9);
+}
+html body .page-frame .qa-item:nth-child(4) .qa-icon {
+  color: var(--fafa-accent-lavender);
+  background: linear-gradient(145deg, #F4F0FB, #EAE5F7);
+}
+html body .page-frame .qa-icon {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+html body .page-frame .metric-cell:nth-child(1) .metric-icon { color: var(--fafa-accent-amber); }
+html body .page-frame .metric-cell:nth-child(2) .metric-icon { color: var(--fafa-accent-sky); }
+html body .page-frame .metric-cell:nth-child(3) .metric-icon { color: var(--fafa-accent-coral); }
+
+/* Semantic colors keep the existing Lucide outline icon set, adding meaning through hue. */
+html body .page-frame [data-lucide="heart"],
+html body .page-frame [data-lucide="heart-pulse"],
+html body .page-frame [data-lucide="stethoscope"],
+html body .page-frame [data-lucide="pill"],
+html body .page-frame [data-lucide="syringe"],
+html body .page-frame [data-lucide="thermometer"],
+html body .page-frame [data-lucide="activity"] {
+  color: var(--fafa-accent-coral);
+}
+html body .page-frame [data-lucide="image"],
+html body .page-frame [data-lucide="images"],
+html body .page-frame [data-lucide="camera"],
+html body .page-frame [data-lucide="scan-line"],
+html body .page-frame [data-lucide="search"],
+html body .page-frame [data-lucide="gallery-horizontal"] {
+  color: var(--fafa-accent-sky);
+}
+html body .page-frame [data-lucide="sparkles"],
+html body .page-frame [data-lucide="bot"],
+html body .page-frame [data-lucide="wand-sparkles"],
+html body .page-frame [data-lucide="message-circle"],
+html body .page-frame [data-lucide="brain-circuit"] {
+  color: var(--fafa-accent-lavender);
+}
+html body .page-frame [data-lucide="utensils"],
+html body .page-frame [data-lucide="droplets"],
+html body .page-frame [data-lucide="cup-soda"],
+html body .page-frame [data-lucide="fish"],
+html body .page-frame [data-lucide="scale"] {
+  color: var(--fafa-accent-amber);
+}
+
+/* Existing primary action geometry stays intact; deepen green under white labels. */
+html body .page-frame .btn-hero,
+html body .page-frame .btn-primary,
+html body .page-frame .btn-submit,
+html body .page-frame .btn-pill-primary,
+html body .page-frame .btn-mid,
+html body .page-frame .inputbar-send,
+html body .page-frame .ai-send {
+  background: var(--fafa-gradient-action) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(57, 116, 77, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+html body .page-frame .btn-hero:hover,
+html body .page-frame .btn-primary:hover,
+html body .page-frame .btn-submit:hover,
+html body .page-frame .btn-pill-primary:hover,
+html body .page-frame .btn-mid:hover,
+html body .page-frame .inputbar-send:hover,
+html body .page-frame .ai-send:hover {
+  background: var(--fafa-gradient-action-hover) !important;
+}
+html body .page-frame .chip.is-active {
+  background: var(--fafa-gradient-action) !important;
+  border-color: var(--fafa-primary-action) !important;
+}
+
+/* AI conversation keeps its original bubble geometry with a richer brand-green surface. */
+html body .page-frame .msg-user .bubble {
+  background: var(--fafa-gradient-action) !important;
+  color: #FFFFFF !important;
+}
+
+/* Frosted input surfaces for search, chat and forms; no dimensions or handlers change. */
+html body .page-frame .inputbar,
+html body .page-frame .ai-input-row,
+html body .page-frame .search-box,
+html body .page-frame .search-field,
+html body .page-frame .search-wrap,
+html body .page-frame .tab-hero-btn,
+html body .page-frame .appbar-pill,
+html body .page-frame .ask-chip,
+html body .page-frame input:not([type="checkbox"]):not([type="radio"]),
+html body .page-frame select,
+html body .page-frame textarea {
+  background-color: var(--fafa-glass-surface-strong);
+  border-color: rgba(197, 215, 199, 0.82);
+  box-shadow: 0 2px 10px rgba(55, 81, 64, 0.045), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html body .page-frame .inputbar,
+  html body .page-frame .ai-input-row,
+  html body .page-frame .search-box,
+  html body .page-frame .search-field,
+  html body .page-frame .search-wrap,
+  html body .page-frame .tab-hero-btn,
+  html body .page-frame .appbar-pill,
+  html body .page-frame .ask-chip {
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    backdrop-filter: blur(14px) saturate(1.15);
+  }
+}
+html body .page-frame input:focus,
+html body .page-frame select:focus,
+html body .page-frame textarea:focus {
+  border-color: var(--fafa-primary) !important;
+  box-shadow: 0 0 0 3px rgba(92, 158, 113, 0.13);
+}
+
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased">
+    <style id="critical-layout">
+  /* ===== FaFa 用药计划 · 鼠尾草 · 关键静态布局（不依赖 Tailwind 运行时） ===== */
+  * { box-sizing: border-box; }
+  html { background: var(--fafa-background); }
+  body {
+    margin: 0;
+    background: var(--fafa-background);
+    color: var(--fafa-foreground);
+    font-family: var(--fafa-font-sans);
+    font-size: 13px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, p, ol, ul, li { margin: 0; padding: 0; }
+  ol, ul { list-style: none; }
+  img { display: block; max-width: 100%; }
+  button { font-family: inherit; font-size: inherit; border: none; background: transparent; padding: 0; cursor: pointer; color: inherit; }
+  a { text-decoration: none; color: inherit; cursor: pointer; }
+
+  /* 警示令牌（医疗危险区专用：漏服提示、停药警示） */
+  :root {
+    --fafa-danger: #B4543C;
+    --fafa-danger-strong: color-mix(in srgb, var(--fafa-danger) 78%, var(--fafa-foreground));
+    --fafa-danger-soft: color-mix(in srgb, var(--fafa-danger) 9%, var(--fafa-card));
+    --fafa-danger-tint: color-mix(in srgb, var(--fafa-danger) 30%, var(--fafa-card));
+    --fafa-danger-tint-border: color-mix(in srgb, var(--fafa-danger) 42%, var(--fafa-card));
+  }
+
+  /* 根框架：移动端文档流，max-width 480px 居中 */
+  .page-frame { max-width: 480px; width: 100%; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background: var(--fafa-background); }
+  .page-main { flex: 1 0 auto; width: 100%; padding: 16px 16px 40px; }
+  .page-section { margin: 0 0 24px; }
+  .page-section:last-child { margin-bottom: 0; }
+
+  /* A1 二级页顶部应用栏（44px：返回 + 居中标题 + 右侧动作位） */
+  .appbar { position: sticky; top: 0; z-index: 30; display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; height: 44px; padding: 0 10px 0 6px; background: var(--fafa-card); border-bottom: 1px solid var(--fafa-border); }
+  .appbar-back { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--fafa-radius-md); color: var(--fafa-foreground); }
+  .appbar-back svg { width: 22px; height: 22px; }
+  .appbar-title { min-width: 0; text-align: center; font-size: 15px; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .appbar-action { display: flex; align-items: center; justify-content: flex-end; min-width: 44px; }
+
+  /* 应用栏右侧计数胶囊（纯展示） */
+  .appbar-pill { display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 10px; border-radius: var(--fafa-radius-full); background: var(--fafa-muted); border: 1px solid var(--fafa-border); color: var(--fafa-primary-soft-foreground); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .appbar-pill svg { width: 13px; height: 13px; }
+
+  /* 分区标题行 */
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .sec-title { font-size: 15px; font-weight: 600; line-height: 1.3; }
+  .sec-hint { font-size: 11px; color: var(--fafa-muted-foreground); white-space: nowrap; }
+
+  /* 用药计划卡：药名 + MEDICATION 徽标 + 剂量/频次/周期三格 + 下次提醒 */
+  .med-card { display: block; width: 100%; padding: 14px 16px; background: var(--fafa-card); border: 1px solid var(--fafa-border); border-radius: var(--fafa-radius-lg); box-shadow: var(--fafa-shadow-sm); }
+  .med-card + .med-card { margin-top: 10px; }
+  .med-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .med-icon { flex: none; width: 28px; height: 28px; border-radius: var(--fafa-radius-full); background: var(--fafa-muted); color: var(--fafa-primary); display: inline-flex; align-items: center; justify-content: center; }
+  .med-icon svg { width: 15px; height: 15px; }
+  .med-name { flex: 1 1 auto; min-width: 0; font-size: 14px; font-weight: 600; line-height: 1.3; }
+  .med-tag { flex: none; display: inline-flex; align-items: center; height: 19px; padding: 0 8px; border-radius: var(--fafa-radius-full); background: var(--fafa-muted); color: var(--fafa-muted-foreground); font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .med-meta { display: flex; gap: 8px; margin-top: 12px; }
+  .med-stat { flex: 1 1 0; min-width: 0; display: block; padding: 8px 6px; background: var(--fafa-muted); border-radius: var(--fafa-radius-md); text-align: center; }
+  .med-stat-k { display: block; font-size: 10px; line-height: 1.4; color: var(--fafa-muted-foreground); }
+  .med-stat-v { display: block; margin-top: 1px; font-size: 12px; font-weight: 600; line-height: 1.4; font-variant-numeric: tabular-nums; }
+  .med-next { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 11px; color: var(--fafa-muted-foreground); }
+  .med-next svg { flex: none; width: 13px; height: 13px; color: var(--fafa-primary); }
+  .med-next strong { color: var(--fafa-primary-soft-foreground); font-weight: 600; }
+
+  /* 依从打卡进度 */
+  .adherence-card { padding: 14px 16px; background: var(--fafa-card); border: 1px solid var(--fafa-border); border-radius: var(--fafa-radius-lg); box-shadow: var(--fafa-shadow-sm); }
+  .adherence-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .adherence-title { font-size: 14px; font-weight: 600; }
+  .adherence-count { font-size: 12px; color: var(--fafa-muted-foreground); font-variant-numeric: tabular-nums; }
+  .adherence-count strong { font-size: 18px; font-weight: 700; color: var(--fafa-primary); }
+  .adherence-track { margin-top: 10px; height: 8px; border-radius: var(--fafa-radius-full); background: var(--fafa-muted); overflow: hidden; }
+  .adherence-fill { display: block; width: 86%; height: 100%; border-radius: var(--fafa-radius-full); background: var(--fafa-primary); }
+  .adherence-hint { margin-top: 10px; font-size: 11px; line-height: 1.5; color: var(--fafa-muted-foreground); }
+
+  /* MEDICATION 派生规则说明 */
+  .derive-card { display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; background: var(--fafa-card); border: 1px solid var(--fafa-border); border-radius: var(--fafa-radius-lg); box-shadow: var(--fafa-shadow-sm); }
+  .derive-card > svg { flex: none; width: 17px; height: 17px; margin-top: 2px; color: var(--fafa-primary); }
+  .derive-title { font-size: 13px; font-weight: 600; line-height: 1.4; }
+  .derive-text { margin-top: 2px; font-size: 12px; line-height: 1.6; color: var(--fafa-muted-foreground); }
+  .derive-text strong { color: var(--fafa-foreground); font-weight: 600; }
+
+  /* 新建入口 */
+  .btn-hero { width: 100%; height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--fafa-radius-full); background: var(--fafa-primary); color: var(--fafa-primary-foreground); font-size: 15px; font-weight: 600; }
+  .btn-hero svg { width: 17px; height: 17px; }
+  .hero-note { margin-top: 8px; text-align: center; font-size: 11px; line-height: 1.5; color: var(--fafa-muted-foreground); }
+
+  /* 交互状态：CSS transition 0.15s 级，触控设备禁用 hover 过渡，reduced-motion 降级 */
+  .appbar-back, .med-card, .btn-hero { transition: background-color 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  @media (hover: hover) {
+    .appbar-back:hover { color: var(--fafa-primary); }
+    .med-card:hover { border-color: var(--fafa-primary-tint-border); }
+    .med-card:hover .med-next strong { color: var(--fafa-primary); }
+    .btn-hero:hover { background: var(--fafa-primary-soft-foreground); }
+  }
+  .med-card:active, .btn-hero:active { transform: translateY(1px); }
+  .appbar-back:focus-visible, .med-card:focus-visible, .btn-hero:focus-visible { outline: 2px solid var(--fafa-ring); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    .appbar-back, .med-card, .btn-hero { transition-duration: 0.01ms; }
+  }
+    </style>
+    <main>
+  <div class="page-frame">
+    <header class="appbar">
+      <a class="appbar-back" href="#" data-dom-id="back-previous" aria-label="返回"><i data-lucide="chevron-left"></i></a>
+      <h1 class="appbar-title">用药计划</h1>
+      <div class="appbar-action">
+        <span class="appbar-pill"><i data-lucide="cat"></i>毛毛 · 3 个进行中</span>
+      </div>
+    </header>
+    <div class="page-main">
+
+      <!-- region: medication-list -->
+      <section class="page-section" id="medication-list">
+        <div class="sec-head">
+          <h2 class="sec-title">进行中的用药计划</h2>
+          <span class="sec-hint">3 个 · 按下次用药排序</span>
+        </div>
+        <a class="med-card" href="#" data-dom-id="link-medication-detail-1">
+          <span class="med-head">
+            <span class="med-icon"><i data-lucide="pill"></i></span>
+            <span class="med-name">甲硝唑片 25mg</span>
+            <span class="med-tag">MEDICATION</span>
+          </span>
+          <span class="med-meta">
+            <span class="med-stat"><span class="med-stat-k">每次剂量</span><span class="med-stat-v">1/4 片</span></span>
+            <span class="med-stat"><span class="med-stat-k">频次</span><span class="med-stat-v">每日 2 次</span></span>
+            <span class="med-stat"><span class="med-stat-k">周期</span><span class="med-stat-v">剩 3 天 / 7 天</span></span>
+          </span>
+          <span class="med-next"><i data-lucide="clock"></i>下次 <strong>今晚 20:00</strong> · 已派生 2 条用药提醒</span>
+        </a>
+        <a class="med-card" href="#" data-dom-id="link-medication-detail-2">
+          <span class="med-head">
+            <span class="med-icon"><i data-lucide="droplets"></i></span>
+            <span class="med-name">耳肤灵滴耳液</span>
+            <span class="med-tag">MEDICATION</span>
+          </span>
+          <span class="med-meta">
+            <span class="med-stat"><span class="med-stat-k">每次剂量</span><span class="med-stat-v">每耳 2 滴</span></span>
+            <span class="med-stat"><span class="med-stat-k">频次</span><span class="med-stat-v">每日 1 次</span></span>
+            <span class="med-stat"><span class="med-stat-k">周期</span><span class="med-stat-v">剩 9 天 / 14 天</span></span>
+          </span>
+          <span class="med-next"><i data-lucide="clock"></i>下次 <strong>明早 08:30</strong> · 已派生 1 条用药提醒</span>
+        </a>
+        <a class="med-card" href="#" data-dom-id="link-medication-detail-3">
+          <span class="med-head">
+            <span class="med-icon"><i data-lucide="leaf"></i></span>
+            <span class="med-name">布拉迪酵母益生菌</span>
+            <span class="med-tag">MEDICATION</span>
+          </span>
+          <span class="med-meta">
+            <span class="med-stat"><span class="med-stat-k">每次剂量</span><span class="med-stat-v">1 袋</span></span>
+            <span class="med-stat"><span class="med-stat-k">频次</span><span class="med-stat-v">每日 1 次</span></span>
+            <span class="med-stat"><span class="med-stat-k">周期</span><span class="med-stat-v">剩 6 天 / 10 天</span></span>
+          </span>
+          <span class="med-next"><i data-lucide="clock"></i>下次 <strong>明早 08:00</strong> · 与滴耳液间隔 30 分钟</span>
+        </a>
+      </section>
+
+      <!-- region: medication-adherence -->
+      <section class="page-section" id="medication-adherence">
+        <div class="adherence-card">
+          <div class="adherence-head">
+            <p class="adherence-title">本周依从打卡</p>
+            <span class="adherence-count"><strong>12</strong>/14 次</span>
+          </div>
+          <div class="adherence-track"><span class="adherence-fill"></span></div>
+          <p class="adherence-hint">依从率 86% · 漏服 2 次已自动顺延提醒，目标 ≥ 95%</p>
+        </div>
+      </section>
+
+      <!-- region: medication-derive -->
+      <section class="page-section" id="medication-derive">
+        <div class="derive-card">
+          <i data-lucide="bell-off"></i>
+          <div>
+            <p class="derive-title">MEDICATION 类提醒只能由用药计划派生</p>
+            <p class="derive-text">提醒中心不提供「用药」类型的新建入口：所有 MEDICATION 提醒均来自本页的用药计划，<strong>不能单独新建</strong>。修改计划会同步更新提醒，停用计划会一并撤销其派生的全部提醒。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- region: medication-create-entry -->
+      <section class="page-section" id="medication-create-entry">
+        <button type="button" class="btn-hero" data-dom-id="cta-medication-create"><i data-lucide="plus"></i>新建用药计划</button>
+        <p class="hero-note">2 步：填用药信息 → 自动派生每日用药提醒</p>
+      </section>
+
+    </div>
+  </div>
+    </main>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

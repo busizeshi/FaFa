@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页 · 奶油陶土</title>
+    <style id="theme-vars">
+/* ============================================================
+   FaFa 宠物小程序 · 风格一：奶油陶土 · 暖橘
+   背景 #FAF6F0 · 唯一主色 #C4674A（陶土橘）· 16px 大圆角卡片
+   Token 前缀：fafa（preflight 契约：--fafa-* 语义别名 + 圆角刻度）
+   ============================================================ */
+
+:root {
+  /* —— 唯一品牌主色（仅此一个色相，其余为主色明度变体） —— */
+  --fafa-primary: #C4674A;
+  --fafa-primary-foreground: #FFFFFF;
+  --fafa-primary-soft: #F6E4DB;            /* 主色浅底：强调区块、选中态 */
+  --fafa-primary-soft-2: #EFD3C6;          /* 主色次浅底：图形点缀、进度 */
+  --fafa-primary-soft-foreground: #8A4A34; /* 浅底上的深字 */
+  --fafa-primary-tint-border: #E8C9B9;     /* 浅底描边 */
+
+  /* —— 页面语义色 —— */
+  --fafa-background: #FAF6F0;
+  --fafa-foreground: #3B2D25;
+  --fafa-card: #FFFFFF;
+  --fafa-card-foreground: #3B2D25;
+  --fafa-muted: #F2EAE0;
+  --fafa-muted-foreground: #94796A;
+  --fafa-border: #EAE0D4;
+  --fafa-input: #FFFFFF;
+  --fafa-ring: #C4674A;
+
+  /* —— 字体：单一无衬线系统字体栈 —— */
+  --fafa-font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC",
+    "HarmonyOS Sans SC", "Microsoft YaHei", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  /* —— 圆角刻度（大圆角卡片风格） —— */
+  --fafa-radius-sm: 4px;
+  --fafa-radius-md: 8px;
+  --fafa-radius-lg: 16px;
+  --fafa-radius-full: 9999px;
+
+  /* —— 阴影（静态、低透明度、暖棕投影） —— */
+  --fafa-shadow-sm: 0 1px 2px rgba(59, 45, 37, 0.04);
+  --fafa-shadow-md: 0 6px 16px rgba(59, 45, 37, 0.05);
+}
+
+body {
+  background: var(--fafa-background);
+  color: var(--fafa-foreground);
+  font-family: var(--fafa-font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--fafa-background);
+    --color-foreground: var(--fafa-foreground);
+    --color-card: var(--fafa-card);
+    --color-card-foreground: var(--fafa-card-foreground);
+    --color-primary: var(--fafa-primary);
+    --color-primary-foreground: var(--fafa-primary-foreground);
+    --color-muted: var(--fafa-muted);
+    --color-muted-foreground: var(--fafa-muted-foreground);
+    --color-border: var(--fafa-border);
+    --color-input: var(--fafa-input);
+    --color-ring: var(--fafa-ring);
+    --radius-sm: var(--fafa-radius-sm);
+    --radius-md: var(--fafa-radius-md);
+    --radius-lg: var(--fafa-radius-lg);
+  }
+  @layer base {
+    body { background: var(--fafa-background); color: var(--fafa-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--fafa-background); }
+      .text-background { color: var(--fafa-background); }
+      .border-background { border-color: var(--fafa-background); }
+      .ring-background { --tw-ring-color: var(--fafa-background); }
+      .bg-foreground { background-color: var(--fafa-foreground); }
+      .text-foreground { color: var(--fafa-foreground); }
+      .border-foreground { border-color: var(--fafa-foreground); }
+      .ring-foreground { --tw-ring-color: var(--fafa-foreground); }
+      .bg-card { background-color: var(--fafa-card); }
+      .text-card { color: var(--fafa-card); }
+      .border-card { border-color: var(--fafa-card); }
+      .ring-card { --tw-ring-color: var(--fafa-card); }
+      .bg-card-foreground { background-color: var(--fafa-card-foreground); }
+      .text-card-foreground { color: var(--fafa-card-foreground); }
+      .border-card-foreground { border-color: var(--fafa-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--fafa-card-foreground); }
+      .bg-primary { background-color: var(--fafa-primary); }
+      .text-primary { color: var(--fafa-primary); }
+      .border-primary { border-color: var(--fafa-primary); }
+      .ring-primary { --tw-ring-color: var(--fafa-primary); }
+      .bg-primary-foreground { background-color: var(--fafa-primary-foreground); }
+      .text-primary-foreground { color: var(--fafa-primary-foreground); }
+      .border-primary-foreground { border-color: var(--fafa-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--fafa-primary-foreground); }
+      .bg-muted { background-color: var(--fafa-muted); }
+      .text-muted { color: var(--fafa-muted); }
+      .border-muted { border-color: var(--fafa-muted); }
+      .ring-muted { --tw-ring-color: var(--fafa-muted); }
+      .bg-muted-foreground { background-color: var(--fafa-muted-foreground); }
+      .text-muted-foreground { color: var(--fafa-muted-foreground); }
+      .border-muted-foreground { border-color: var(--fafa-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--fafa-muted-foreground); }
+      .bg-border { background-color: var(--fafa-border); }
+      .text-border { color: var(--fafa-border); }
+      .border-border { border-color: var(--fafa-border); }
+      .ring-border { --tw-ring-color: var(--fafa-border); }
+      .bg-input { background-color: var(--fafa-input); }
+      .text-input { color: var(--fafa-input); }
+      .border-input { border-color: var(--fafa-input); }
+      .ring-input { --tw-ring-color: var(--fafa-input); }
+      .bg-ring { background-color: var(--fafa-ring); }
+      .text-ring { color: var(--fafa-ring); }
+      .border-ring { border-color: var(--fafa-ring); }
+      .ring-ring { --tw-ring-color: var(--fafa-ring); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body>
+<style id="critical-layout">
+  /* ============ 关键布局（纯静态 CSS：Tailwind 运行时加载失败也不塌陷） ============ */
+  html { background: var(--fafa-background); }
+  body {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: var(--fafa-background);
+    color: var(--fafa-foreground);
+    font-family: var(--fafa-font-sans);
+  }
+  .fafa-main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 16px 16px 28px;
+  }
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .sec-title { margin: 0; font-size: 16px; font-weight: 700; color: var(--fafa-card-foreground); }
+  .sec-side {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 12px;
+    color: var(--fafa-muted-foreground);
+    text-decoration: none;
+  }
+
+  /* —— 顶部问候 —— */
+  .greet-card {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 16px;
+    border-radius: var(--fafa-radius-lg);
+    border: 1px solid var(--fafa-primary-tint-border);
+    background: linear-gradient(135deg, var(--fafa-primary-soft) 0%, var(--fafa-background) 82%);
+    box-shadow: var(--fafa-shadow-sm);
+  }
+  .greet-card::after {
+    content: '';
+    position: absolute;
+    right: -34px;
+    bottom: -48px;
+    width: 118px;
+    height: 118px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--fafa-primary-soft-2), transparent 70%);
+    pointer-events: none;
+  }
+  .greet-body { position: relative; z-index: 1; min-width: 0; }
+  .greet-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 10px;
+    padding: 3px 10px;
+    border-radius: var(--fafa-radius-full);
+    background: var(--fafa-card);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fafa-primary-soft-foreground);
+  }
+  .greet-title { margin: 0 0 6px; font-size: 20px; font-weight: 800; color: var(--fafa-foreground); }
+  .greet-sub { margin: 0; font-size: 13px; line-height: 1.6; color: var(--fafa-muted-foreground); }
+  .bell-btn {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: var(--fafa-radius-full);
+    border: 1px solid var(--fafa-border);
+    background: var(--fafa-card);
+    box-shadow: var(--fafa-shadow-sm);
+    color: var(--fafa-primary-soft-foreground);
+    cursor: pointer;
+  }
+  .bell-dot {
+    position: absolute;
+    top: 8px;
+    right: 9px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--fafa-primary);
+    border: 2px solid var(--fafa-card);
+    box-sizing: content-box;
+  }
+
+  /* —— 宠物概览卡 —— */
+  .pet-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+  }
+  .pet-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    border-radius: var(--fafa-radius-lg);
+    border: 1px solid var(--fafa-border);
+    background: var(--fafa-card);
+    box-shadow: var(--fafa-shadow-sm);
+  }
+  .pet-photo {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 12px;
+    background: var(--fafa-muted);
+  }
+  .pet-name-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .pet-name { margin: 0; font-size: 15px; font-weight: 700; color: var(--fafa-card-foreground); }
+  .badge {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 8px;
+    border-radius: var(--fafa-radius-full);
+    background: var(--fafa-primary-soft);
+    color: var(--fafa-primary-soft-foreground);
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge--muted { background: var(--fafa-muted); color: var(--fafa-muted-foreground); }
+  .pet-breed { margin: 2px 0 0; font-size: 11px; color: var(--fafa-muted-foreground); }
+  .pet-weight-row { display: flex; align-items: baseline; gap: 6px; margin-top: 6px; }
+  .pet-weight { font-size: 16px; font-weight: 800; color: var(--fafa-card-foreground); }
+  .pet-weight-unit { font-size: 11px; font-weight: 600; color: var(--fafa-muted-foreground); }
+  .pet-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    padding: 2px 7px;
+    border-radius: var(--fafa-radius-full);
+    background: var(--fafa-primary-soft);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fafa-primary-soft-foreground);
+    white-space: nowrap;
+  }
+
+  /* —— 今日概览指标 —— */
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .status-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 8px 12px;
+    border-radius: var(--fafa-radius-lg);
+    border: 1px solid var(--fafa-border);
+    background: var(--fafa-card);
+    box-shadow: var(--fafa-shadow-sm);
+    text-align: center;
+  }
+  .status-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    background: var(--fafa-primary-soft);
+    color: var(--fafa-primary);
+  }
+  .status-value { display: inline-flex; align-items: baseline; gap: 2px; font-size: 17px; font-weight: 800; line-height: 1; color: var(--fafa-card-foreground); }
+  .status-unit { font-size: 11px; font-weight: 600; color: var(--fafa-muted-foreground); }
+  .status-label { font-size: 12px; color: var(--fafa-muted-foreground); }
+  .status-sub { font-size: 10px; color: var(--fafa-muted-foreground); }
+
+  /* —— 快捷入口 —— */
+  .qa-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .qa-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 4px 10px;
+    border-radius: var(--fafa-radius-lg);
+    border: 1px solid var(--fafa-border);
+    background: var(--fafa-card);
+    box-shadow: var(--fafa-shadow-sm);
+    text-decoration: none;
+  }
+  .qa-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    background: var(--fafa-primary-soft);
+    color: var(--fafa-primary);
+  }
+  .qa-label { font-size: 12px; font-weight: 600; color: var(--fafa-card-foreground); white-space: nowrap; }
+
+  /* —— AI 助手入口 —— */
+  .ai-card {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 20px;
+    border: 1px solid var(--fafa-primary-tint-border);
+    background: linear-gradient(135deg, var(--fafa-primary-soft) 0%, var(--fafa-primary-soft-2) 100%);
+    box-shadow: var(--fafa-shadow-md);
+  }
+  .ai-head { display: flex; align-items: center; gap: 10px; }
+  .ai-avatar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--fafa-primary);
+    color: var(--fafa-primary-foreground);
+    box-shadow: var(--fafa-shadow-sm);
+  }
+  .ai-title { margin: 0; font-size: 16px; font-weight: 800; color: var(--fafa-primary-soft-foreground); }
+  .ai-sub { margin: 2px 0 0; font-size: 11px; color: var(--fafa-muted-foreground); }
+  .ai-inputbar {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 8px 8px 14px;
+    border-radius: var(--fafa-radius-full);
+    border: 1px solid var(--fafa-border);
+    background: var(--fafa-card);
+    box-shadow: var(--fafa-shadow-sm);
+  }
+  .ai-placeholder {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    color: var(--fafa-muted-foreground);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ai-send {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--fafa-primary);
+    color: var(--fafa-primary-foreground);
+  }
+
+  /* —— 今日时间线 —— */
+  .tl-card {
+    padding: 6px 16px;
+    border-radius: var(--fafa-radius-lg);
+    border: 1px solid var(--fafa-border);
+    background: var(--fafa-card);
+    box-shadow: var(--fafa-shadow-sm);
+  }
+  .tl-item { display: flex; gap: 12px; padding: 12px 0; }
+  .tl-item + .tl-item { border-top: 1px dashed var(--fafa-border); }
+  .tl-time {
+    flex: none;
+    width: 44px;
+    padding-top: 1px;
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--fafa-card-foreground);
+  }
+  .tl-item.is-done .tl-time { color: var(--fafa-muted-foreground); font-weight: 600; }
+  .tl-body { flex: 1; min-width: 0; }
+  .tl-title { margin: 0; font-size: 14px; font-weight: 600; color: var(--fafa-card-foreground); }
+  .tl-note { margin: 3px 0 0; font-size: 12px; color: var(--fafa-muted-foreground); }
+  .tl-chip {
+    flex: none;
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 9px;
+    border-radius: var(--fafa-radius-full);
+    background: var(--fafa-primary-soft);
+    color: var(--fafa-primary-soft-foreground);
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tl-chip--done { background: var(--fafa-muted); color: var(--fafa-muted-foreground); }
+</style>
+
+<main class="fafa-main">
+
+  <!-- 1. 顶部问候 -->
+  <header data-dom-id="greeting-header" class="greet-card" aria-label="顶部问候">
+    <div class="greet-body">
+      <span class="greet-date"><i data-lucide="calendar" style="width:12px;height:12px;"></i>10 月 7 日 · 周三</span>
+      <h1 class="greet-title">早上好，林小雅</h1>
+      <p class="greet-sub">团子和小满都在等你投喂，今天也要元气满满哦</p>
+    </div>
+    <button class="bell-btn" type="button" aria-label="查看通知">
+      <i data-lucide="bell" style="width:20px;height:20px;"></i>
+      <span class="bell-dot" aria-hidden="true"></span>
+    </button>
+  </header>
+
+  <!-- 2. 宠物概览卡 -->
+  <section data-dom-id="pet-overview-cards" aria-label="宠物概览">
+    <div class="sec-head">
+      <h2 class="sec-title">我的宠物</h2>
+      <a class="sec-side" href="#">全部<i data-lucide="chevron-right" style="width:14px;height:14px;"></i></a>
+    </div>
+    <div class="pet-grid">
+      <article class="pet-card">
+        <img class="pet-photo" src="../assets/cat1.png" alt="英短猫团子的照片">
+        <div>
+          <div class="pet-name-row">
+            <h3 class="pet-name">团子</h3>
+            <span class="badge">健康良好</span>
+          </div>
+          <p class="pet-breed">英国短毛猫 · 2 岁</p>
+        </div>
+        <div class="pet-weight-row">
+          <span class="pet-weight">4.8</span>
+          <span class="pet-weight-unit">kg</span>
+          <span class="pet-trend"><i data-lucide="trending-up" style="width:12px;height:12px;"></i>+0.2</span>
+        </div>
+      </article>
+      <article class="pet-card">
+        <img class="pet-photo" src="../assets/cat2.png" alt="橘猫小满的照片">
+        <div>
+          <div class="pet-name-row">
+            <h3 class="pet-name">小满</h3>
+            <span class="badge badge--muted">本月待驱虫</span>
+          </div>
+          <p class="pet-breed">中华田园橘猫 · 1 岁</p>
+        </div>
+        <div class="pet-weight-row">
+          <span class="pet-weight">3.6</span>
+          <span class="pet-weight-unit">kg</span>
+          <span class="pet-trend"><i data-lucide="trending-down" style="width:12px;height:12px;"></i>-0.1</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 3. 今日概览指标 -->
+  <section data-dom-id="today-status" aria-label="今日概览">
+    <div class="sec-head">
+      <h2 class="sec-title">今日概览</h2>
+      <span class="sec-side">自动同步中</span>
+    </div>
+    <div class="status-grid">
+      <div class="status-card">
+        <span class="status-icon"><i data-lucide="utensils" style="width:18px;height:18px;"></i></span>
+        <span class="status-value">2<span class="status-unit">/3 餐</span></span>
+        <span class="status-label">已喂食</span>
+        <span class="status-sub">晚餐待喂</span>
+      </div>
+      <div class="status-card">
+        <span class="status-icon"><i data-lucide="droplets" style="width:18px;height:18px;"></i></span>
+        <span class="status-value">180<span class="status-unit">ml</span></span>
+        <span class="status-label">今日饮水</span>
+        <span class="status-sub">目标 250ml</span>
+      </div>
+      <div class="status-card">
+        <span class="status-icon"><i data-lucide="activity" style="width:18px;height:18px;"></i></span>
+        <span class="status-value">42<span class="status-unit">分钟</span></span>
+        <span class="status-label">运动量</span>
+        <span class="status-sub">逗猫棒互动</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 快捷入口 -->
+  <section data-dom-id="quick-actions" aria-label="快捷入口">
+    <div class="sec-head">
+      <h2 class="sec-title">快捷入口</h2>
+    </div>
+    <div class="qa-grid">
+      <a class="qa-item" href="#">
+        <span class="qa-icon"><i data-lucide="scale" style="width:20px;height:20px;"></i></span>
+        <span class="qa-label">体重记录</span>
+      </a>
+      <a class="qa-item" href="#">
+        <span class="qa-icon"><i data-lucide="camera" style="width:20px;height:20px;"></i></span>
+        <span class="qa-label">拍照记素材</span>
+      </a>
+      <a class="qa-item" href="#">
+        <span class="qa-icon"><i data-lucide="stethoscope" style="width:20px;height:20px;"></i></span>
+        <span class="qa-label">就医记录</span>
+      </a>
+      <a class="qa-item" href="#">
+        <span class="qa-icon"><i data-lucide="wallet" style="width:20px;height:20px;"></i></span>
+        <span class="qa-label">花费记账</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 5. AI 助手入口 -->
+  <section data-dom-id="ai-agent-entry" aria-label="AI 助手入口">
+    <div class="ai-card">
+      <div class="ai-head">
+        <span class="ai-avatar"><i data-lucide="message-circle" style="width:20px;height:20px;"></i></span>
+        <div>
+          <h2 class="ai-title">问问 FaFa 助手</h2>
+          <p class="ai-sub">已守护团子和小满 128 天</p>
+        </div>
+      </div>
+      <div class="ai-inputbar" role="button" tabindex="0" aria-label="唤起 FaFa 助手对话">
+        <span class="ai-placeholder">团子最近总挠耳朵，是怎么回事？</span>
+        <span class="ai-send"><i data-lucide="chevron-right" style="width:18px;height:18px;"></i></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. 今日时间线 -->
+  <section data-dom-id="today-timeline" aria-label="今日时间线">
+    <div class="sec-head">
+      <h2 class="sec-title">今日安排</h2>
+      <span class="sec-side">2 项待完成</span>
+    </div>
+    <div class="tl-card">
+      <div class="tl-item is-done">
+        <span class="tl-time">07:50</span>
+        <div class="tl-body">
+          <p class="tl-title">早餐喂食</p>
+          <p class="tl-note">团子 40g · 小满 35g</p>
+        </div>
+        <span class="tl-chip tl-chip--done"><i data-lucide="check" style="width:12px;height:12px;"></i>已完成</span>
+      </div>
+      <div class="tl-item is-done">
+        <span class="tl-time">12:30</span>
+        <div class="tl-body">
+          <p class="tl-title">午餐喂食</p>
+          <p class="tl-note">小满 30g · 饭后换水</p>
+        </div>
+        <span class="tl-chip tl-chip--done"><i data-lucide="check" style="width:12px;height:12px;"></i>已完成</span>
+      </div>
+      <div class="tl-item">
+        <span class="tl-time">18:30</span>
+        <div class="tl-body">
+          <p class="tl-title">晚餐喂食</p>
+          <p class="tl-note">团子 45g · 小满 35g</p>
+        </div>
+        <span class="tl-chip">待完成</span>
+      </div>
+      <div class="tl-item">
+        <span class="tl-time">21:00</span>
+        <div class="tl-body">
+          <p class="tl-title">换季梳毛</p>
+          <p class="tl-note">团子掉毛期，重点梳理腹部</p>
+        </div>
+        <span class="tl-chip">待完成</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!--
+  ============================================================
+  FaFa 宠物助手 · 共享外壳片段（shared shell fragment）
+  ============================================================
+  sharedRegion : bottom-tab-navigation（底部标签导航）
+  mutableSlot  : nav-active-key —— 已解析为 home（本项目三页一致，无页面级差异）
+  内联位置     : 建议粘贴在各页面 main 结束标签之后、body 结束标签之前
+  换肤机制     : 片段内颜色全部引用 var(--fafa-*) 语义令牌，由各页面
+                 head 内联的主题令牌驱动自动换肤，三种风格的三份首页
+                 共用本外壳，无需修改本文件
+  结构纪律     : 下方 nav 规范标记（元素结构、class、data-nav-key、
+                 aria-current、内联 style 与文案）必须逐字保留，
+                 禁止增删标签或属性
+  ============================================================
+-->
+<style id="fafa-shell-critical">
+  /* 外壳补充静态样式（scoped；不破坏规范标记行内样式的结构布局） */
+  .fafa-tabbar {
+    font-family: var(--fafa-font-sans, -apple-system, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .fafa-tab {
+    text-decoration: none;
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* 激活态轻量指示：激活标签文字下方的主题色短横线 */
+  .fafa-tab.is-active span::after {
+    content: '';
+    display: block;
+    width: 16px;
+    height: 2px;
+    background: var(--fafa-primary);
+    margin: 3px auto 0;
+  }
+  /* 可访问性：键盘聚焦时使用主题色描边，不遮挡内容 */
+  .fafa-tab:focus-visible {
+    outline: 2px solid var(--fafa-primary);
+    outline-offset: -2px;
+  }
+</style>
+<nav data-mobile-nav="global" class="fafa-tabbar w-full h-[64px]" aria-label="底部导航" style="height:64px;display:flex;align-items:stretch;background:var(--fafa-card);border-top:1px solid var(--fafa-border);"><div class="w-full max-w-md mx-auto grid grid-cols-3 h-full" style="width:100%;height:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));"><a class="fafa-tab is-active min-w-0 flex flex-col items-center justify-center gap-0.5 px-1 h-full" data-nav-key="home" aria-current="page" style="min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 4px;height:100%;color:var(--fafa-primary);"><i data-lucide="home" class="w-5 h-5 shrink-0" style="width:22px;height:22px;flex-shrink:0;"></i><span class="text-[11px] leading-none whitespace-nowrap max-w-full truncate" style="font-size:11px;line-height:1;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-weight:600;">首页</span></a><a class="fafa-tab min-w-0 flex flex-col items-center justify-center gap-0.5 px-1 h-full" data-nav-key="pets" style="min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 4px;height:100%;color:var(--fafa-muted-foreground);"><i data-lucide="paw-print" class="w-5 h-5 shrink-0" style="width:22px;height:22px;flex-shrink:0;"></i><span class="text-[11px] leading-none whitespace-nowrap max-w-full truncate" style="font-size:11px;line-height:1;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;">宠物</span></a><a class="fafa-tab min-w-0 flex flex-col items-center justify-center gap-0.5 px-1 h-full" data-nav-key="me" style="min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 4px;height:100%;color:var(--fafa-muted-foreground);"><i data-lucide="user" class="w-5 h-5 shrink-0" style="width:22px;height:22px;flex-shrink:0;"></i><span class="text-[11px] leading-none whitespace-nowrap max-w-full truncate" style="font-size:11px;line-height:1;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;">我的</span></a></div></nav>
+<script>(function(){var r=function(){if(window.lucide&&window.lucide.createIcons){window.lucide.createIcons();}};if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',r);}else{r();}})();</script>
+</body>
+</html>

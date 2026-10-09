@@ -1,0 +1,18 @@
+<view class="page me-page">
+  <view class="me-title">我的</view>
+  <view wx:if="{{error}}" class="error-banner" bindtap="onRetry">{{error}}　点击重试</view>
+  <view class="profile-card card" bindtap="goProfile">
+    <view class="profile-avatar"><image wx:if="{{user.avatarUrl}}" src="{{user.avatarUrl}}" mode="aspectFill"/><text wx:else>{{avatarLetter || '我'}}</text></view>
+    <view class="profile-info"><view class="profile-name">{{user.displayName || user.nickname || 'FaFa 伙伴'}}</view><view class="profile-caption">{{user.vip ? 'FaFa 会员' : '记录每份细心的陪伴'}}</view></view><text class="arrow">›</text>
+  </view>
+  <view class="membership-card" bindtap="goMembership"><view><view class="member-title">{{user.vip ? '会员权益' : '了解 FaFa 会员'}}</view><view class="member-copy">{{user.vip ? '查看有效期与服务额度' : '给更多成长记忆留个位置'}}</view></view><text class="member-arrow">›</text></view>
+  <view class="section menu-card card">
+    <view class="menu-row" bindtap="goPets"><text class="menu-icon pet-icon">♡</text><text class="menu-label">我的宠物</text><text class="menu-value">{{petCount}} 只</text><text class="arrow">›</text></view>
+    <view class="menu-row" bindtap="goFamily"><text class="menu-icon family-icon">⌂</text><text class="menu-label">家庭成员</text><text class="arrow">›</text></view>
+    <view class="menu-row" bindtap="goReports"><text class="menu-icon report-icon">▤</text><text class="menu-label">健康报告</text><text class="arrow">›</text></view>
+    <view class="menu-row" bindtap="goReminders"><text class="menu-icon reminder-icon">◷</text><text class="menu-label">提醒中心</text><text class="arrow">›</text></view>
+    <view class="menu-row" bindtap="goExpenses"><text class="menu-icon expense-icon">￥</text><text class="menu-label">照护账本</text><text class="arrow">›</text></view>
+    <view class="menu-row last-row" bindtap="goProfile"><text class="menu-icon profile-icon">○</text><text class="menu-label">个人资料</text><text class="arrow">›</text></view>
+  </view>
+  <view class="me-footer">FaFa · 陪伴有迹可循</view>
+</view>

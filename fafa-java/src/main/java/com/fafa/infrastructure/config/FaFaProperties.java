@@ -22,7 +22,7 @@ public class FaFaProperties {
     /** 服务间内部令牌（Java 与 Python 双方一致） */
     private String internalToken;
 
-    /** 存储类型：minio（开发/测试）/ oss（生产） */
+    /** 存储类型：minio（本地开发）/ oss（生产）/ cos（腾讯云） */
     private Storage storage = new Storage();
 
     /** AI 任务分发器：http（开发）/ rocketmq（生产） */
@@ -66,6 +66,9 @@ public class FaFaProperties {
 
     /** 阿里云 OSS 配置 */
     private Oss oss = new Oss();
+
+    /** 腾讯云 COS 配置 */
+    private Cos cos = new Cos();
 
     @Data
     public static class WeChat {
@@ -270,5 +273,14 @@ public class FaFaProperties {
         private String accessKeyId;
         private String accessKeySecret;
         private String bucketName = "fafa-prod";
+    }
+
+    @Data
+    public static class Cos {
+        private String secretId;
+        private String secretKey;
+        /** 地域，如 ap-guangzhou */
+        private String region;
+        private String bucketName;
     }
 }

@@ -1,7 +1,10 @@
 package com.fafa.interfaces.controller;
 
 import com.fafa.common.Result;
+import com.fafa.application.dto.pet.PetVectorizationCallbackCommand;
 import com.fafa.application.service.MediaApplicationService;
+import com.fafa.application.service.PetApplicationService;
+import com.fafa.interfaces.dto.callback.PetVectorizationCallback;
 import com.fafa.interfaces.dto.callback.PhotoAnalysisCallback;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,6 +34,8 @@ public class CallbackController {
 
     private final MediaApplicationService mediaApplicationService;
 
+    private final PetApplicationService petApplicationService;
+
     /** 素材分析结果回调 */
     @Operation(summary = "素材分析结果回调")
     @PostMapping("/photo-analysis")
@@ -48,6 +53,20 @@ public class CallbackController {
         ));
         log.info("素材向量化回调处理完成: mediaId={}, petIds={}, success={}",
                 callback.getMediaId(), callback.getRecognizedPetIds(), callback.getSuccess());
+        return Result.ok();
+    }
+
+    /** 宠物三视图向量化结果回调（Python 完成 embed_profile_photos 并写入 Qdrant 后调用） */
+    @Operation(summary = "宠物三视图向量化结果回调")
+    @PostMapping("/pet-vectorization")
+    public Result<Void> onPetVectorization(@RequestBody @Valid PetVectorizationCallback callback) {
+        petApplicationService.handleVectorizationCallback(new PetVectorizationCallbackCommand(
+                callback.getPetId(),
+                Boolean.TRUE.equals(callback.getSuccess()),
+                callback.getMessage()
+        ));
+        log.info("宠物三视图向量化回调处理完成: petId={}, success={}, message={}",
+                callback.getPetId(), callback.getSuccess(), callback.getMessage());
         return Result.ok();
     }
 }

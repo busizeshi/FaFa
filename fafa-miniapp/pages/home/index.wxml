@@ -1,0 +1,39 @@
+<view class="page home-page">
+  <view class="home-top row-between">
+    <view><text class="eyebrow">{{dateLabel}}</text><view class="greeting">今天也要好好陪伴</view></view>
+    <view class="avatar-dot">F</view>
+  </view>
+  <view wx:if="{{error}}" class="error-banner">{{error}} <text class="retry" bindtap="loadHome">重试</text></view>
+  <view wx:if="{{!loading && !pet}}" class="welcome-card card">
+    <view class="welcome-icon">♡</view><view class="welcome-title">先为家里的伙伴建个档案</view><view class="muted">记录从认识它开始。</view>
+    <button class="primary-button welcome-action" bindtap="goPets">添加宠物</button>
+  </view>
+  <block wx:if="{{pet}}">
+    <view class="pet-card card" bindtap="goPets">
+      <view class="pet-avatar"><image wx:if="{{pet.avatarUrl}}" src="{{pet.avatarUrl}}" mode="aspectFill" /><text wx:else>{{pet.type === 'cat' ? '🐱' : pet.type === 'dog' ? '🐶' : '🐾'}}</text></view>
+      <view class="pet-info"><view class="row pet-name-line"><text class="pet-name">{{pet.name}}</text><text class="pet-type">{{pet.type === 'cat' ? '猫咪' : pet.type === 'dog' ? '狗狗' : '伙伴'}}</text></view><text class="pet-meta">{{pet.breed || '来认识一下它'}} · {{pet.gender === 'female' ? '妹妹' : pet.gender === 'male' ? '弟弟' : '小伙伴'}}</text></view>
+      <picker wx:if="{{pets.length > 1}}" mode="selector" range="{{petNames}}" value="{{petIndex}}" bindchange="onChoosePet"><view class="switch-pet">切换⌄</view></picker>
+      <text wx:else class="pet-arrow">›</text>
+    </view>
+    <view class="section daily-section">
+      <view class="section-heading"><view><view class="section-title">今日照护</view><view class="section-note">每天一点点，都是很重要的记录</view></view><text wx:if="{{canRecord}}" class="text-link" bindtap="goCheckin">{{daily ? '查看记录' : '去打卡'}} ›</text></view>
+      <view wx:if="{{canRecord}}" class="daily-card card" bindtap="goCheckin">
+        <view class="daily-mark {{daily ? 'done' : ''}}">{{daily ? '✓' : '＋'}}</view>
+        <view class="daily-copy"><view class="daily-title">{{daily ? (daily.allNormal ? '今天状态都不错' : '今日记录已保存') : '记录一下今天的状态'}}</view><view class="daily-sub">{{daily ? (daily.notes || '继续留意食欲、精神和日常变化') : '食欲、精神、饮水等几项就好'}}</view></view><text class="chevron">›</text>
+      </view>
+      <view wx:else class="daily-card card readonly-card"><view class="daily-mark">♡</view><view class="daily-copy"><view class="daily-title">今日状态</view><view class="daily-sub">你可以查看宠物资料与动态</view></view></view>
+    </view>
+    <view class="section shortcuts">
+      <view class="section-heading"><view class="section-title">常用照护</view><text class="text-link" bindtap="goReminders">提醒中心 ›</text></view>
+      <view class="shortcut-grid">
+        <view class="shortcut card feed-shortcut" bindtap="goFeeding"><text class="shortcut-icon">◒</text><text class="shortcut-title">喂养记录</text><text class="shortcut-note">按计划好好吃饭</text></view>
+        <view class="shortcut card weight-shortcut" bindtap="goWeight"><text class="shortcut-icon">⌁</text><text class="shortcut-title">体重趋势</text><text class="shortcut-note">看看成长的变化</text></view>
+      </view>
+    </view>
+    <view wx:if="{{reminders.length}}" class="section">
+      <view class="section-heading"><view class="section-title">即将提醒</view><text class="text-link" bindtap="goReminders">全部 ›</text></view>
+      <view class="reminder-row card" wx:for="{{reminders}}" wx:key="id" bindtap="goReminders"><view class="reminder-mark">•</view><view class="reminder-text"><view class="reminder-title">{{item.reminder.title}}</view><view class="reminder-time">{{item.reminder.nextRemindTime || item.completionTime}}</view></view><text class="chevron">›</text></view>
+    </view>
+    <view class="bottom-note">每一份细心，都在陪它慢慢长大</view>
+  </block>
+</view>

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记一笔</title>
+    <style id="theme-vars">
+/* ============================================================
+   FaFa · Warm Sage visual system
+   保留原有新魏字体、字号和线性图标；以暖色辅助和轻透表面增加层次
+   ============================================================ */
+:root {
+  /* 品牌绿：保留原有鼠尾草主色 */
+  --fafa-primary: #5C9E71;
+  --fafa-primary-foreground: #FFFFFF;
+  --fafa-primary-action: #3E7A52;
+  --fafa-primary-action-hover: #326946;
+  --fafa-primary-soft: #E6F2E8;
+  --fafa-primary-soft-2: #D4EAD9;
+  --fafa-primary-soft-foreground: #3E7A52;
+  --fafa-primary-tint-border: #C5DFC9;
+
+  /* 页面与文字 */
+  --fafa-background: #FAFBF7;
+  --fafa-foreground: #293A31;
+  --fafa-card: #FFFFFF;
+  --fafa-card-foreground: #293A31;
+  --fafa-muted: #EEF4EC;
+  --fafa-muted-foreground: #65796B;
+  --fafa-border: #E2E9DF;
+  --fafa-input: #FFFFFF;
+  --fafa-ring: #5C9E71;
+
+  /* 辅助色：健康绿、影像雾蓝、AI 薰衣草紫、日常杏橘与暖金 */
+  --fafa-accent-coral: #D97B61;
+  --fafa-accent-coral-soft: #FFF0EA;
+  --fafa-accent-amber: #B77B24;
+  --fafa-accent-amber-soft: #FFF4DE;
+  --fafa-accent-sky: #4E88A2;
+  --fafa-accent-sky-soft: #EAF4F8;
+  --fafa-accent-lavender: #7869A6;
+  --fafa-accent-lavender-soft: #F1EDFA;
+  --fafa-accent-mint: #468B79;
+  --fafa-accent-mint-soft: #E8F4EF;
+
+  /* 玻璃表面：不支持 backdrop-filter 时仍有足够不透明度 */
+  --fafa-glass-surface: rgba(255, 255, 255, 0.86);
+  --fafa-glass-surface-strong: rgba(255, 255, 255, 0.94);
+  --fafa-glass-border: rgba(255, 255, 255, 0.88);
+  --fafa-gradient-canvas:
+    radial-gradient(ellipse at 7% 0%, rgba(244, 194, 138, 0.17), transparent 36%),
+    radial-gradient(ellipse at 100% 23%, rgba(140, 197, 179, 0.15), transparent 40%),
+    #FAFBF7;
+  --fafa-gradient-ai: linear-gradient(128deg, #E8F4E7 0%, #E9F4F2 54%, #F1ECF8 100%);
+  --fafa-gradient-sunshine: linear-gradient(135deg, #F4D58A 0%, #F2AD82 53%, #E9967E 100%);
+  --fafa-gradient-action: linear-gradient(135deg, #4B8D63 0%, #3E7A52 100%);
+  --fafa-gradient-action-hover: linear-gradient(135deg, #3E7A52 0%, #326946 100%);
+
+  /* 圆角刻度：保留现有 4 / 8 / 12 / full 规范 */
+  --fafa-radius-sm: 4px;
+  --fafa-radius-md: 8px;
+  --fafa-radius-lg: 12px;
+  --fafa-radius-full: 9999px;
+
+  /* 轻量层次：浅灰绿投影与玻璃高光 */
+  --fafa-shadow-sm: 0 2px 6px rgba(41, 58, 49, 0.045);
+  --fafa-shadow-md: 0 8px 20px rgba(41, 58, 49, 0.075);
+  --fafa-shadow-card: 0 5px 18px rgba(54, 78, 63, 0.055), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  /* 字体保持 fafa-app-design 原有设计，不在本轮替换或嵌入字体文件 */
+  --fafa-font-sans: "STXinwei", "华文新魏", "KaiTi", "楷体", "STKaiti", "华文楷体",
+    "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  background: var(--fafa-background);
+  color: var(--fafa-foreground);
+  font-family: var(--fafa-font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--fafa-background);
+    --color-foreground: var(--fafa-foreground);
+    --color-card: var(--fafa-card);
+    --color-card-foreground: var(--fafa-card-foreground);
+    --color-primary: var(--fafa-primary);
+    --color-primary-foreground: var(--fafa-primary-foreground);
+    --color-muted: var(--fafa-muted);
+    --color-muted-foreground: var(--fafa-muted-foreground);
+    --color-border: var(--fafa-border);
+    --color-input: var(--fafa-input);
+    --color-ring: var(--fafa-ring);
+    --radius-sm: var(--fafa-radius-sm);
+    --radius-md: var(--fafa-radius-md);
+    --radius-lg: var(--fafa-radius-lg);
+  }
+  @layer base {
+    body { background: var(--fafa-background); color: var(--fafa-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--fafa-background); }
+      .text-background { color: var(--fafa-background); }
+      .border-background { border-color: var(--fafa-background); }
+      .ring-background { --tw-ring-color: var(--fafa-background); }
+      .bg-foreground { background-color: var(--fafa-foreground); }
+      .text-foreground { color: var(--fafa-foreground); }
+      .border-foreground { border-color: var(--fafa-foreground); }
+      .ring-foreground { --tw-ring-color: var(--fafa-foreground); }
+      .bg-card { background-color: var(--fafa-card); }
+      .text-card { color: var(--fafa-card); }
+      .border-card { border-color: var(--fafa-card); }
+      .ring-card { --tw-ring-color: var(--fafa-card); }
+      .bg-card-foreground { background-color: var(--fafa-card-foreground); }
+      .text-card-foreground { color: var(--fafa-card-foreground); }
+      .border-card-foreground { border-color: var(--fafa-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--fafa-card-foreground); }
+      .bg-primary { background-color: var(--fafa-primary); }
+      .text-primary { color: var(--fafa-primary); }
+      .border-primary { border-color: var(--fafa-primary); }
+      .ring-primary { --tw-ring-color: var(--fafa-primary); }
+      .bg-primary-foreground { background-color: var(--fafa-primary-foreground); }
+      .text-primary-foreground { color: var(--fafa-primary-foreground); }
+      .border-primary-foreground { border-color: var(--fafa-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--fafa-primary-foreground); }
+      .bg-muted { background-color: var(--fafa-muted); }
+      .text-muted { color: var(--fafa-muted); }
+      .border-muted { border-color: var(--fafa-muted); }
+      .ring-muted { --tw-ring-color: var(--fafa-muted); }
+      .bg-muted-foreground { background-color: var(--fafa-muted-foreground); }
+      .text-muted-foreground { color: var(--fafa-muted-foreground); }
+      .border-muted-foreground { border-color: var(--fafa-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--fafa-muted-foreground); }
+      .bg-border { background-color: var(--fafa-border); }
+      .text-border { color: var(--fafa-border); }
+      .border-border { border-color: var(--fafa-border); }
+      .ring-border { --tw-ring-color: var(--fafa-border); }
+      .bg-input { background-color: var(--fafa-input); }
+      .text-input { color: var(--fafa-input); }
+      .border-input { border-color: var(--fafa-input); }
+      .ring-input { --tw-ring-color: var(--fafa-input); }
+      .bg-ring { background-color: var(--fafa-ring); }
+      .text-ring { color: var(--fafa-ring); }
+      .border-ring { border-color: var(--fafa-ring); }
+      .ring-ring { --tw-ring-color: var(--fafa-ring); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+    <style id="fafa-visual-polish">
+/* FaFa Warm Sage · glass and semantic color layer
+   Keep the existing page DOM, spacing, line-icon shapes and interaction hooks intact. */
+html {
+  background: var(--fafa-background);
+}
+html body {
+  background: var(--fafa-gradient-canvas) !important;
+  color: var(--fafa-foreground);
+}
+html body .page-frame {
+  background: transparent !important;
+}
+
+/* Apple-like translucent headers and the existing four-item tab bar.
+   Opaque fallback surfaces above stay readable where blur is unavailable. */
+html body .appbar,
+html body [data-mobile-nav="global"] {
+  background: var(--fafa-glass-surface) !important;
+  border-color: var(--fafa-glass-border) !important;
+  box-shadow: 0 5px 18px rgba(45, 68, 54, 0.045);
+}
+html body .appbar {
+  border-bottom-color: rgba(205, 221, 207, 0.72) !important;
+}
+html body [data-mobile-nav="global"] {
+  border-top-color: rgba(205, 221, 207, 0.72) !important;
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html body .appbar,
+  html body [data-mobile-nav="global"] {
+    -webkit-backdrop-filter: blur(18px) saturate(1.18);
+    backdrop-filter: blur(18px) saturate(1.18);
+  }
+}
+
+/* Card edges retain the original thin-line language with a quiet lift. */
+html body .page-frame .page-main [class*="-card"] {
+  border-color: var(--fafa-border);
+  box-shadow: var(--fafa-shadow-card);
+}
+html body .page-frame .page-main .ai-card {
+  background: var(--fafa-gradient-ai) !important;
+  border-color: rgba(197, 223, 201, 0.86) !important;
+  box-shadow: 0 10px 26px rgba(69, 117, 87, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+html body .page-frame .ai-avatar {
+  background: linear-gradient(135deg, #68A77A, #8EBFC0 58%, #9F91C7) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 10px rgba(76, 130, 99, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* Home quick actions: four calm semantic colors instead of four identical mint icons. */
+html body .page-frame .qa-item:nth-child(1) .qa-icon {
+  color: var(--fafa-accent-mint);
+  background: linear-gradient(145deg, #E8F4EF, #D9EEE4);
+}
+html body .page-frame .qa-item:nth-child(2) .qa-icon {
+  color: var(--fafa-accent-sky);
+  background: linear-gradient(145deg, #EDF6FA, #DFEEF5);
+}
+html body .page-frame .qa-item:nth-child(3) .qa-icon {
+  color: var(--fafa-accent-coral);
+  background: linear-gradient(145deg, #FFF3EC, #FBE5D9);
+}
+html body .page-frame .qa-item:nth-child(4) .qa-icon {
+  color: var(--fafa-accent-lavender);
+  background: linear-gradient(145deg, #F4F0FB, #EAE5F7);
+}
+html body .page-frame .qa-icon {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+html body .page-frame .metric-cell:nth-child(1) .metric-icon { color: var(--fafa-accent-amber); }
+html body .page-frame .metric-cell:nth-child(2) .metric-icon { color: var(--fafa-accent-sky); }
+html body .page-frame .metric-cell:nth-child(3) .metric-icon { color: var(--fafa-accent-coral); }
+
+/* Semantic colors keep the existing Lucide outline icon set, adding meaning through hue. */
+html body .page-frame [data-lucide="heart"],
+html body .page-frame [data-lucide="heart-pulse"],
+html body .page-frame [data-lucide="stethoscope"],
+html body .page-frame [data-lucide="pill"],
+html body .page-frame [data-lucide="syringe"],
+html body .page-frame [data-lucide="thermometer"],
+html body .page-frame [data-lucide="activity"] {
+  color: var(--fafa-accent-coral);
+}
+html body .page-frame [data-lucide="image"],
+html body .page-frame [data-lucide="images"],
+html body .page-frame [data-lucide="camera"],
+html body .page-frame [data-lucide="scan-line"],
+html body .page-frame [data-lucide="search"],
+html body .page-frame [data-lucide="gallery-horizontal"] {
+  color: var(--fafa-accent-sky);
+}
+html body .page-frame [data-lucide="sparkles"],
+html body .page-frame [data-lucide="bot"],
+html body .page-frame [data-lucide="wand-sparkles"],
+html body .page-frame [data-lucide="message-circle"],
+html body .page-frame [data-lucide="brain-circuit"] {
+  color: var(--fafa-accent-lavender);
+}
+html body .page-frame [data-lucide="utensils"],
+html body .page-frame [data-lucide="droplets"],
+html body .page-frame [data-lucide="cup-soda"],
+html body .page-frame [data-lucide="fish"],
+html body .page-frame [data-lucide="scale"] {
+  color: var(--fafa-accent-amber);
+}
+
+/* Existing primary action geometry stays intact; deepen green under white labels. */
+html body .page-frame .btn-hero,
+html body .page-frame .btn-primary,
+html body .page-frame .btn-submit,
+html body .page-frame .btn-pill-primary,
+html body .page-frame .btn-mid,
+html body .page-frame .inputbar-send,
+html body .page-frame .ai-send {
+  background: var(--fafa-gradient-action) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(57, 116, 77, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+html body .page-frame .btn-hero:hover,
+html body .page-frame .btn-primary:hover,
+html body .page-frame .btn-submit:hover,
+html body .page-frame .btn-pill-primary:hover,
+html body .page-frame .btn-mid:hover,
+html body .page-frame .inputbar-send:hover,
+html body .page-frame .ai-send:hover {
+  background: var(--fafa-gradient-action-hover) !important;
+}
+html body .page-frame .chip.is-active {
+  background: var(--fafa-gradient-action) !important;
+  border-color: var(--fafa-primary-action) !important;
+}
+
+/* AI conversation keeps its original bubble geometry with a richer brand-green surface. */
+html body .page-frame .msg-user .bubble {
+  background: var(--fafa-gradient-action) !important;
+  color: #FFFFFF !important;
+}
+
+/* Frosted input surfaces for search, chat and forms; no dimensions or handlers change. */
+html body .page-frame .inputbar,
+html body .page-frame .ai-input-row,
+html body .page-frame .search-box,
+html body .page-frame .search-field,
+html body .page-frame .search-wrap,
+html body .page-frame .tab-hero-btn,
+html body .page-frame .appbar-pill,
+html body .page-frame .ask-chip,
+html body .page-frame input:not([type="checkbox"]):not([type="radio"]),
+html body .page-frame select,
+html body .page-frame textarea {
+  background-color: var(--fafa-glass-surface-strong);
+  border-color: rgba(197, 215, 199, 0.82);
+  box-shadow: 0 2px 10px rgba(55, 81, 64, 0.045), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html body .page-frame .inputbar,
+  html body .page-frame .ai-input-row,
+  html body .page-frame .search-box,
+  html body .page-frame .search-field,
+  html body .page-frame .search-wrap,
+  html body .page-frame .tab-hero-btn,
+  html body .page-frame .appbar-pill,
+  html body .page-frame .ask-chip {
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    backdrop-filter: blur(14px) saturate(1.15);
+  }
+}
+html body .page-frame input:focus,
+html body .page-frame select:focus,
+html body .page-frame textarea:focus {
+  border-color: var(--fafa-primary) !important;
+  box-shadow: 0 0 0 3px rgba(92, 158, 113, 0.13);
+}
+
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased">
+    <style id="critical-layout">
+* { box-sizing: border-box; margin: 0; padding: 0; }
+img { display: block; max-width: 100%; }
+:root { --fafa-danger: #B4543C; }
+.page-frame { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+.page-main { flex: 1; padding: 20px 16px 36px; }
+.page-section { margin: 0 0 24px; }
+.appbar { position: sticky; top: 0; z-index: 30; height: 44px; display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; background: var(--fafa-background); }
+.appbar-btn { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; color: var(--fafa-foreground); border-radius: var(--fafa-radius-full); }
+.appbar-btn [data-icon], .appbar-btn svg { width: 22px; height: 22px; }
+.appbar-title { text-align: center; font-size: 15px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.appbar-slot { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.card { background: var(--fafa-card); border: 1px solid var(--fafa-border); border-radius: var(--fafa-radius-lg); padding: 16px; box-shadow: var(--fafa-shadow-sm); }
+.card-title { font-size: 13px; color: var(--fafa-muted-foreground); letter-spacing: 0.04em; margin: 0 0 10px; }
+.chip-row + .card-title { margin-top: 18px; }
+a, button { font-family: inherit; color: inherit; text-decoration: none; transition: background-color 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.15s cubic-bezier(0.2, 0.8, 0.2, 1); }
+:focus-visible { outline: 2px solid var(--fafa-ring); outline-offset: 2px; }
+@media (hover: hover) {
+  .appbar-btn:hover { background: var(--fafa-muted); }
+  .key:hover { background: var(--fafa-primary-soft); border-color: var(--fafa-primary-tint-border); }
+  .chip:hover { border-color: var(--fafa-primary-tint-border); }
+  .chip.is-active:hover { border-color: var(--fafa-primary-soft-foreground); }
+  .save-btn:hover { filter: brightness(0.96); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+.amount-card { text-align: center; }
+.amount-label { font-size: 13px; color: var(--fafa-muted-foreground); margin-bottom: 6px; }
+.amount-field { display: flex; align-items: baseline; justify-content: center; gap: 6px; }
+.amount-cny { font-size: 22px; color: var(--fafa-primary-soft-foreground); }
+.amount-num { font-size: 44px; line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+.amount-hint { margin-top: 8px; font-size: 12px; color: var(--fafa-muted-foreground); }
+.amount-hint.is-error { color: var(--fafa-danger); }
+.keypad { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--fafa-border); display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.key { height: 48px; display: inline-flex; align-items: center; justify-content: center; background: var(--fafa-input); border: 1px solid var(--fafa-border); border-radius: var(--fafa-radius-md); font-size: 18px; color: var(--fafa-foreground); cursor: pointer; }
+.key [data-icon] { width: 20px; height: 20px; }
+.key:active { background: var(--fafa-primary-soft); }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { min-height: 44px; padding: 0 16px; display: inline-flex; align-items: center; gap: 6px; background: var(--fafa-card); border: 1px solid var(--fafa-border); border-radius: var(--fafa-radius-full); font-size: 14px; color: var(--fafa-foreground); cursor: pointer; }
+.chip [data-icon] { width: 16px; height: 16px; }
+.chip.is-active { background: var(--fafa-primary-soft); border-color: var(--fafa-primary-tint-border); color: var(--fafa-primary-soft-foreground); }
+.save-btn { width: 100%; min-height: 52px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--fafa-primary); color: var(--fafa-primary-foreground); border: none; border-radius: var(--fafa-radius-full); font-size: 16px; letter-spacing: 0.06em; cursor: pointer; box-shadow: var(--fafa-shadow-sm); }
+.save-note { margin-top: 10px; text-align: center; font-size: 12px; color: var(--fafa-muted-foreground); }
+    </style>
+    <main>
+      <div class="page-frame">
+        <header class="appbar">
+          <a class="appbar-btn" href="#" data-dom-id="back-previous" aria-label="返回上一页"><i data-lucide="chevron-left"></i></a>
+          <h1 class="appbar-title">记一笔</h1>
+          <span class="appbar-slot"></span>
+        </header>
+        <div class="page-main">
+          <section class="page-section" id="create-amount">
+            <div class="card amount-card">
+              <p class="amount-label">金额（元）</p>
+              <div class="amount-field">
+                <span class="amount-cny">¥</span>
+                <span class="amount-num">86.50</span>
+              </div>
+              <p class="amount-hint">金额需大于 0，且不超过 ¥1,000,000.00</p>
+              <p class="amount-hint is-error" hidden>金额无效：需大于 0 且不超过 ¥1,000,000.00</p>
+              <div class="keypad" aria-label="数字键盘（示意）">
+                <button class="key" type="button">1</button>
+                <button class="key" type="button">2</button>
+                <button class="key" type="button">3</button>
+                <button class="key" type="button">4</button>
+                <button class="key" type="button">5</button>
+                <button class="key" type="button">6</button>
+                <button class="key" type="button">7</button>
+                <button class="key" type="button">8</button>
+                <button class="key" type="button">9</button>
+                <button class="key" type="button">.</button>
+                <button class="key" type="button">0</button>
+                <button class="key" type="button" aria-label="删除一位"><i data-lucide="delete"></i></button>
+              </div>
+            </div>
+          </section>
+          <section class="page-section" id="create-category">
+            <div class="card">
+              <p class="card-title">支出分类</p>
+              <div class="chip-row">
+                <button class="chip is-active" type="button"><i data-lucide="wheat"></i>粮票</button>
+                <button class="chip" type="button"><i data-lucide="stethoscope"></i>医疗</button>
+                <button class="chip" type="button"><i data-lucide="package"></i>用品</button>
+                <button class="chip" type="button"><i data-lucide="scissors"></i>美容</button>
+                <button class="chip" type="button"><i data-lucide="home"></i>寄养</button>
+                <button class="chip" type="button"><i data-lucide="more-horizontal"></i>其他</button>
+              </div>
+              <p class="card-title">关联宠物</p>
+              <div class="chip-row">
+                <button class="chip is-active" type="button"><i data-lucide="cat"></i>毛毛</button>
+                <button class="chip" type="button"><i data-lucide="dog"></i>团子</button>
+              </div>
+            </div>
+          </section>
+          <section class="page-section" id="create-submit">
+            <button class="save-btn" type="button" data-dom-id="cta-expense-save">保存这笔账</button>
+            <p class="save-note">保存后将同步至记账本流水</p>
+          </section>
+        </div>
+      </div>
+    </main>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,17 +1,42 @@
 {
   "pages": [
-    "pages/index/index"
+    "pages/login/index",
+    "pages/home/index",
+    "pages/album/index",
+    "pages/chat/index",
+    "pages/me/index"
+  ],
+  "subpackages": [
+    { "root": "packages/pet", "pages": ["pages/list/index", "pages/create/index", "pages/detail/index", "pages/tags/index"] },
+    { "root": "packages/daily", "pages": ["pages/checkin/index", "pages/history/index", "pages/weight-record/index", "pages/weight-trend/index"] },
+    { "root": "packages/feeding", "pages": ["pages/today/index", "pages/plan-list/index", "pages/plan-create/index", "pages/analysis/index", "pages/food-library/index", "pages/food-detail/index", "pages/food-recognition/index", "pages/food-transition/index"] },
+    { "root": "packages/media", "pages": ["pages/upload/index", "pages/photo-detail/index", "pages/search/index"] },
+    { "root": "packages/medical", "pages": ["pages/records/index", "pages/create/index", "pages/medication/index", "pages/alerts/index", "pages/reminder-center/index", "pages/reminder-create/index", "pages/timeline/index", "pages/summary/index"] },
+    { "root": "packages/biz", "pages": ["pages/reports/index", "pages/report-detail/index", "pages/family/index", "pages/expense-book/index", "pages/expense-create/index", "pages/membership/index", "pages/profile/index", "pages/emergency/index", "pages/invitation-accept/index", "pages/content-drafts/index", "pages/content-edit/index", "pages/content-schedule/index"] }
   ],
   "window": {
-    "navigationBarTitleText": "微信登录调试台",
-    "navigationBarBackgroundColor": "#f6f8fb",
+    "navigationBarTitleText": "FaFa 宠物生活",
+    "navigationBarBackgroundColor": "#FAFBF7",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#f6f8fb",
-    "backgroundTextStyle": "light"
+    "backgroundColor": "#FAFBF7",
+    "backgroundTextStyle": "light",
+    "enablePullDownRefresh": false
   },
-  "networkTimeout": {
-    "request": 15000
+  "tabBar": {
+    "custom": true,
+    "color": "#758579",
+    "selectedColor": "#3E7A52",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/home/index", "text": "首页" },
+      { "pagePath": "pages/album/index", "text": "相册" },
+      { "pagePath": "pages/chat/index", "text": "问问" },
+      { "pagePath": "pages/me/index", "text": "我的" }
+    ]
   },
   "style": "v2",
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "__usePrivacyCheck__": true
 }

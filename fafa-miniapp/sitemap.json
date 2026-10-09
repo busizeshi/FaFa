@@ -1,8 +1,4 @@
 {
-  "rules": [
-    {
-      "action": "allow",
-      "page": "*"
-    }
-  ]
+  "desc": "FaFa 宠物生活小程序页面索引",
+  "rules": [{ "action": "allow", "page": "*" }]
 }

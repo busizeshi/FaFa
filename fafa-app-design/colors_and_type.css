@@ -1,0 +1,74 @@
+/* ============================================================
+   FaFa · Warm Sage visual system
+   保留原有新魏字体、字号和线性图标；以暖色辅助和轻透表面增加层次
+   ============================================================ */
+:root {
+  /* 品牌绿：保留原有鼠尾草主色 */
+  --fafa-primary: #5C9E71;
+  --fafa-primary-foreground: #FFFFFF;
+  --fafa-primary-action: #3E7A52;
+  --fafa-primary-action-hover: #326946;
+  --fafa-primary-soft: #E6F2E8;
+  --fafa-primary-soft-2: #D4EAD9;
+  --fafa-primary-soft-foreground: #3E7A52;
+  --fafa-primary-tint-border: #C5DFC9;
+
+  /* 页面与文字 */
+  --fafa-background: #FAFBF7;
+  --fafa-foreground: #293A31;
+  --fafa-card: #FFFFFF;
+  --fafa-card-foreground: #293A31;
+  --fafa-muted: #EEF4EC;
+  --fafa-muted-foreground: #65796B;
+  --fafa-border: #E2E9DF;
+  --fafa-input: #FFFFFF;
+  --fafa-ring: #5C9E71;
+
+  /* 辅助色：健康绿、影像雾蓝、AI 薰衣草紫、日常杏橘与暖金 */
+  --fafa-accent-coral: #D97B61;
+  --fafa-accent-coral-soft: #FFF0EA;
+  --fafa-accent-amber: #B77B24;
+  --fafa-accent-amber-soft: #FFF4DE;
+  --fafa-accent-sky: #4E88A2;
+  --fafa-accent-sky-soft: #EAF4F8;
+  --fafa-accent-lavender: #7869A6;
+  --fafa-accent-lavender-soft: #F1EDFA;
+  --fafa-accent-mint: #468B79;
+  --fafa-accent-mint-soft: #E8F4EF;
+
+  /* 玻璃表面：不支持 backdrop-filter 时仍有足够不透明度 */
+  --fafa-glass-surface: rgba(255, 255, 255, 0.86);
+  --fafa-glass-surface-strong: rgba(255, 255, 255, 0.94);
+  --fafa-glass-border: rgba(255, 255, 255, 0.88);
+  --fafa-gradient-canvas:
+    radial-gradient(ellipse at 7% 0%, rgba(244, 194, 138, 0.17), transparent 36%),
+    radial-gradient(ellipse at 100% 23%, rgba(140, 197, 179, 0.15), transparent 40%),
+    #FAFBF7;
+  --fafa-gradient-ai: linear-gradient(128deg, #E8F4E7 0%, #E9F4F2 54%, #F1ECF8 100%);
+  --fafa-gradient-sunshine: linear-gradient(135deg, #F4D58A 0%, #F2AD82 53%, #E9967E 100%);
+  --fafa-gradient-action: linear-gradient(135deg, #4B8D63 0%, #3E7A52 100%);
+  --fafa-gradient-action-hover: linear-gradient(135deg, #3E7A52 0%, #326946 100%);
+
+  /* 圆角刻度：保留现有 4 / 8 / 12 / full 规范 */
+  --fafa-radius-sm: 4px;
+  --fafa-radius-md: 8px;
+  --fafa-radius-lg: 12px;
+  --fafa-radius-full: 9999px;
+
+  /* 轻量层次：浅灰绿投影与玻璃高光 */
+  --fafa-shadow-sm: 0 2px 6px rgba(41, 58, 49, 0.045);
+  --fafa-shadow-md: 0 8px 20px rgba(41, 58, 49, 0.075);
+  --fafa-shadow-card: 0 5px 18px rgba(54, 78, 63, 0.055), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  /* 字体保持 fafa-app-design 原有设计，不在本轮替换或嵌入字体文件 */
+  --fafa-font-sans: "STXinwei", "华文新魏", "KaiTi", "楷体", "STKaiti", "华文楷体",
+    "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  background: var(--fafa-background);
+  color: var(--fafa-foreground);
+  font-family: var(--fafa-font-sans);
+  -webkit-font-smoothing: antialiased;
+}

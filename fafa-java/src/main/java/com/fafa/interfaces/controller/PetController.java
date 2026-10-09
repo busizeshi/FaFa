@@ -1,6 +1,7 @@
 package com.fafa.interfaces.controller;
 
 import com.fafa.application.dto.pet.PetInfoDTO;
+import com.fafa.application.dto.pet.PetPhotoSlot;
 import com.fafa.application.dto.pet.RegisterPetCommand;
 import com.fafa.application.dto.pet.UpdatePetProfileCommand;
 import com.fafa.application.service.PetApplicationService;
@@ -13,13 +14,15 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * 宠物接口控制器
+ * <p>
+ * 头像与三视图已合并为一套按位序上传的照片（位1=头像、位2=正面照、位3=侧面照）：
+ * 创建宠物必须携带三张照片；更新照片走统一的替换接口，可传新文件或引用现有照片调整位序。
  *
  * @author FaFa Team
  * @since 1.0
@@ -27,14 +30,16 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/pets")
 @RequiredArgsConstructor
-@Tag(name = "宠物管理", description = "宠物档案 CRUD、头像/三视图上传、排序")
+@Tag(name = "宠物管理", description = "宠物档案 CRUD、三视图照片（位1头像）、排序")
 public class PetController {
 
     private final PetApplicationService petApplicationService;
 
-    @PostMapping
-    @Operation(summary = "创建宠物", description = "普通用户限2只，会员不限")
-    public Result<PetDetailResponse> createPet(@Valid @RequestBody CreatePetRequest request) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "创建宠物", description = "普通用户限2只，会员不限。必须按位序上传三张照片（photos[0]=头像、photos[1]=正面照、photos[2]=侧面照）")
+    public Result<PetDetailResponse> createPet(
+        @Valid @ModelAttribute CreatePetRequest request
+    ) {
         RegisterPetCommand command = new RegisterPetCommand(
             request.getName(),
             request.getType(),
@@ -43,7 +48,8 @@ public class PetController {
             request.getBirthDate(),
             request.getIsNeutered(),
             request.getAdoptDate(),
-            request.getWeight()
+            request.getWeight(),
+            request.getPhotos()
         );
 
         PetInfoDTO dto = petApplicationService.registerPet(command);
@@ -51,7 +57,7 @@ public class PetController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "更新宠物信息", description = "更新宠物基本资料（不含照片）")
+    @Operation(summary = "更新宠物信息", description = "更新宠物基本资料（照片请使用统一的替换三视图接口）")
     public Result<PetDetailResponse> updatePet(
         @Parameter(description = "宠物ID") @PathVariable Long id,
         @Valid @RequestBody UpdatePetRequest request
@@ -100,24 +106,27 @@ public class PetController {
         return Result.ok();
     }
 
-    @PostMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "上传宠物头像", description = "上传头像照片")
-    public Result<PetDetailResponse> uploadAvatar(
+    @PutMapping(value = "/{id}/photos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "替换三视图照片", description = "按位序替换照片（位1=头像、位2=正面照、位3=侧面照），三张缺一不可。每个槽位二选一：传新文件（avatarFile/frontFile/sideFile），或传现有照片 URL 调整位序（avatarUrl/frontUrl/sideUrl）。被替换的旧照片将从 OSS 删除，并触发重新向量化")
+    public Result<PetDetailResponse> replacePetPhotos(
         @Parameter(description = "宠物ID") @PathVariable Long id,
-        @Parameter(description = "头像文件") @RequestParam("file") MultipartFile file
+        @ModelAttribute ReplacePetPhotosRequest request
     ) {
-        PetInfoDTO dto = petApplicationService.uploadAvatar(id, file);
+        PetInfoDTO dto = petApplicationService.replacePetPhotos(
+            id,
+            new PetPhotoSlot(request.getAvatarFile(), request.getAvatarUrl()),
+            new PetPhotoSlot(request.getFrontFile(), request.getFrontUrl()),
+            new PetPhotoSlot(request.getSideFile(), request.getSideUrl())
+        );
         return Result.ok(convertToResponse(dto));
     }
 
-    @PostMapping(value = "/{id}/profile-photos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "上传三视图照片", description = "上传正面照+侧面照")
-    public Result<PetDetailResponse> uploadProfilePhotos(
-        @Parameter(description = "宠物ID") @PathVariable Long id,
-        @Parameter(description = "正面照") @RequestParam("frontPhoto") MultipartFile frontPhoto,
-        @Parameter(description = "侧面照") @RequestParam("sidePhoto") MultipartFile sidePhoto
+    @PostMapping("/{id}/photos/revectorize")
+    @Operation(summary = "重新触发三视图向量化", description = "向量化失败或任务丢失时的补偿入口：将向量化状态重置为待处理并重新派发任务。照片不齐全或已完成向量化时会被拒绝")
+    public Result<PetDetailResponse> revectorizePhotos(
+        @Parameter(description = "宠物ID") @PathVariable Long id
     ) {
-        PetInfoDTO dto = petApplicationService.uploadProfilePhotos(id, frontPhoto, sidePhoto);
+        PetInfoDTO dto = petApplicationService.revectorizePetPhotos(id);
         return Result.ok(convertToResponse(dto));
     }
 
@@ -147,6 +156,8 @@ public class PetController {
         response.setAvatarUrl(dto.avatarUrl());
         response.setFrontPhotoUrl(dto.frontPhotoUrl());
         response.setSidePhotoUrl(dto.sidePhotoUrl());
+        response.setPhotos(dto.photos());
+        response.setVectorizationStatus(dto.vectorizationStatus());
         response.setSortOrder(dto.sortOrder());
         return response;
     }

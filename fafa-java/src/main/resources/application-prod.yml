@@ -1,5 +1,10 @@
 # 生产环境：使用阿里云服务
 spring:
+  flyway:
+    url: jdbc:mysql://${DB_HOST:localhost}:3306/fafa?useUnicode=true&characterEncoding=UTF-8&useSSL=true&serverTimezone=Asia/Shanghai
+    user: ${DB_USERNAME:fafa}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -17,7 +22,6 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD}
       database: 0
 
 rocketmq:

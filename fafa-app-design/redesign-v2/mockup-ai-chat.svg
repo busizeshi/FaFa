@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 812" font-family="'STXinwei','华文新魏','KaiTi','STKaiti','PingFang SC','Microsoft YaHei',sans-serif">
+  <defs>
+    <linearGradient id="cBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#DFF6EE"/>
+      <stop offset="1" stop-color="#F2FAF6"/>
+    </linearGradient>
+    <linearGradient id="uBubble" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4ADEB8"/>
+      <stop offset="1" stop-color="#1FAE85"/>
+    </linearGradient>
+    <linearGradient id="sendBtn" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4ADEB8"/>
+      <stop offset="1" stop-color="#58B8E8"/>
+    </linearGradient>
+    <g id="paw4">
+      <ellipse cx="0" cy="4" rx="7.5" ry="6"/>
+      <ellipse cx="-8.5" cy="-4.5" rx="3.4" ry="4.4" transform="rotate(-24 -8.5 -4.5)"/>
+      <ellipse cx="-2.6" cy="-8" rx="3.4" ry="4.6" transform="rotate(-8 -2.6 -8)"/>
+      <ellipse cx="3.6" cy="-8" rx="3.4" ry="4.6" transform="rotate(8 3.6 -8)"/>
+      <ellipse cx="9.2" cy="-4.5" rx="3.4" ry="4.4" transform="rotate(24 9.2 -4.5)"/>
+    </g>
+    <!-- 结构化数据块 / 快捷工具 渐变 -->
+    <linearGradient id="gMint" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D5F2E6"/><stop offset="1" stop-color="#C0EAD8"/></linearGradient>
+    <linearGradient id="gLemon" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFEFC2"/><stop offset="1" stop-color="#FFF9E6"/></linearGradient>
+    <linearGradient id="gMed" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD9E3"/><stop offset="1" stop-color="#FFF1F4"/></linearGradient>
+    <linearGradient id="gSky" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#CFEAF9"/><stop offset="1" stop-color="#F0F9FE"/></linearGradient>
+  </defs>
+
+  <rect width="375" height="812" fill="url(#cBg)"/>
+  <use href="#paw4" fill="#C9EBDD" transform="translate(350 140) scale(1.3) rotate(18)"/>
+  <use href="#paw4" fill="#FFE3B3" transform="translate(20 480) scale(1) rotate(-15)"/>
+
+  <!-- 状态栏 -->
+  <text x="24" y="24" font-size="13" font-weight="600" fill="#22423A">9:41</text>
+  <g fill="#22423A">
+    <rect x="316" y="14" width="20" height="10" rx="3" opacity="0.9"/>
+    <rect x="292" y="15" width="16" height="8" rx="2.5" opacity="0.7"/>
+  </g>
+
+  <!-- ===== 顶部对话头 ===== -->
+  <g>
+    <circle cx="46" cy="58" r="20" fill="url(#sendBtn)"/>
+    <path d="M38 56 q8 -11 16 0 q-3 11 -8 11 q-5 0 -8 -11 Z" fill="#FFFFFF"/>
+    <circle cx="46" cy="70" r="3.4" fill="#FFFFFF"/>
+    <text x="76" y="54" font-size="16" font-weight="700" fill="#22423A">发发 AI · 助手</text>
+    <text x="76" y="71" font-size="10.5" fill="#5E9A82">● 在线 · 已绑定「年糕」</text>
+    <circle cx="337" cy="58" r="18" fill="#FFFFFF" stroke="#DCEDE5"/>
+    <circle cx="332" cy="53" r="2" fill="#5C7A70"/>
+    <circle cx="337" cy="53" r="2" fill="#5C7A70"/>
+    <circle cx="342" cy="53" r="2" fill="#5C7A70"/>
+    <circle cx="332" cy="61" r="2" fill="#5C7A70"/>
+    <circle cx="337" cy="61" r="2" fill="#5C7A70"/>
+    <circle cx="342" cy="61" r="2" fill="#5C7A70"/>
+  </g>
+  <line x1="20" y1="92" x2="355" y2="92" stroke="#DCEDE5" opacity="0.6"/>
+
+  <!-- ===== 推荐问题 chips ===== -->
+  <g font-size="10.5">
+    <rect x="20" y="106" width="104" height="28" rx="14" fill="#FFFFFF" stroke="#C9EBDD"/>
+    <text x="72" y="124" fill="#0F7A5F" text-anchor="middle">📋 生成周报</text>
+    <rect x="130" y="106" width="118" height="28" rx="14" fill="#FFFFFF" stroke="#C9EBDD"/>
+    <text x="189" y="124" fill="#0F7A5F" text-anchor="middle">🍜 推荐猫粮搭配</text>
+    <rect x="254" y="106" width="101" height="28" rx="14" fill="#FFFFFF" stroke="#C9EBDD"/>
+    <text x="304" y="124" fill="#0F7A5F" text-anchor="middle">📉 体重正常吗</text>
+  </g>
+
+  <!-- ===== 对话区 ===== -->
+  <!-- 用户气泡（渐变） -->
+  <g>
+    <rect x="130" y="150" width="205" height="42" rx="18" fill="url(#uBubble)"/>
+    <path d="M343 168 l10 6 -10 6 Z" fill="#1FAE85"/>
+    <text x="146" y="176" font-size="12.5" fill="#FFFFFF">年糕最近食欲有点下降，要紧吗？</text>
+  </g>
+
+  <!-- AI 回复卡片 -->
+  <g>
+    <rect x="30" y="208" width="280" height="196" rx="20" fill="#FFFFFF"/>
+    <rect x="30" y="208" width="280" height="196" rx="20" fill="none" stroke="#E3F1EA"/>
+    <path d="M30 224 q-10 2 -12 10 q6 -2 12 -2 Z" fill="#FFFFFF"/>
+    <!-- stat block -->
+    <rect x="46" y="226" width="120" height="52" rx="13" fill="url(#gMint)"/>
+    <text x="58" y="248" font-size="17" font-weight="800" fill="#0F7A5F">-12%</text>
+    <text x="58" y="266" font-size="9.5" fill="#5E9A82">近3天进食量</text>
+    <rect x="174" y="226" width="120" height="52" rx="13" fill="url(#gLemon)"/>
+    <text x="186" y="248" font-size="17" font-weight="800" fill="#9A7418">1次</text>
+    <text x="186" y="266" font-size="9.5" fill="#B89640">昨日呕吐记录</text>
+    <!-- chart block -->
+    <text x="46" y="300" font-size="11" font-weight="700" fill="#22423A">近7天食欲曲线</text>
+    <polyline points="46,344 78,336 110,340 142,326 174,330 206,318 250,312" fill="none" stroke="#FF9F5C" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="250" cy="312" r="4" fill="#fff" stroke="#FF9F5C" stroke-width="2.2"/>
+    <!-- notice -->
+    <rect x="46" y="360" width="248" height="30" rx="10" fill="#FFF3F5"/>
+    <text x="58" y="379" font-size="10" fill="#C2556E">⚠ 已连续2天低于日常均值，建议观察</text>
+  </g>
+  <!-- 引用来源 -->
+  <text x="30" y="424" font-size="9" fill="#8FA8A0">📎 来源：每日打卡 · 体重记录 · 就诊记录（可展开）</text>
+
+  <!-- 用户气泡2 -->
+  <g>
+    <rect x="130" y="440" width="205" height="58" rx="18" fill="url(#uBubble)"/>
+    <path d="M343 458 l10 6 -10 6 Z" fill="#1FAE85"/>
+    <text x="146" y="462" font-size="12.5" fill="#FFFFFF">帮我记一下：今天下午吐了</text>
+    <text x="146" y="480" font-size="12.5" fill="#FFFFFF">一次，晚饭吃了一半</text>
+  </g>
+
+  <!-- AI 记录草稿卡 -->
+  <g>
+    <rect x="30" y="514" width="300" height="118" rx="20" fill="#FFFFFF"/>
+    <rect x="30" y="514" width="300" height="118" rx="20" fill="none" stroke="#C9EBDD"/>
+    <text x="48" y="540" font-size="12" font-weight="700" fill="#0F7A5F">🐾 已帮你生成今日打卡草稿</text>
+    <g font-size="10.5" fill="#5C7A70">
+      <rect x="48" y="552" width="120" height="24" rx="12" fill="#FFF1E7"/>
+      <text x="60" y="568" fill="#B26120">呕吐 ×1</text>
+      <rect x="174" y="552" width="120" height="24" rx="12" fill="url(#gMint)"/>
+      <text x="186" y="568" fill="#0F7A5F">食欲 · 一般</text>
+      <rect x="48" y="582" width="120" height="24" rx="12" fill="#F2FAF6"/>
+      <text x="60" y="598" fill="#5C7A70">精神 · 正常</text>
+      <rect x="174" y="582" width="120" height="24" rx="12" fill="#F2FAF6"/>
+      <text x="186" y="598" fill="#5C7A70">饮水 · 正常</text>
+    </g>
+    <rect x="216" y="610" width="98" height="0" fill="none"/>
+    <rect x="220" y="610" width="94" height="0" fill="none"/>
+  </g>
+  <!-- 草稿操作按钮 -->
+  <g>
+    <rect x="48" y="640" width="88" height="30" rx="15" fill="#FFFFFF" stroke="#DCEDE5"/>
+    <text x="92" y="659" font-size="11" fill="#5C7A70" text-anchor="middle">再改改</text>
+    <rect x="144" y="640" width="110" height="30" rx="15" fill="url(#sendBtn)"/>
+    <text x="199" y="659" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">✓ 一键保存打卡</text>
+  </g>
+
+  <!-- ===== 输入栏 ===== -->
+  <rect x="0" y="690" width="375" height="66" fill="#FFFFFF"/>
+  <line x1="0" y1="690" x2="375" y2="690" stroke="#E3F1EA"/>
+  <rect x="20" y="702" width="281" height="42" rx="21" fill="#F2FAF6" stroke="#DCEDE5"/>
+  <text x="40" y="728" font-size="12" fill="#8FA8A0">问问毛孩子的任何事…</text>
+  <circle cx="323" cy="723" r="21" fill="url(#sendBtn)"/>
+  <path d="M314 723 h16 M324 716 l7 7 -7 7" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 快捷工具行 -->
+  <g font-size="9.5" fill="#5C7A70">
+    <rect x="20" y="752" width="58" height="20" rx="10" fill="url(#gLemon)"/>
+    <text x="49" y="765" text-anchor="middle">📷 拍照识别</text>
+    <rect x="84" y="752" width="58" height="20" rx="10" fill="url(#gMed)"/>
+    <text x="113" y="765" text-anchor="middle">🏥 就医建议</text>
+    <rect x="148" y="752" width="58" height="20" rx="10" fill="url(#gSky)"/>
+    <text x="177" y="765" text-anchor="middle">📊 健康报告</text>
+    <rect x="212" y="752" width="58" height="20" rx="10" fill="url(#gMint)"/>
+    <text x="241" y="765" text-anchor="middle">🍳 喂食建议</text>
+  </g>
+  <rect x="128" y="800" width="120" height="4" rx="2" fill="#22423A" opacity="0.2"/>
+</svg>

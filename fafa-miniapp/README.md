@@ -1,22 +1,39 @@
-# FaFa 微信登录调试小程序
+# FaFa 微信小程序
 
-这是一个面向本地联调的原生微信小程序，当前页面用于验证 Java 服务的：
+原生微信小程序前端，连接本仓库 `fafa-java` Spring Boot 服务。根目录的 `project.config.json` 将 `miniprogramRoot` 指向本目录，可直接用微信开发者工具打开仓库根目录。
 
-```text
-POST /auth/wechat/login
-请求体：{"code":"wx.login() 返回值"}
-```
+## 本地启动
 
-## 使用方式
+1. 启动 `fafa-java`。开发配置默认请求 `http://192.168.1.15:8080`，对应 Docker 部署服务器的局域网地址。
+2. 使用微信开发者工具打开 `D:\dev\Java\FaFa` 或 `D:\dev\Java\FaFa\fafa-miniapp`。两处都包含项目配置：根目录配置将小程序根目录指向 `fafa-miniapp/`，子目录配置则直接以当前目录作为小程序根目录。AppID 应与 Java 开发环境的微信 AppID 一致；AppSecret 只保留在 Java 服务端配置中。
+3. 开发者工具本地配置允许 `urlCheck: false`；发布版本仍需在微信公众平台配置合法的 HTTPS request/uploadFile 域名。
 
-1. 使用微信开发者工具导入 `fafa-miniapp` 目录。
-2. 默认 AppID 与 `fafa-java/src/main/resources/application-dev.yml` 中的开发配置一致；如果使用自己的 AppID，需要同时修改 `project.config.json` 和 Java 服务的 `WECHAT_APPID` / `WECHAT_SECRET`。
-3. 启动 Java 服务后打开页面。开发者工具中默认后端地址是 `http://localhost:8080`，`project.config.json` 已关闭本地合法域名校验。
-4. 点击“刷新 code”获取新凭证，再点击“复制 code”或“调用登录接口”。登录成功后，token 会保存在本机，可复制 `Authorization` 请求头到 Knife4j 或其他接口工具。
+模拟器默认读取 `config.js` 中的 development 地址，开发者工具项目配置允许本地调试时跳过域名校验。真机联调和发布版本需要可访问的 HTTPS API 地址，并在微信公众平台配置合法 request/uploadFile 域名；如果运行环境提供 ExtConfig，也可注入 `apiBaseUrl` 覆盖。测试、生产地址目前留空，避免误连到未确认的服务环境。
 
-## 真机调试注意事项
+## 目录
 
-- `wx.login()` 生成的 code 只能使用一次；刷新后必须使用最新值。
-- 真机不能访问电脑的 `localhost`，请把页面中的 Base URL 改成电脑局域网 IP，例如 `http://192.168.1.10:8080`。
-- 真机或正式环境还需要为小程序配置 HTTPS 合法域名；开发者工具的本地校验开关不等同于线上配置。
-- Java 服务约定 `Authorization` 直接携带 token，不要添加 `Bearer ` 前缀。
+- `config.js`：API 环境、接口路径、路由、请求参数默认值、上传限制和存储键。
+- `services/`：按业务域封装 Java API。
+- `utils/request.js`：统一处理请求、`Result<T>` 响应、鉴权过期和文件上传。
+- `utils/multipart.js`：宠物创建时提交三张同名 `photos` 图片字段。
+- `features/`：套餐页面的数据加载、表单提交和操作定义。
+- `pages/`：登录、首页、相册、问答、我的四个主 tab 及登录入口。
+- `packages/`：宠物、日常、喂养、相册、医疗和业务页面分包。
+- `components/feature-view/`：复用业务页面的表单、列表、错误和加载状态。
+
+## Java 接口约定
+
+服务端返回 `{ code, message, data }`，成功码为 `0`。登录成功后，token 统一放入 `Authorization` 请求头。接口路径和通用参数集中放在 `config.js`，业务请求放在 `services/`。
+
+宠物创建按后端契约上传 `name/type/breed/gender/birthDate/isNeutered/adoptDate` 及三张 `photos` 文件；相册上传逐文件调用 `/api/photos/upload`。食品识别使用后端 `taskId/draft/status` DTO，确认时再调用确认接口创建食品档案。
+
+## 平台与适配
+
+- 页面以原生 WXML/WXSS/JavaScript 实现，不引入 WebView 或跨端运行时。
+- 页面和 tab 底部留出安全区域；样式使用 `rpx` 适配不同屏宽。
+- 相机/相册操作接入微信隐私授权 API，并保留隐私指引入口。
+- 线上请求必须使用公众平台配置的 HTTPS 合法域名；请将已部署 Java 服务的真实域名配置到对应环境后再真机或线上联调。
+
+## 暂未接通的后端能力
+
+Java 当前没有微信支付下单与回调流程，因此会员页面只展示状态，不开放升级/续费按钮。微信订阅消息投递也尚无可调用服务端流程；提醒数据本身已接入提醒 API。

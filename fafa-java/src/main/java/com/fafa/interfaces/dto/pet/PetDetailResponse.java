@@ -6,6 +6,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 宠物详情响应
@@ -47,14 +48,20 @@ public class PetDetailResponse {
     @Schema(description = "当前体重（kg）", example = "4.5")
     private BigDecimal weight;
 
-    @Schema(description = "头像URL", example = "https://oss.fafa.com/avatar/123.jpg")
+    @Schema(description = "头像URL（即位1照片）", example = "https://oss.fafa.com/avatar/123.jpg")
     private String avatarUrl;
 
-    @Schema(description = "正面照URL", example = "https://oss.fafa.com/profile/front_123.jpg")
+    @Schema(description = "正面照URL（即位2照片）", example = "https://oss.fafa.com/profile/front_123.jpg")
     private String frontPhotoUrl;
 
-    @Schema(description = "侧面照URL", example = "https://oss.fafa.com/profile/side_123.jpg")
+    @Schema(description = "侧面照URL（即位3照片）", example = "https://oss.fafa.com/profile/side_123.jpg")
     private String sidePhotoUrl;
+
+    @Schema(description = "按位序排列的三张照片URL数组：[头像, 正面, 侧面]")
+    private List<String> photos;
+
+    @Schema(description = "三视图向量化状态：pending/processing/completed/failed", example = "completed")
+    private String vectorizationStatus;
 
     @Schema(description = "排序序号", example = "1")
     private Integer sortOrder;

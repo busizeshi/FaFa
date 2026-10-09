@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preflight 杏黄</title>
+    <style id="theme-vars">
+/* ============================================================
+   FaFa 宠物小程序 · 风格三：杏黄暖阳 · 暖黄
+   背景 #FFFBF3 · 唯一主色 #E8A23D（杏黄）· 8px 小圆角、几何色块、信息密度稍高
+   Token 前缀：fafa（preflight 契约：--fafa-* 语义别名 + 圆角刻度）
+   ============================================================ */
+
+:root {
+  /* —— 唯一品牌主色（仅此一个色相，其余为主色明度变体） —— */
+  --fafa-primary: #E8A23D;
+  --fafa-primary-foreground: #3D2B12;      /* 杏黄底上使用深咖啡字保证对比度 */
+  --fafa-primary-soft: #FBEFD9;            /* 主色浅底：强调区块、选中态 */
+  --fafa-primary-soft-2: #F6E2BE;          /* 主色次浅底：图形点缀、进度 */
+  --fafa-primary-soft-foreground: #A66A14; /* 浅底上的深字 */
+  --fafa-primary-tint-border: #EFD6A8;     /* 浅底描边 */
+
+  /* —— 页面语义色 —— */
+  --fafa-background: #FFFBF3;
+  --fafa-foreground: #43382A;
+  --fafa-card: #FFFFFF;
+  --fafa-card-foreground: #43382A;
+  --fafa-muted: #F8EFE0;
+  --fafa-muted-foreground: #9A8465;
+  --fafa-border: #F1E5CE;
+  --fafa-input: #FFFFFF;
+  --fafa-ring: #E8A23D;
+
+  /* —— 字体：单一无衬线系统字体栈 —— */
+  --fafa-font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC",
+    "HarmonyOS Sans SC", "Microsoft YaHei", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  /* —— 圆角刻度（小圆角利落风格） —— */
+  --fafa-radius-sm: 2px;
+  --fafa-radius-md: 8px;
+  --fafa-radius-lg: 12px;
+  --fafa-radius-full: 9999px;
+
+  /* —— 阴影（静态、低透明度、暖棕投影） —— */
+  --fafa-shadow-sm: 0 1px 2px rgba(67, 56, 42, 0.04);
+  --fafa-shadow-md: 0 6px 16px rgba(67, 56, 42, 0.05);
+}
+
+body {
+  background: var(--fafa-background);
+  color: var(--fafa-foreground);
+  font-family: var(--fafa-font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--fafa-background);
+    --color-foreground: var(--fafa-foreground);
+    --color-card: var(--fafa-card);
+    --color-card-foreground: var(--fafa-card-foreground);
+    --color-primary: var(--fafa-primary);
+    --color-primary-foreground: var(--fafa-primary-foreground);
+    --color-muted: var(--fafa-muted);
+    --color-muted-foreground: var(--fafa-muted-foreground);
+    --color-border: var(--fafa-border);
+    --color-input: var(--fafa-input);
+    --color-ring: var(--fafa-ring);
+    --radius-sm: var(--fafa-radius-sm);
+    --radius-md: var(--fafa-radius-md);
+    --radius-lg: var(--fafa-radius-lg);
+  }
+  @layer base {
+    body { background: var(--fafa-background); color: var(--fafa-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--fafa-background); }
+      .text-background { color: var(--fafa-background); }
+      .border-background { border-color: var(--fafa-background); }
+      .ring-background { --tw-ring-color: var(--fafa-background); }
+      .bg-foreground { background-color: var(--fafa-foreground); }
+      .text-foreground { color: var(--fafa-foreground); }
+      .border-foreground { border-color: var(--fafa-foreground); }
+      .ring-foreground { --tw-ring-color: var(--fafa-foreground); }
+      .bg-card { background-color: var(--fafa-card); }
+      .text-card { color: var(--fafa-card); }
+      .border-card { border-color: var(--fafa-card); }
+      .ring-card { --tw-ring-color: var(--fafa-card); }
+      .bg-card-foreground { background-color: var(--fafa-card-foreground); }
+      .text-card-foreground { color: var(--fafa-card-foreground); }
+      .border-card-foreground { border-color: var(--fafa-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--fafa-card-foreground); }
+      .bg-primary { background-color: var(--fafa-primary); }
+      .text-primary { color: var(--fafa-primary); }
+      .border-primary { border-color: var(--fafa-primary); }
+      .ring-primary { --tw-ring-color: var(--fafa-primary); }
+      .bg-primary-foreground { background-color: var(--fafa-primary-foreground); }
+      .text-primary-foreground { color: var(--fafa-primary-foreground); }
+      .border-primary-foreground { border-color: var(--fafa-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--fafa-primary-foreground); }
+      .bg-muted { background-color: var(--fafa-muted); }
+      .text-muted { color: var(--fafa-muted); }
+      .border-muted { border-color: var(--fafa-muted); }
+      .ring-muted { --tw-ring-color: var(--fafa-muted); }
+      .bg-muted-foreground { background-color: var(--fafa-muted-foreground); }
+      .text-muted-foreground { color: var(--fafa-muted-foreground); }
+      .border-muted-foreground { border-color: var(--fafa-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--fafa-muted-foreground); }
+      .bg-border { background-color: var(--fafa-border); }
+      .text-border { color: var(--fafa-border); }
+      .border-border { border-color: var(--fafa-border); }
+      .ring-border { --tw-ring-color: var(--fafa-border); }
+      .bg-input { background-color: var(--fafa-input); }
+      .text-input { color: var(--fafa-input); }
+      .border-input { border-color: var(--fafa-input); }
+      .ring-input { --tw-ring-color: var(--fafa-input); }
+      .bg-ring { background-color: var(--fafa-ring); }
+      .text-ring { color: var(--fafa-ring); }
+      .border-ring { border-color: var(--fafa-ring); }
+      .ring-ring { --tw-ring-color: var(--fafa-ring); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased">
+    <main>
+    </main>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

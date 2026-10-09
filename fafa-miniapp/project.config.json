@@ -1,5 +1,5 @@
 {
-  "description": "FaFa 微信登录接口调试小程序",
+  "description": "FaFa 微信小程序",
   "packOptions": {
     "ignore": [],
     "include": []
@@ -29,9 +29,9 @@
     }
   },
   "compileType": "miniprogram",
-  "libVersion": "3.8.0",
+  "libVersion": "3.17.3",
   "appid": "wx8cb5c0e52b67b79c",
-  "projectname": "fafa-auth-debugger",
+  "projectname": "fafa-miniapp",
   "condition": {},
   "simulatorPluginLibVersion": {},
   "editorSetting": {}

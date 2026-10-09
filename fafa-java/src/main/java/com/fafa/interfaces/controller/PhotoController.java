@@ -3,13 +3,12 @@ package com.fafa.interfaces.controller;
 import com.fafa.application.dto.PageDTO;
 import com.fafa.application.dto.media.ConfirmPetCommand;
 import com.fafa.application.dto.media.MediaDTO;
-import com.fafa.application.dto.media.SemanticSearchCommand;
-import com.fafa.application.dto.media.SemanticSearchResultDTO;
+import com.fafa.application.dto.media.PhotoSearchCommand;
 import com.fafa.application.dto.media.UpdateMediaCommand;
 import com.fafa.application.service.MediaApplicationService;
 import com.fafa.common.Result;
 import com.fafa.interfaces.dto.media.ConfirmPetRequest;
-import com.fafa.interfaces.dto.media.SemanticSearchRequest;
+import com.fafa.interfaces.dto.media.PhotoSearchRequest;
 import com.fafa.interfaces.dto.media.UpdateMediaRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,7 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -36,7 +34,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/photos")
 @RequiredArgsConstructor
-@Tag(name = "素材", description = "素材上传/检索/语义检索/归属确认/编辑/删除")
+@Tag(name = "素材", description = "素材上传/融合检索/归属确认/编辑/删除")
 public class PhotoController {
 
     private final MediaApplicationService mediaApplicationService;
@@ -53,30 +51,18 @@ public class PhotoController {
         return Result.ok(mediaApplicationService.upload(files, tags, petId, takenAt));
     }
 
-    @GetMapping
-    @Operation(summary = "确定性检索", description = "不限次；tags 多选为 OR 语义；按拍摄时间倒序分页")
-    public Result<PageDTO<MediaDTO>> search(
-            @Parameter(description = "宠物过滤（可选）") @RequestParam(required = false) Long petId,
-            @Parameter(description = "标签过滤（可选，逗号分隔）") @RequestParam(required = false) List<String> tags,
-            @Parameter(description = "开始日期（可选）") @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @Parameter(description = "结束日期（可选）") @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @Parameter(description = "页码（从1开始）") @RequestParam(defaultValue = "1") int page,
-            @Parameter(description = "每页条数") @RequestParam(defaultValue = "20") int size
-    ) {
-        return Result.ok(mediaApplicationService.search(petId, tags, startDate, endDate, page, size));
-    }
-
-    @PostMapping("/search/semantic")
-    @Operation(summary = "AI 语义检索", description = "自然语言检索；普通用户月限额，VIP 不限；失败请求不占额度")
-    public Result<SemanticSearchResultDTO> semanticSearch(@Valid @RequestBody SemanticSearchRequest request) {
-        return Result.ok(mediaApplicationService.semanticSearch(new SemanticSearchCommand(
+    @PostMapping("/search")
+    @Operation(summary = "素材检索（确定性 + 语义融合）",
+            description = "query 为空：确定性分页检索（不限次，按拍摄时间倒序）；query 有值：语义检索（占 AI 月配额，失败不占额度），petId/tags/日期作为确定性硬过滤叠加")
+    public Result<PageDTO<MediaDTO>> search(@Valid @RequestBody PhotoSearchRequest request) {
+        return Result.ok(mediaApplicationService.search(new PhotoSearchCommand(
                 request.getQuery(),
                 request.getPetId(),
+                request.getTags(),
                 request.getStartDate(),
                 request.getEndDate(),
-                request.getLimit()
+                request.getPage(),
+                request.getSize()
         )));
     }
 

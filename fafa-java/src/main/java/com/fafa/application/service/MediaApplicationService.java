@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  * 素材应用服务
  *
  * 负责素材管理闭环（见 phase4-implementation-plan.md 第 6 节）：
- * - 批量上传（OSS 先行 → 配额原子扣减 → 落库 → AFTER_COMMIT 分发 AI 分析）
+ * - 批量上传（预校验 → 配额前置扣减 → OSS 并行上传 → 落库 → AFTER_COMMIT 分发 AI 分析）
  * - 确定性检索（不限次）与 AI 语义检索（会员月限额）
  * - 编辑 / 确认归属 / 删除（先删库后删文件四步链路）
  * - embedding 向量化回调处理（幂等，并追加全部命中的宠物名称标签）
@@ -72,7 +72,8 @@ public class MediaApplicationService {
     /**
      * 批量上传素材
      *
-     * 事务内：OSS 上传 → 配额原子增量（失败整批回滚并清理已上传对象）→ 落库 → 打标联动；
+     * 事务内：预校验 → 配额原子增量（校验+扣减二合一，配额不足直接失败，一个文件都不上传）
+     * → OSS 并行上传 → 落库 → 打标联动；上传或落库失败时回滚配额并清理已上传对象；
      * AI 分析分发注册在事务提交后（AFTER_COMMIT），避免分发到可能回滚的数据。
      */
     @Transactional
@@ -90,7 +91,6 @@ public class MediaApplicationService {
             throw new BusinessException(ErrorCode.MEDIA_FILE_COUNT_EXCEEDED);
         }
 
-//        todo member
         if (petId != null) {
             petAccessApplicationService.require(operatorId, petId, PetPermission.CREATE_RECORD);
             assignedPet = petApplicationService.getPetDomain(petId);
@@ -106,6 +106,7 @@ public class MediaApplicationService {
         LocalDateTime effectiveTakenAt = takenAt != null ? takenAt : LocalDateTime.now();
 
         List<String> uploadedUrls = new ArrayList<>();
+        long totalSize = 0;
         try {
             // 1. 预校验全部文件（类型与大小，任一不合法立即终止，避免浪费已上传文件）
             int count = files.size();
@@ -116,7 +117,13 @@ public class MediaApplicationService {
                 validateFileSize(file, mediaTypes[i], mediaConfig);
             }
 
-            // 2. 虚拟线程并行上传（对象存储为阻塞 IO，接口耗时由 n 次之和降为最慢一次）
+            // 2. 存储配额前置原子增量（校验+扣减二合一，失败抛 STORAGE_QUOTA_EXCEEDED，一个文件都不上传）
+            for (MultipartFile file : files) {
+                totalSize += file.getSize();
+            }
+            quotaApplicationService.increaseStorage(userId, totalSize);
+
+            // 3. 虚拟线程并行上传（对象存储为阻塞 IO，接口耗时由 n 次之和降为最慢一次）
             String[] urls = new String[count];
             try (ExecutorService uploadExecutor = Executors.newVirtualThreadPerTaskExecutor()) {
                 List<Future<String>> futures = new ArrayList<>(count);
@@ -129,9 +136,8 @@ public class MediaApplicationService {
                 }
             }
 
-            // 3. 组装领域对象（顺序与入参一致）
+            // 4. 组装领域对象（顺序与入参一致）
             List<MediaAsset> assets = new ArrayList<>(count);
-            long totalSize = 0;
             for (int i = 0; i < count; i++) {
                 MultipartFile file = files.get(i);
                 MediaAsset asset = MediaAsset.create(userId, mediaTypes[i], urls[i], file.getOriginalFilename(),
@@ -142,11 +148,7 @@ public class MediaApplicationService {
                     asset.addTags(List.of(assignedPet.getName()));
                 }
                 assets.add(asset);
-                totalSize += file.getSize();
             }
-
-            // 4. 存储配额原子增量（失败抛 STORAGE_QUOTA_EXCEEDED → 整批回滚）
-            quotaApplicationService.increaseStorage(userId, totalSize);
 
             // 5. 落库 + 打标联动
             List<MediaDTO> result = new ArrayList<>();
@@ -175,40 +177,118 @@ public class MediaApplicationService {
             return result;
 
         } catch (RuntimeException ex) {
-            // 配额不足/落库失败：清理已上传的 OSS 对象后抛出（事务回滚）
+            // 上传失败/落库失败：回滚配额并清理已上传的 OSS 对象后抛出（事务回滚）
+            quotaApplicationService.decreaseStorage(userId, totalSize);
             cleanupUploaded(uploadedUrls);
             throw ex;
         }
     }
 
     /**
-     * 确定性检索（不限次、无 AI）
+     * 素材检索（确定性 + 语义融合，前端唯一检索入口）
+     *
+     * query 为空 → 纯确定性分页检索（不限次）；query 有值 → 语义检索（占 AI 月配额），
+     * petId/tags/日期作为确定性硬过滤叠加：petId 与日期下推网关，tags 在 MySQL 补全阶段过滤（OR 语义）。
+     * 协同成员按 READ_RECORD 放行，检索范围解析为素材归属人的数据。
      */
-    public PageDTO<MediaDTO> search(Long petId, List<String> tags, LocalDate startDate,
-                                    LocalDate endDate, int page, int size) {
+    public PageDTO<MediaDTO> search(PhotoSearchCommand command) {
         Long userId = getCurrentUserId();
+        String query = command.query() == null ? null : command.query().trim();
+        if (query == null || query.isBlank()) {
+            return deterministicSearch(userId, command);
+        }
+        return semanticSearchMerged(userId, query, command);
+    }
+
+    /**
+     * 确定性检索分支（不限次、无 AI），按拍摄时间倒序分页
+     */
+    private PageDTO<MediaDTO> deterministicSearch(Long userId, PhotoSearchCommand command) {
+        Long scopeUserId = userId;
         String petTagName = null;
-        if (petId != null) {
-            petAccessApplicationService.require(userId, petId, PetPermission.READ_RECORD);
-            Pet pet = petApplicationService.getPetDomain(petId);
-            userId = pet.getUserId();
+        if (command.petId() != null) {
+            petAccessApplicationService.require(userId, command.petId(), PetPermission.READ_RECORD);
+            Pet pet = petApplicationService.getPetDomain(command.petId());
+            scopeUserId = pet.getUserId();
             petTagName = pet.getName();
         }
+        int page = command.page() == null ? 1 : command.page();
+        int size = command.size() == null ? 20 : command.size();
         int offset = (page - 1) * size;
-        List<MediaAsset> assets = mediaAssetRepository.search(userId, petTagName, tags,
-                startDate, endDate, offset, size);
-        long total = mediaAssetRepository.countSearch(userId, petTagName, tags, startDate, endDate);
+        List<MediaAsset> assets = mediaAssetRepository.search(scopeUserId, petTagName, command.tags(),
+                command.startDate(), command.endDate(), offset, size);
+        long total = mediaAssetRepository.countSearch(scopeUserId, petTagName, command.tags(),
+                command.startDate(), command.endDate());
         return PageDTO.of(assets.stream().map(this::toDTO).toList(), total, page, size);
     }
 
     /**
-     * AI 语义检索（会员月限额）
+     * 语义检索分支（条件过滤 + 语义排序，占 AI 月配额）
      *
-     * 配额获取 → 网关检索（失败回滚配额）→ MySQL 补全（归属/删除二次过滤）→ 统计摘要。
+     * 配额获取 → 网关检索（petId/日期下推，失败回滚配额）→ MySQL 补全（tags OR 硬过滤 + 归属/删除二次过滤）。
      */
-    public SemanticSearchResultDTO semanticSearch(SemanticSearchCommand command) {
-        Long userId = getCurrentUserId();
-        return semanticSearchForUser(userId, command);
+    private PageDTO<MediaDTO> semanticSearchMerged(Long userId, String query, PhotoSearchCommand command) {
+        if (query.length() > 100) {
+            throw new BusinessException(ErrorCode.PARAM_INVALID, "检索语句不能超过100字符");
+        }
+        Long scopeUserId = userId;
+        Long resolvedPetId = command.petId();
+        if (resolvedPetId != null) {
+            petAccessApplicationService.require(userId, resolvedPetId, PetPermission.READ_RECORD);
+            scopeUserId = petApplicationService.getPetDomain(resolvedPetId).getUserId();
+        }
+
+        // 1. 配额获取（VIP 不限；普通用户 INCR 超限抛 AI_SEARCH_QUOTA_EXCEEDED）
+        quotaApplicationService.tryAcquireAiSearch(userId);
+
+        // 2. 未指定 petId 时锁定检索范围：单宠物直接作为条件，多宠物交 Python 做名称匹配
+        List<SemanticSearchGateway.PetCandidate> petCandidates = List.of();
+        if (resolvedPetId == null) {
+            List<Pet> userPets = petApplicationService.getUserPetDomains(userId);
+            if (userPets.size() == 1) {
+                resolvedPetId = userPets.getFirst().getId();
+            } else if (userPets.size() > 1) {
+                petCandidates = userPets.stream()
+                        .map(pet -> new SemanticSearchGateway.PetCandidate(pet.getId(), pet.getName()))
+                        .toList();
+            }
+        }
+
+        int limit = command.size() == null ? 20 : Math.min(Math.max(command.size(), 1), 100);
+        List<SemanticSearchGateway.SearchHit> hits;
+        try {
+            // 3. 网关检索（Java → Python → Qdrant，按相关度排序）
+            hits = semanticSearchGateway.search(userId, query, resolvedPetId,
+                    petCandidates, command.startDate(), command.endDate(), limit);
+        } catch (Exception ex) {
+            // 网关失败：回滚本次计数（失败请求不占额度）
+            quotaApplicationService.releaseAiSearch(userId);
+            log.error("语义检索网关调用失败: userId={}", userId, ex);
+            throw new BusinessException(ErrorCode.AI_SERVICE_UNAVAILABLE);
+        }
+
+        // 4. MySQL 补全（按素材归属人过滤）+ tags OR 硬过滤，保持网关返回的语义排序
+        List<Long> ids = hits.stream().map(SemanticSearchGateway.SearchHit::mediaId).toList();
+        Map<Long, MediaAsset> assetMap = mediaAssetRepository.findByIds(scopeUserId, ids).stream()
+                .collect(Collectors.toMap(MediaAsset::getId, Function.identity()));
+        List<MediaDTO> media = hits.stream()
+                .map(hit -> assetMap.get(hit.mediaId()))
+                .filter(java.util.Objects::nonNull)
+                .filter(asset -> matchesTags(asset, command.tags()))
+                .map(asset -> toDTO(asset, userId))
+                .toList();
+
+        // 语义结果按相关度一次性返回，不做翻页
+        return PageDTO.of(media, media.size(), 1, limit);
+    }
+
+    /** tags 硬过滤：任一命中即通过（OR 语义，与确定性检索一致），无 tags 条件时全部通过 */
+    private boolean matchesTags(MediaAsset asset, List<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return true;
+        }
+        List<String> assetTags = asset.getTags() == null ? List.of() : asset.getTags();
+        return tags.stream().anyMatch(assetTags::contains);
     }
 
     /**

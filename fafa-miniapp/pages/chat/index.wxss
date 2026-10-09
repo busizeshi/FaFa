@@ -1,0 +1,30 @@
+.chat-page { position: relative; height: 100vh; padding: 0 26rpx calc(150rpx + env(safe-area-inset-bottom)); overflow: hidden; }
+.chat-heading { display: flex; align-items: center; padding: 22rpx 0 16rpx; }
+.assistant-badge { display: flex; width: 64rpx; height: 64rpx; align-items: center; justify-content: center; border-radius: 22rpx; background: linear-gradient(145deg, #E6F0E3, #D7E9D8); color: #3E7A52; font-family: Georgia, serif; font-weight: 700; }
+.chat-intro { flex: 1; margin-left: 14rpx; }
+.chat-title { font-size: 29rpx; font-weight: 700; }
+.chat-subtitle { color: #7E8C80; font-size: 21rpx; }
+.chat-more { padding: 8rpx 14rpx; color: #7E8C80; font-size: 36rpx; }
+.disclaimer { padding: 12rpx 16rpx; border-radius: 14rpx; background: #F2F4EF; color: #818D83; font-size: 20rpx; }
+.chat-error { margin-top: 12rpx; font-size: 21rpx; }
+.retry-link { color: #3E7A52; }
+.message-list { height: calc(100vh - 380rpx - env(safe-area-inset-bottom)); padding: 24rpx 0 22rpx; }
+.chat-loading { padding: 20rpx; color: #89958A; text-align: center; }
+.welcome-message { padding: 70rpx 20rpx; text-align: center; }
+.welcome-orb { margin: 0 auto 18rpx; width: 90rpx; height: 90rpx; border-radius: 32rpx; background: #EEF4E9; color: #60906B; font-size: 46rpx; line-height: 90rpx; }
+.welcome-title { font-size: 30rpx; font-weight: 650; }
+.welcome-copy { margin-top: 8rpx; color: #839084; font-size: 22rpx; }
+.message-row { display: flex; margin: 14rpx 0; }
+.message-user { justify-content: flex-end; }
+.message-bubble { max-width: 82%; padding: 20rpx 24rpx; border-radius: 24rpx; font-size: 26rpx; white-space: pre-wrap; overflow-wrap: break-word; }
+.bubble-user { border-bottom-right-radius: 8rpx; background: #E8F1E5; color: #293A31; }
+.bubble-ai { border-bottom-left-radius: 8rpx; background: #fff; border: 1rpx solid #E6EBE2; color: #354338; }
+.typing { color: #879287; }
+.failed-label { display: block; margin-top: 8rpx; color: #B45B45; font-size: 20rpx; }
+.chat-bottom { position: absolute; right: 20rpx; bottom: calc(112rpx + env(safe-area-inset-bottom)); left: 20rpx; }
+.suggestions { white-space: nowrap; margin-bottom: 14rpx; }
+.suggestion { display: inline-block; max-width: 440rpx; overflow: hidden; padding: 13rpx 18rpx; margin-right: 12rpx; border: 1rpx solid #DEE7DB; border-radius: 999rpx; background: #fff; color: #607264; font-size: 21rpx; text-overflow: ellipsis; }
+.composer { display: flex; align-items: flex-end; padding: 12rpx; border: 1rpx solid #E0E7DD; border-radius: 26rpx; background: rgba(255,255,255,.98); box-shadow: 0 8rpx 22rpx rgba(42,62,45,.08); }
+.chat-input { flex: 1; max-height: 180rpx; min-height: 58rpx; padding: 12rpx 14rpx; font-size: 25rpx; }
+.send-button { width: 62rpx; height: 62rpx; margin-left: 8rpx; border-radius: 20rpx; background: #3E7A52; color: white; font-size: 36rpx; line-height: 58rpx; }
+.send-disabled { opacity: .45; }

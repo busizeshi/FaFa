@@ -36,7 +36,8 @@ fafa:
     base-url: http://localhost:8000
   internal-token: ${INTERNAL_TOKEN:fafa-internal-dev-2026}
   storage:
-    type: minio
+    # 开发环境使用腾讯云 COS（公有读桶，直链展示/AI 拉图）
+    type: cos
   ai:
     dispatcher: http
     # 视频向量化需要百炼可访问的临时对象存储 URL
@@ -137,6 +138,11 @@ fafa:
     access-key: minioadmin
     secret-key: minioadmin123
     bucket-media: fafa-media
+  cos:
+    secret-id: ${FAFA_COS_SECRET_ID:}
+    secret-key: ${FAFA_COS_SECRET_KEY:}
+    region: ap-guangzhou
+    bucket-name: fafa-dev-2026-1335105367
 
 springdoc:
   api-docs:

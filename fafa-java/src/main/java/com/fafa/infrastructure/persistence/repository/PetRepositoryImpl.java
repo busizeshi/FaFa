@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fafa.domain.model.pet.Gender;
 import com.fafa.domain.model.pet.Pet;
 import com.fafa.domain.model.pet.PetType;
+import com.fafa.domain.model.pet.PetVectorizationStatus;
 import com.fafa.domain.repository.PetRepository;
 import com.fafa.infrastructure.persistence.mapper.PetMapper;
 import com.fafa.infrastructure.persistence.po.PetPO;
@@ -128,6 +129,7 @@ public class PetRepositoryImpl implements PetRepository {
             po.getAvatarUrl(),
             po.getFrontPhotoUrl(),
             po.getSidePhotoUrl(),
+            PetVectorizationStatus.fromCode(po.getVectorizationStatus()),
             po.getSortOrder(),
             po.getIsDeleted() != null && po.getIsDeleted()
         );
@@ -155,6 +157,8 @@ public class PetRepositoryImpl implements PetRepository {
         po.setAvatarUrl(pet.getAvatarUrl());
         po.setFrontPhotoUrl(pet.getFrontPhotoUrl());
         po.setSidePhotoUrl(pet.getSidePhotoUrl());
+        po.setVectorizationStatus(pet.getVectorizationStatus() != null
+                ? pet.getVectorizationStatus().getCode() : null);
         po.setSortOrder(pet.getSortOrder());
         po.setIsDeleted(pet.isDeleted());
 
