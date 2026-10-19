@@ -121,3 +121,9 @@ qdrant_storage/
 # ---------- 前端工具链（如后续引入脚本/原型工具）----------
 node_modules/
 dist/
+
+.agents/
+assets/
+design-assets/
+docs/
+html/
