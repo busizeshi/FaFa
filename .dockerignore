@@ -1,0 +1,17 @@
+.git
+.gitignore
+.idea
+.vscode
+.env
+.env.*
+**/.env
+**/.env.*
+**/target
+**/.venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+assets
+docs

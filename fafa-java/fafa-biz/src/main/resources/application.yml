@@ -1,0 +1,60 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: fafa-biz
+  config:
+    import:
+      - optional:nacos:fafa-shared.properties?group=FAFA_GROUP&refreshEnabled=true
+      - optional:nacos:fafa-biz.properties?group=FAFA_GROUP&refreshEnabled=true
+  cloud:
+    nacos:
+      config:
+        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+        namespace: ${NACOS_NAMESPACE:}
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+        namespace: ${NACOS_NAMESPACE:}
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+dubbo:
+  application:
+    name: fafa-biz
+    logger: slf4j
+  config-center:
+    address: N/A
+  protocol:
+    name: tri
+    port: ${DUBBO_PORT:-1}
+  registry:
+    address: nacos://${NACOS_SERVER_ADDR:localhost:8848}
+    check: false
+    username: ${NACOS_USERNAME:nacos}
+    password: ${NACOS_PASSWORD:nacos}
+    parameters:
+      namespace: ${NACOS_NAMESPACE:}
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{requestId:-}]"

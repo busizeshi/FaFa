@@ -1,0 +1,44 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: fafa-gateway
+  config:
+    import:
+      - optional:nacos:fafa-shared.properties?group=FAFA_GROUP&refreshEnabled=true
+      - optional:nacos:fafa-gateway.properties?group=FAFA_GROUP&refreshEnabled=true
+  cloud:
+    nacos:
+      config:
+        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+        namespace: ${NACOS_NAMESPACE:}
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+        namespace: ${NACOS_NAMESPACE:}
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+fafa:
+  gateway:
+    admin-uri: ${FAFA_ADMIN_URL:http://localhost:8081}
+    biz-uri: ${FAFA_BIZ_URL:http://localhost:8082}
+    python-uri: ${FAFA_PYTHON_URL:http://localhost:8000}
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{requestId:-}]"
