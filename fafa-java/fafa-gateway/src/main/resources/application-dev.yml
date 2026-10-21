@@ -1,0 +1,10 @@
+spring:
+  cloud:
+    nacos:
+      config:
+        enabled: false
+      discovery:
+        enabled: false
+fafa:
+  gateway:
+    legacy-routes-enabled: false
