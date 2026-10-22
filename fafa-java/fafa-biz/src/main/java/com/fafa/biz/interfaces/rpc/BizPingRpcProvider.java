@@ -6,7 +6,7 @@ import org.apache.dubbo.config.annotation.DubboService;
 
 import java.time.Instant;
 
-/** Connectivity provider used by the initial scaffold; replace with real application contracts over time. */
+/** 初始脚手架使用的连通性服务提供者；后续应逐步替换为真实业务契约。 */
 @DubboService
 public class BizPingRpcProvider implements BizPingRpc {
     @Override

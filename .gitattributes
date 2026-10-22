@@ -1,0 +1,2 @@
+# Linux 容器入口脚本必须保持 LF，避免 Windows 检出产生解释器或 SQL 输入错误。
+*.sh text eol=lf

@@ -1,0 +1,94 @@
+{
+  "日期": "2026-10-22",
+  "范围": "WP02/WP03 后端与 WP00/WP01 接口文档补齐",
+  "本地Maven验证": {
+    "结果": "通过",
+    "套件": [
+      {
+        "name": "com.fafa.admin.testing.AdminSecurityTest",
+        "tests": "6",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.fafa.biz.testing.IdentityHttpTest",
+        "tests": "12",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.fafa.biz.testing.IdentitySecurityTest",
+        "tests": "7",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.fafa.biz.testing.OpenApiContractTest",
+        "tests": "1",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.fafa.biz.testing.PetQuotaTest",
+        "tests": "10",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.fafa.gateway.GatewayRoutingTest",
+        "tests": "3",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      }
+    ]
+  },
+  "真实依赖": {
+    "MySQL": "8.0.46",
+    "Redis": "服务器密码认证及会话",
+    "Nacos": "3.2.4 注册/发现，配置订阅",
+    "链路": "Gateway → Admin → 签名 Dubbo → Biz",
+    "验证结果": "通过",
+    "分库权限": "Admin 账号跨库访问 Biz 表被拒绝"
+  },
+  "真实MySQL套件": {
+    "Biz": 30,
+    "Admin": 6,
+    "失败": 0,
+    "错误": 0
+  },
+  "接口文档": {
+    "业务HTTP接口": 40,
+    "逐接口内容": [
+      "名称",
+      "定义",
+      "请求JSON",
+      "请求字段",
+      "响应JSON",
+      "响应字段",
+      "curl"
+    ],
+    "结构与覆盖检查": "通过"
+  },
+  "其他检查": [
+    "中文 Javadoc 生成通过",
+    "文档本地链接检查通过",
+    "git diff --check 通过"
+  ],
+  "限制": [
+    "SMTP 实际收信未验收，注册端到端使用明确 SENT 测试夹具",
+    "媒体和推送属于后续批次",
+    "删除到期物理清理在 WP09 实现"
+  ],
+  "修复记录": [
+    "真实 MySQL 日期映射使用 LocalDateTime，避免对 Timestamp 的错误强转",
+    "无 Web 的管理员初始化关闭 Knife4j 与 Dubbo 并在成功后退出",
+    "dev 不再导入 Nacos 配置，RPC 使用明确直连端口",
+    "使用 READ_COMMITTED 防止锁后读取旧幂等快照"
+  ]
+}

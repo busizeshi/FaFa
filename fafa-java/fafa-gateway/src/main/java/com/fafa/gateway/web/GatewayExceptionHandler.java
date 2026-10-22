@@ -2,7 +2,7 @@ package com.fafa.gateway.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fafa.common.api.ApiResponse;
+import com.fafa.common.api.R;
 import com.fafa.common.error.CommonErrorCode;
 import com.fafa.common.error.FafaException;
 import com.fafa.common.web.RequestIdContext;
@@ -19,7 +19,7 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebExceptionHandler;
 import reactor.core.publisher.Mono;
 
-/** Reactive Gateway error adapter; it reads the ID from the exchange instead of servlet MDC. */
+/** 响应式 Gateway 错误适配器；从 exchange 读取请求 ID，而不是读取 Servlet MDC。 */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GatewayExceptionHandler implements WebExceptionHandler {
@@ -78,6 +78,10 @@ public class GatewayExceptionHandler implements WebExceptionHandler {
                     code = CommonErrorCode.UNSUPPORTED_MEDIA_TYPE.code();
                     message = CommonErrorCode.UNSUPPORTED_MEDIA_TYPE.message();
                 }
+                case 413 -> {
+                    code = CommonErrorCode.REQUEST_TOO_LARGE.code();
+                    message = CommonErrorCode.REQUEST_TOO_LARGE.message();
+                }
                 case 503 -> {
                     code = CommonErrorCode.DEPENDENCY_UNAVAILABLE.code();
                     message = CommonErrorCode.DEPENDENCY_UNAVAILABLE.message();
@@ -91,7 +95,7 @@ public class GatewayExceptionHandler implements WebExceptionHandler {
 
         byte[] body;
         try {
-            body = objectMapper.writeValueAsBytes(ApiResponse.failure(code, message, null, requestId));
+            body = objectMapper.writeValueAsBytes(R.error(code, message, null, requestId));
         } catch (JsonProcessingException serializationException) {
             return Mono.error(serializationException);
         }

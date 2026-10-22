@@ -1,0 +1,5 @@
+spring:
+  config:
+    import:
+      - optional:nacos:fafa-shared.properties?group=FAFA_GROUP&refreshEnabled=true
+      - optional:nacos:fafa-gateway.properties?group=FAFA_GROUP&refreshEnabled=true

@@ -7,9 +7,10 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
-      MYSQL_DATABASE: fafa_admin
+      MYSQL_DATABASE: fafa_biz
       MYSQL_USER: fafa
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      MYSQL_ADMIN_PASSWORD: ${MYSQL_ADMIN_PASSWORD:?Set MYSQL_ADMIN_PASSWORD in .env}
       TZ: Asia/Hong_Kong
     ports:
       - "127.0.0.1:3306:3306"
@@ -99,8 +100,14 @@ services:
       NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
       NACOS_PASSWORD: ${NACOS_PASSWORD:-nacos}
       DUBBO_PORT: -1
+      FAFA_ADMIN_DB_URL: jdbc:mysql://mysql:3306/fafa_admin?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+      FAFA_ADMIN_DB_USERNAME: fafa_admin
+      FAFA_ADMIN_DB_PASSWORD: ${MYSQL_ADMIN_PASSWORD:?Set MYSQL_ADMIN_PASSWORD in .env}
+      FAFA_INTERNAL_RPC_SECRET: ${FAFA_INTERNAL_RPC_SECRET:?Set an internal RPC secret of at least 32 characters}
     depends_on:
       nacos:
+        condition: service_healthy
+      mysql:
         condition: service_healthy
     networks: [fafa-dev]
 
@@ -115,9 +122,35 @@ services:
       NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
       NACOS_PASSWORD: ${NACOS_PASSWORD:-nacos}
       DUBBO_PORT: 50051
+      FAFA_DB_URL: jdbc:mysql://mysql:3306/fafa_biz?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+      FAFA_DB_USERNAME: fafa
+      FAFA_DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      FAFA_REDIS_HOST: redis
+      FAFA_REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+      FAFA_AUTH_HMAC_SECRET: ${FAFA_AUTH_HMAC_SECRET:?Set a random HMAC secret of at least 32 characters}
+      FAFA_INTERNAL_RPC_SECRET: ${FAFA_INTERNAL_RPC_SECRET:?Set an internal RPC secret of at least 32 characters}
+      FAFA_INITIAL_STORAGE_BYTES: ${FAFA_INITIAL_STORAGE_BYTES:-0}
+      FAFA_MAIL_FROM: ${FAFA_MAIL_FROM:-dev@fafa.invalid}
+      FAFA_SMTP_HOST: mailpit
+      FAFA_SMTP_PORT: 1025
+      FAFA_SMTP_AUTH: "false"
+      FAFA_SMTP_STARTTLS: "false"
     depends_on:
       nacos:
         condition: service_healthy
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks: [fafa-dev]
+
+  mailpit:
+    image: axllent/mailpit:v1.27.8
+    profiles: [mail]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
     networks: [fafa-dev]
 
   fafa-python:

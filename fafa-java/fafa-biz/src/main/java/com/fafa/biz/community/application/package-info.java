@@ -1,2 +1,2 @@
-/** Community use cases and transaction boundaries. */
+/** {@code community} 领域的用例和事务边界。 */
 package com.fafa.biz.community.application;

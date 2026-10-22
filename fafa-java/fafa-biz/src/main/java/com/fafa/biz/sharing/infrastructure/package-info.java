@@ -1,2 +1,2 @@
-/** Sharing persistence and external-service adapters. */
+/** {@code sharing} 领域的持久化和外部服务适配器。 */
 package com.fafa.biz.sharing.infrastructure;

@@ -1,19 +1,19 @@
 # fafa-python
 
-The standalone FastAPI service is the home for AI orchestration and provider adapters. It must read business facts through authorized Biz APIs and must not write Java-owned business data directly.
+独立的 FastAPI 服务用于 AI 流程编排和模型供应商适配。它必须通过经过授权的 Biz API 读取业务事实，不得直接写入 Java 服务拥有的业务数据。
 
-## Requirements
+## 前置要求
 
-- Python 3.12
-- `uv` for resolving and installing the committed `uv.lock`
+- Python 3.12。
+- 使用 `uv` 解析并安装已提交的 `uv.lock`。
 
-## Local run
+## 本地运行
 
 ```powershell
 uv sync --locked
 uv run uvicorn app.main:app --reload --app-dir .
 ```
 
-Health is available at `GET /api/v1/health`; through Gateway it is available at `GET /api/ai/api/v1/health`. The shared response fields are `code`, `message`, `data`, and `requestId`. Unknown exceptions are logged with a stack trace and returned without internal details.
+健康检查地址为 `GET /api/v1/health`；通过 Gateway 访问时为 `GET /api/ai/api/v1/health`。共享响应字段为 `code`、`message`、`data` 和 `requestId`。未知异常会记录堆栈，但返回给客户端时不暴露内部详情。
 
-Settings use the `FAFA_PYTHON_` environment prefix. Copy values from `../deploy/docker-compose/.env.example` when needed; do not commit real API keys.
+配置使用 `FAFA_PYTHON_` 环境变量前缀。需要时可参考 `../deploy/docker-compose/.env.example`，真实 API Key 不得提交到仓库。

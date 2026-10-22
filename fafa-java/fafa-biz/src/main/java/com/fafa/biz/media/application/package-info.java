@@ -1,2 +1,2 @@
-/** Media use cases and transaction boundaries. */
+/** {@code media} 领域的用例和事务边界。 */
 package com.fafa.biz.media.application;

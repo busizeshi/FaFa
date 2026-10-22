@@ -1,0 +1,15 @@
+spring:
+  cloud:
+    nacos:
+      config:
+        enabled: false
+      discovery:
+        enabled: false
+dubbo:
+  registry:
+    address: N/A
+  application:
+    qos-enable: false
+fafa:
+  biz-rpc:
+    url: ${FAFA_BIZ_RPC_URL:tri://127.0.0.1:20882}

@@ -8,10 +8,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
-@EnableDubbo
 @Import({CommonExceptionHandler.class, CommonWebMvcConfiguration.class})
 public class AdminApplication {
     public static void main(String[] args) {
-        SpringApplication.run(AdminApplication.class, args);
+        var context = SpringApplication.run(AdminApplication.class, args);
+        if (context.getEnvironment().matchesProfiles("admin-init")) {
+            System.exit(SpringApplication.exit(context));
+        }
     }
 }

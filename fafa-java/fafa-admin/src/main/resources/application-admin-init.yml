@@ -1,0 +1,12 @@
+spring:
+  main:
+    web-application-type: none
+dubbo:
+  enabled: false
+knife4j:
+  enable: false
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

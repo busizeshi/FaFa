@@ -1,9 +1,12 @@
 package com.fafa.common.error;
 
-/** Validation error without echoing submitted field values.
+/** 不回显提交字段值的校验错误。
  *
- * @param field name or path of the invalid field
- * @param message client-safe validation message
+ * @param field 无效字段的名称或路径
+ * @param message 可安全返回给客户端的校验消息
  */
-public record FieldViolation(String field, String message) {
+public record FieldViolation(String field, String code, String message) {
+    public FieldViolation(String field, String message) {
+        this(field, "INVALID_VALUE", message);
+    }
 }

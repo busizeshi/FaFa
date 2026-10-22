@@ -1,2 +1,2 @@
-/** Pet use cases and transaction boundaries. */
+/** {@code pet} 领域的用例和事务边界。 */
 package com.fafa.biz.pet.application;

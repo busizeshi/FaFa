@@ -1,0 +1,1096 @@
+{
+  "listLegalDocuments": {
+    "method": "GET",
+    "path": "/api/v1/legal-documents",
+    "pathParameters": {},
+    "query": {
+      "type": "TERMS",
+      "version": "v1"
+    },
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": [
+        {
+          "type": "TERMS",
+          "version": "v1",
+          "title": "用户服务协议",
+          "body": "示意正文；以实际发布文本为准。",
+          "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "effectiveAt": "2026-10-22T00:00:00Z"
+        }
+      ],
+      "requestId": "example-request-001"
+    }
+  },
+  "createEmailChallenge": {
+    "method": "POST",
+    "path": "/api/v1/auth/email-challenges",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": {
+      "purpose": "REGISTER",
+      "email": "owner@example.com"
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "challengeId": "55000000-0000-4000-8000-000000000001",
+        "expiresAt": "2026-10-22T04:10:00Z",
+        "resendAfter": 60
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "registerAccount": {
+    "method": "POST",
+    "path": "/api/v1/auth/registrations",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": {
+      "email": "owner@example.com",
+      "password": "ExamplePassword123",
+      "confirmedPassword": "ExamplePassword123",
+      "challengeId": "55000000-0000-4000-8000-000000000001",
+      "code": "123456",
+      "legalVersions": {
+        "TERMS": "v1",
+        "PRIVACY": "v1"
+      },
+      "device": {
+        "deviceId": "android-example-001",
+        "deviceName": "安卓测试设备"
+      }
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "user": {
+          "id": "11000000-0000-4000-8000-000000000001",
+          "email": "owner@example.com",
+          "nickname": "铲屎官A1B2",
+          "signature": null,
+          "avatarMediaId": null,
+          "timezone": "Asia/Hong_Kong",
+          "version": 1
+        },
+        "session": {
+          "token": "00000000-0000-4000-8000-000000000001",
+          "tokenType": "Bearer",
+          "expiresIn": 604800
+        },
+        "nextAction": "NO_PET"
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "login": {
+    "method": "POST",
+    "path": "/api/v1/auth/sessions",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": {
+      "email": "owner@example.com",
+      "password": "ExamplePassword123",
+      "device": {
+        "deviceId": "android-example-001",
+        "deviceName": "安卓测试设备"
+      }
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "user": {
+          "id": "11000000-0000-4000-8000-000000000001",
+          "email": "owner@example.com",
+          "nickname": "铲屎官A1B2",
+          "signature": null,
+          "avatarMediaId": null,
+          "timezone": "Asia/Hong_Kong",
+          "version": 1
+        },
+        "session": {
+          "token": "00000000-0000-4000-8000-000000000001",
+          "tokenType": "Bearer",
+          "expiresIn": 604800
+        }
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "logout": {
+    "method": "DELETE",
+    "path": "/api/v1/auth/session",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": null,
+      "requestId": "example-request-001"
+    }
+  },
+  "verifyPasswordReset": {
+    "method": "POST",
+    "path": "/api/v1/auth/password-reset-tickets",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": {
+      "challengeId": "55000000-0000-4000-8000-000000000001",
+      "code": "123456"
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "resetTicket": "example-ticket-id.example-one-time-secret",
+        "expiresAt": "2026-10-22T04:10:00Z"
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "resetPassword": {
+    "method": "POST",
+    "path": "/api/v1/auth/password-resets",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": {
+      "resetTicket": "example-ticket-id.example-one-time-secret",
+      "password": "NewExamplePassword123",
+      "confirmedPassword": "NewExamplePassword123"
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": null,
+      "requestId": "example-request-001"
+    }
+  },
+  "getBootstrap": {
+    "method": "GET",
+    "path": "/api/v1/bootstrap",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "authenticated": true,
+        "user": {
+          "id": "11000000-0000-4000-8000-000000000001",
+          "email": "owner@example.com",
+          "nickname": "铲屎官A1B2",
+          "signature": null,
+          "avatarMediaId": null,
+          "timezone": "Asia/Hong_Kong",
+          "version": 1
+        },
+        "pets": [
+          {
+            "id": "22000000-0000-4000-8000-000000000001",
+            "ownerUserId": "11000000-0000-4000-8000-000000000001",
+            "role": "OWNER",
+            "profile": {
+              "nickname": "雪球",
+              "species": "CAT",
+              "breedId": null,
+              "sex": "UNKNOWN",
+              "neuteredStatus": "UNKNOWN",
+              "birthDate": null,
+              "estimatedBirthMonth": null,
+              "arrivedOn": null
+            },
+            "status": "ACTIVE",
+            "version": 1,
+            "deleteAfter": null
+          }
+        ],
+        "currentPetId": "22000000-0000-4000-8000-000000000001",
+        "nextRoute": "HOME",
+        "features": {
+          "ai": false,
+          "community": false,
+          "petManagement": true
+        }
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "getMyProfile": {
+    "method": "GET",
+    "path": "/api/v1/me",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "11000000-0000-4000-8000-000000000001",
+        "email": "owner@example.com",
+        "nickname": "铲屎官A1B2",
+        "signature": null,
+        "avatarMediaId": null,
+        "timezone": "Asia/Hong_Kong",
+        "version": 1
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "listMySessions": {
+    "method": "GET",
+    "path": "/api/v1/me/sessions",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": [
+        {
+          "deviceId": "android-example-001",
+          "deviceName": "安卓测试设备"
+        }
+      ],
+      "requestId": "example-request-001"
+    }
+  },
+  "getPetPreferences": {
+    "method": "GET",
+    "path": "/api/v1/me/pet-preferences",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "currentPetId": "22000000-0000-4000-8000-000000000001",
+        "defaultPetId": "22000000-0000-4000-8000-000000000001",
+        "version": 2
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "updatePetPreferences": {
+    "method": "PUT",
+    "path": "/api/v1/me/pet-preferences",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": {
+      "version": 2,
+      "currentPetId": "22000000-0000-4000-8000-000000000001",
+      "defaultPetId": "22000000-0000-4000-8000-000000000001"
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "currentPetId": "22000000-0000-4000-8000-000000000001",
+        "defaultPetId": "22000000-0000-4000-8000-000000000001",
+        "version": 3
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "listMyQuotaRequests": {
+    "method": "GET",
+    "path": "/api/v1/quota-grant-requests",
+    "pathParameters": {},
+    "query": {
+      "limit": 20
+    },
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "items": [
+          {
+            "id": "44000000-0000-4000-8000-000000000001",
+            "userId": "11000000-0000-4000-8000-000000000001",
+            "bucket": "STORAGE_BYTES",
+            "amount": "1000",
+            "reason": "申请开发测试空间",
+            "state": "PENDING",
+            "grantedAmount": null,
+            "decisionReason": null,
+            "operatorId": null,
+            "version": 1
+          }
+        ],
+        "nextCursor": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "requestFreeQuota": {
+    "method": "POST",
+    "path": "/api/v1/quota-grant-requests",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": {
+      "bucket": "STORAGE_BYTES",
+      "amount": "1000",
+      "reason": "申请开发测试空间"
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "44000000-0000-4000-8000-000000000001",
+        "userId": "11000000-0000-4000-8000-000000000001",
+        "bucket": "STORAGE_BYTES",
+        "amount": "1000",
+        "reason": "申请开发测试空间",
+        "state": "PENDING",
+        "grantedAmount": null,
+        "decisionReason": null,
+        "operatorId": null,
+        "version": 1
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "listAccessiblePets": {
+    "method": "GET",
+    "path": "/api/v1/pets",
+    "pathParameters": {},
+    "query": {
+      "status": "ACTIVE",
+      "limit": 20
+    },
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "items": [
+          {
+            "id": "22000000-0000-4000-8000-000000000001",
+            "ownerUserId": "11000000-0000-4000-8000-000000000001",
+            "role": "OWNER",
+            "profile": {
+              "nickname": "雪球",
+              "species": "CAT",
+              "breedId": null,
+              "sex": "UNKNOWN",
+              "neuteredStatus": "UNKNOWN",
+              "birthDate": null,
+              "estimatedBirthMonth": null,
+              "arrivedOn": null
+            },
+            "status": "ACTIVE",
+            "version": 1,
+            "deleteAfter": null
+          }
+        ],
+        "nextCursor": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "createPet": {
+    "method": "POST",
+    "path": "/api/v1/pets",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": {
+      "nickname": "雪球",
+      "species": "CAT"
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "22000000-0000-4000-8000-000000000001",
+        "ownerUserId": "11000000-0000-4000-8000-000000000001",
+        "role": "OWNER",
+        "profile": {
+          "nickname": "雪球",
+          "species": "CAT",
+          "breedId": null,
+          "sex": "UNKNOWN",
+          "neuteredStatus": "UNKNOWN",
+          "birthDate": null,
+          "estimatedBirthMonth": null,
+          "arrivedOn": null
+        },
+        "status": "ACTIVE",
+        "version": 1,
+        "deleteAfter": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "restorePet": {
+    "method": "POST",
+    "path": "/api/v1/pets/{id}:restore",
+    "pathParameters": {
+      "id": "22000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": {
+      "version": 2
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "22000000-0000-4000-8000-000000000001",
+        "ownerUserId": "11000000-0000-4000-8000-000000000001",
+        "role": "OWNER",
+        "profile": {
+          "nickname": "雪球",
+          "species": "CAT",
+          "breedId": null,
+          "sex": "UNKNOWN",
+          "neuteredStatus": "UNKNOWN",
+          "birthDate": null,
+          "estimatedBirthMonth": null,
+          "arrivedOn": null
+        },
+        "status": "ACTIVE",
+        "version": 3,
+        "deleteAfter": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "archivePet": {
+    "method": "POST",
+    "path": "/api/v1/pets/{id}:archive",
+    "pathParameters": {
+      "id": "22000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": {
+      "version": 1
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "22000000-0000-4000-8000-000000000001",
+        "ownerUserId": "11000000-0000-4000-8000-000000000001",
+        "role": "OWNER",
+        "profile": {
+          "nickname": "雪球",
+          "species": "CAT",
+          "breedId": null,
+          "sex": "UNKNOWN",
+          "neuteredStatus": "UNKNOWN",
+          "birthDate": null,
+          "estimatedBirthMonth": null,
+          "arrivedOn": null
+        },
+        "status": "ARCHIVED",
+        "version": 2,
+        "deleteAfter": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "requestPetDeletion": {
+    "method": "POST",
+    "path": "/api/v1/pets/{id}/deletion-requests",
+    "pathParameters": {
+      "id": "22000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": {
+      "version": 1,
+      "acknowledgement": true
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "22000000-0000-4000-8000-000000000001",
+        "ownerUserId": "11000000-0000-4000-8000-000000000001",
+        "role": "OWNER",
+        "profile": {
+          "nickname": "雪球",
+          "species": "CAT",
+          "breedId": null,
+          "sex": "UNKNOWN",
+          "neuteredStatus": "UNKNOWN",
+          "birthDate": null,
+          "estimatedBirthMonth": null,
+          "arrivedOn": null
+        },
+        "status": "DELETION_PENDING",
+        "version": 2,
+        "deleteAfter": "2026-11-06T04:00:00Z"
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "withdrawPetDeletion": {
+    "method": "POST",
+    "path": "/api/v1/pets/{id}/deletion-request:withdraw",
+    "pathParameters": {
+      "id": "22000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": {
+      "version": 2
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "22000000-0000-4000-8000-000000000001",
+        "ownerUserId": "11000000-0000-4000-8000-000000000001",
+        "role": "OWNER",
+        "profile": {
+          "nickname": "雪球",
+          "species": "CAT",
+          "breedId": null,
+          "sex": "UNKNOWN",
+          "neuteredStatus": "UNKNOWN",
+          "birthDate": null,
+          "estimatedBirthMonth": null,
+          "arrivedOn": null
+        },
+        "status": "ACTIVE",
+        "version": 3,
+        "deleteAfter": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "getPet": {
+    "method": "GET",
+    "path": "/api/v1/pets/{id}",
+    "pathParameters": {
+      "id": "22000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "22000000-0000-4000-8000-000000000001",
+        "ownerUserId": "11000000-0000-4000-8000-000000000001",
+        "role": "OWNER",
+        "profile": {
+          "nickname": "雪球",
+          "species": "CAT",
+          "breedId": null,
+          "sex": "UNKNOWN",
+          "neuteredStatus": "UNKNOWN",
+          "birthDate": null,
+          "estimatedBirthMonth": null,
+          "arrivedOn": null
+        },
+        "status": "ACTIVE",
+        "version": 1,
+        "deleteAfter": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "updatePet": {
+    "method": "PATCH",
+    "path": "/api/v1/pets/{id}",
+    "pathParameters": {
+      "id": "22000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": {
+      "version": 1,
+      "nickname": "雪球宝宝"
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "22000000-0000-4000-8000-000000000001",
+        "ownerUserId": "11000000-0000-4000-8000-000000000001",
+        "role": "OWNER",
+        "profile": {
+          "nickname": "雪球宝宝",
+          "species": "CAT",
+          "breedId": null,
+          "sex": "UNKNOWN",
+          "neuteredStatus": "UNKNOWN",
+          "birthDate": null,
+          "estimatedBirthMonth": null,
+          "arrivedOn": null
+        },
+        "status": "ACTIVE",
+        "version": 2,
+        "deleteAfter": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "getMyUsage": {
+    "method": "GET",
+    "path": "/api/v1/usage",
+    "pathParameters": {},
+    "query": {
+      "bucket": "STORAGE_BYTES"
+    },
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": [
+        {
+          "bucket": "STORAGE_BYTES",
+          "granted": "1000",
+          "used": "0",
+          "reserved": "0",
+          "available": "1000",
+          "version": 2
+        }
+      ],
+      "requestId": "example-request-001"
+    }
+  },
+  "listMyUsageLedger": {
+    "method": "GET",
+    "path": "/api/v1/usage/ledger",
+    "pathParameters": {},
+    "query": {
+      "bucket": "STORAGE_BYTES",
+      "limit": 20
+    },
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "items": [
+          {
+            "id": "66000000-0000-4000-8000-000000000001",
+            "operationId": "request:44000000-0000-4000-8000-000000000001",
+            "entryType": "GRANT",
+            "amount": "1000",
+            "reason": "批准开发测试空间",
+            "createdAt": "2026-10-22T04:00:00Z"
+          }
+        ],
+        "nextCursor": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "previewPetDeletion": {
+    "method": "GET",
+    "path": "/api/v1/pets/{id}/deletion-impact",
+    "pathParameters": {
+      "id": "22000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "petId": "22000000-0000-4000-8000-000000000001",
+        "status": "ACTIVE",
+        "waitingDays": 15,
+        "resourceCounts": {
+          "pet": 1
+        }
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "listPetSpecies": {
+    "method": "GET",
+    "path": "/api/v1/pet-species",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": [
+        "CAT",
+        "DOG",
+        "OTHER"
+      ],
+      "requestId": "example-request-001"
+    }
+  },
+  "listPetBreeds": {
+    "method": "GET",
+    "path": "/api/v1/pet-breeds",
+    "pathParameters": {},
+    "query": {
+      "species": "CAT",
+      "q": "未知",
+      "limit": 20
+    },
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "items": [
+          {
+            "id": "CAT_UNKNOWN",
+            "species": "CAT",
+            "name": "未知品种",
+            "status": "ACTIVE",
+            "version": 1
+          }
+        ],
+        "nextCursor": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "setAdminUserStatus": {
+    "method": "POST",
+    "path": "/api/admin/v1/users/{id}:set-status",
+    "pathParameters": {
+      "id": "11000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": {
+      "status": "DISABLED",
+      "reason": "开发环境风控验收",
+      "version": 2
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "11000000-0000-4000-8000-000000000001",
+        "maskedEmail": "o***@example.com",
+        "nickname": "铲屎官A1B2",
+        "status": "DISABLED",
+        "version": 3
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "grantAdminUserQuota": {
+    "method": "POST",
+    "path": "/api/admin/v1/users/{id}/quota-adjustments",
+    "pathParameters": {
+      "id": "11000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": {
+      "bucket": "STORAGE_BYTES",
+      "amount": "1000",
+      "entryType": "GRANT",
+      "reason": "开发测试赠送"
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "bucket": "STORAGE_BYTES",
+        "granted": "1000",
+        "used": "0",
+        "reserved": "0",
+        "available": "1000",
+        "version": 2
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "decideAdminQuotaRequest": {
+    "method": "POST",
+    "path": "/api/admin/v1/quota-grant-requests/{id}:decide",
+    "pathParameters": {
+      "id": "44000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": {
+      "approved": true,
+      "amount": "1000",
+      "reason": "批准开发测试空间",
+      "version": 1
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "44000000-0000-4000-8000-000000000001",
+        "userId": "11000000-0000-4000-8000-000000000001",
+        "bucket": "STORAGE_BYTES",
+        "amount": "1000",
+        "reason": "申请开发测试空间",
+        "state": "APPROVED",
+        "grantedAmount": "1000",
+        "decisionReason": "批准开发测试空间",
+        "operatorId": "33000000-0000-4000-8000-000000000001",
+        "version": 2
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "createAdminPetBreed": {
+    "method": "POST",
+    "path": "/api/admin/v1/pet-breeds",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": {
+      "id": "CAT_BRITISH_SHORTHAIR",
+      "species": "CAT",
+      "name": "英国短毛猫",
+      "status": "ACTIVE",
+      "reason": "维护基础品种字典"
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "CAT_BRITISH_SHORTHAIR",
+        "species": "CAT",
+        "name": "英国短毛猫",
+        "status": "ACTIVE",
+        "version": 1
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "createAdminSession": {
+    "method": "POST",
+    "path": "/api/admin/v1/auth/sessions",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": {
+      "username": "example-admin",
+      "password": "ExampleAdminPassword123"
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "admin": {
+          "id": "33000000-0000-4000-8000-000000000001",
+          "username": "example-admin",
+          "permissions": [
+            "USER_READ",
+            "USER_WRITE",
+            "QUOTA_READ",
+            "QUOTA_WRITE",
+            "BREED_READ",
+            "BREED_WRITE",
+            "AUDIT_READ"
+          ]
+        },
+        "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "expiresAt": "2026-10-22T05:00:00Z"
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "updateAdminPetBreed": {
+    "method": "PATCH",
+    "path": "/api/admin/v1/pet-breeds/{id}",
+    "pathParameters": {
+      "id": "CAT_BRITISH_SHORTHAIR"
+    },
+    "query": {},
+    "requestBody": {
+      "id": "CAT_BRITISH_SHORTHAIR",
+      "species": "CAT",
+      "name": "英国短毛猫",
+      "status": "INACTIVE",
+      "version": 1,
+      "reason": "暂停新增选择"
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "CAT_BRITISH_SHORTHAIR",
+        "species": "CAT",
+        "name": "英国短毛猫",
+        "status": "INACTIVE",
+        "version": 2
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "listAdminUsers": {
+    "method": "GET",
+    "path": "/api/admin/v1/users",
+    "pathParameters": {},
+    "query": {
+      "limit": 20
+    },
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "items": [
+          {
+            "id": "11000000-0000-4000-8000-000000000001",
+            "maskedEmail": "o***@example.com",
+            "nickname": "铲屎官A1B2",
+            "status": "ACTIVE",
+            "version": 2
+          }
+        ],
+        "nextCursor": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "getAdminUser": {
+    "method": "GET",
+    "path": "/api/admin/v1/users/{id}",
+    "pathParameters": {
+      "id": "11000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "11000000-0000-4000-8000-000000000001",
+        "maskedEmail": "o***@example.com",
+        "nickname": "铲屎官A1B2",
+        "status": "ACTIVE",
+        "version": 2
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "listAdminQuotaRequests": {
+    "method": "GET",
+    "path": "/api/admin/v1/quota-grant-requests",
+    "pathParameters": {},
+    "query": {
+      "state": "PENDING",
+      "limit": 20
+    },
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "items": [
+          {
+            "id": "44000000-0000-4000-8000-000000000001",
+            "userId": "11000000-0000-4000-8000-000000000001",
+            "bucket": "STORAGE_BYTES",
+            "amount": "1000",
+            "reason": "申请开发测试空间",
+            "state": "PENDING",
+            "grantedAmount": null,
+            "decisionReason": null,
+            "operatorId": null,
+            "version": 1
+          }
+        ],
+        "nextCursor": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "getAdminProfile": {
+    "method": "GET",
+    "path": "/api/admin/v1/me",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "33000000-0000-4000-8000-000000000001",
+        "username": "example-admin",
+        "permissions": [
+          "USER_READ",
+          "USER_WRITE",
+          "QUOTA_READ",
+          "QUOTA_WRITE",
+          "BREED_READ",
+          "BREED_WRITE",
+          "AUDIT_READ"
+        ]
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "listAdminPetBreeds": {
+    "method": "GET",
+    "path": "/api/admin/v1/dictionaries/pet-breeds",
+    "pathParameters": {},
+    "query": {
+      "species": "CAT",
+      "limit": 20
+    },
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "items": [
+          {
+            "id": "CAT_UNKNOWN",
+            "species": "CAT",
+            "name": "未知品种",
+            "status": "ACTIVE",
+            "version": 1
+          }
+        ],
+        "nextCursor": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "listAdminAuditLogs": {
+    "method": "GET",
+    "path": "/api/admin/v1/audit-logs",
+    "pathParameters": {},
+    "query": {
+      "limit": 20
+    },
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "items": [
+          {
+            "operationId": "admin:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "operatorId": "33000000-0000-4000-8000-000000000001",
+            "action": "QUOTA_GRANT",
+            "targetId": "11000000-0000-4000-8000-000000000001",
+            "reason": "开发测试赠送",
+            "state": "COMPLETED",
+            "resultCode": "0",
+            "requestId": "example-request-001"
+          }
+        ],
+        "nextCursor": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "deleteAdminSession": {
+    "method": "DELETE",
+    "path": "/api/admin/v1/auth/session",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": null,
+      "requestId": "example-request-001"
+    }
+  }
+}

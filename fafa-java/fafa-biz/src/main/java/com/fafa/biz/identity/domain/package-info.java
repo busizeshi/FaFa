@@ -1,2 +1,2 @@
-/** Identity aggregates, value objects, rules and repository ports. */
+/** {@code identity} 领域的聚合、值对象、规则和仓储端口。 */
 package com.fafa.biz.identity.domain;

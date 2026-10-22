@@ -1,2 +1,2 @@
-/** Pet HTTP, RPC and messaging adapters. */
+/** {@code pet} 领域的 HTTP、RPC 和消息适配器。 */
 package com.fafa.biz.pet.interfaces;

@@ -2,20 +2,20 @@ package com.fafa.common.error;
 
 import org.springframework.http.HttpStatus;
 
-/** A stable machine code, safe client message and corresponding HTTP status. */
+/** 稳定的机器错误编码、可安全返回的客户端消息及对应 HTTP 状态码。 */
 public interface ErrorCode {
-    /** Returns the stable client-visible code.
-     * @return error code
+    /** 返回对客户端稳定可见的错误编码。
+     * @return 错误编码
      */
     String code();
 
-    /** Returns the safe client-visible message.
-     * @return safe message
+    /** 返回可安全返回给客户端的消息。
+     * @return 安全消息
      */
     String message();
 
-    /** Returns the HTTP status corresponding to this error.
-     * @return HTTP status
+    /** 返回该错误对应的 HTTP 状态码。
+     * @return HTTP 状态码
      */
     HttpStatus httpStatus();
 }
