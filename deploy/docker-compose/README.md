@@ -4,7 +4,7 @@
 
 1. 将 `.env.example` 复制为 `.env`。请分别生成至少 32 字符的 FAFA_AUTH_HMAC_SECRET 与 FAFA_INTERNAL_RPC_SECRET，并设置独立 MYSQL_ADMIN_PASSWORD；这些示例只适用于本地开发。
 2. 启动基础设施：`docker compose -f compose.dev.yaml --profile core up -d`。
-3. 打开 Nacos 控制台 `http://localhost:18080`，将 `nacos/configs/` 下的文件逐个发布，文件名作为 Data ID，分组使用 `FAFA_GROUP`。
+3. 打开 Nacos 控制台 `http://localhost:18080`，先创建 namespace ID `fafa`，再将 [`docs/nacos`](../../docs/nacos) 下的四个 `.properties` 文件逐个发布到该命名空间，文件名作为 Data ID，分组使用 `FAFA_GROUP`。先发布 `common.properties`，再发布三个服务配置。
 4. 启动带开发邮件捕获的应用：`docker compose -f compose.dev.yaml --profile core --profile mail --profile apps up --build`。
 
 本地端口：Gateway `8080`、Nacos API `8848`、Nacos 控制台 `18080`、MySQL `3306`、Redis `6379`。MySQL 和 Redis 仅绑定回环地址。Java 服务和 Python 服务只在 Compose 网络内部可访问，外部请求应通过 Gateway 进入。
@@ -13,7 +13,7 @@
 
 服务器端 MySQL/Redis 已使用独立验收库完成补测；SMTP 和完整 Gateway/Apifox 链路仍待执行。证据和限制见[补测清单](../../docs/dev/后端第一批开发与补测清单.md)。
 
-本地 Nacos 为减少配置成本而关闭认证；共享或生产环境不得复用该设置。生产凭证必须由部署环境注入，管理类服务必须保持内网访问。
+本地 Nacos 为减少配置成本而关闭认证；共享或生产环境不得复用该设置。Compose 将 namespace `fafa` 传给 Java 服务。生产凭证必须由部署环境注入，管理类服务必须保持内网访问。
 
 SQL 初始化脚本会创建独立的 `fafa_admin` 和 `fafa_biz` schema，并向本地开发账号授权。生产环境应为不同服务分配独立账号，并遵循最小权限原则。
 

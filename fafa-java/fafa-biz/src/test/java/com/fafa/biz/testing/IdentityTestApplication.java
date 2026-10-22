@@ -10,7 +10,7 @@ import org.springframework.context.annotation.*;
 
 @SpringBootConfiguration
 @EnableAutoConfiguration
-@ComponentScan({"com.fafa.biz.identity", "com.fafa.biz.pet", "com.fafa.biz.usage", "com.fafa.biz.operation", "com.fafa.biz.admin"})
+@ComponentScan({"com.fafa.biz.media", "com.fafa.biz.identity", "com.fafa.biz.pet", "com.fafa.biz.usage", "com.fafa.biz.operation", "com.fafa.biz.admin"})
 @Import({CommonExceptionHandler.class, CommonWebMvcConfiguration.class,
         com.fafa.biz.admin.interfaces.rpc.AdminBusinessRpcProvider.class})
 public class IdentityTestApplication {

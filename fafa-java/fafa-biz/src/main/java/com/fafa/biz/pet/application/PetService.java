@@ -37,10 +37,11 @@ public class PetService {
     private final PetPolicy policy;
     private final Clock clock;
     private final Paging paging;
+    private final List<PetResourceCounter> counters;
     public PetService(CurrentActor actor, AccountSessions sessions, PetRepository pets, PetAccess access,
-                      BreedCatalog breeds, IdempotentWrites writes, PetPolicy policy, Clock clock, Paging paging) {
+                      BreedCatalog breeds, IdempotentWrites writes, PetPolicy policy, Clock clock, Paging paging, List<PetResourceCounter> counters) {
         this.actor = actor; this.sessions = sessions; this.pets = pets; this.access = access;
-        this.breeds = breeds; this.writes = writes; this.policy = policy; this.clock = clock; this.paging = paging;
+        this.breeds = breeds; this.writes = writes; this.policy = policy; this.clock = clock; this.paging = paging; this.counters = counters;
     }
     @Transactional
     public PetView create(String key, Profile profile) {
@@ -89,7 +90,10 @@ public class PetService {
     }
     public Impact impact(String id) {
         var pet = access.owned(actor.id(), id);
-        return new Impact(id, pet.status(), policy.deletionWaitingDays(), Map.of("pet", 1L));
+        var counts = new java.util.LinkedHashMap<String,Long>();
+        counts.put("pet",1L);
+        counters.forEach(counter -> counter.countForPet(id).forEach((name,count) -> counts.merge(name,count,Long::sum)));
+        return new Impact(id, pet.status(), policy.deletionWaitingDays(), counts);
     }
     @Transactional
     public PetView requestDeletion(String id, String key, Delete request) {

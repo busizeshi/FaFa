@@ -78,7 +78,7 @@ EXAMPLES = {
         {"version": 1}, path={"id": PET_ID}, notes=("归档没有自动删除期限；当前提醒模块尚未接入，未来接入时需在此生命周期边界停止任务展开。",)),
     "restorePet": Example("恢复归档宠物", "将 ARCHIVED 档案恢复为 ACTIVE；不自动恢复以前的偏好和后续暂停任务。", dict(PET, version=3),
         {"version": 2}, path={"id": PET_ID}),
-    "previewPetDeletion": Example("预览宠物删除影响", "返回当前真实已建模块中的资源计数和删除等待策略。", {"petId": PET_ID, "status": "ACTIVE", "waitingDays": 15, "resourceCounts": {"pet": 1}}, path={"id": PET_ID},
+    "previewPetDeletion": Example("预览宠物删除影响", "返回当前真实已建模块中的资源计数和删除等待策略。", {"petId": PET_ID, "status": "ACTIVE", "waitingDays": 15, "resourceCounts": {"pet": 1, "media": 0, "avatar": 0, "pendingUploads": 0}}, path={"id": PET_ID},
         notes=("本批仅统计 pet；媒体、记录、提醒等模块尚未实现，因此不伪造它们的零值计数。",)),
     "requestPetDeletion": Example("申请删除宠物", "对 ACTIVE 或 ARCHIVED 宠物创建删除申请，记录原状态并进入 DELETION_PENDING，清除当前/默认选择。",
         dict(PET, status="DELETION_PENDING", version=2, deleteAfter="2026-11-06T04:00:00Z"),
@@ -132,3 +132,39 @@ EXAMPLES = {
                     "reason": "开发测试赠送", "state": "COMPLETED", "resultCode": "0", "requestId": "example-request-001"}], "nextCursor": None},
         query={"limit": 20}, notes=("PENDING 表示已记录意图，UNKNOWN 表示网络故障导致结果待确认；同键重试后可转为 COMPLETED。",)),
 }
+
+# WP04-A 图片媒体示例；所有地址和签名均为虚构值。
+MEDIA_ID = "66000000-0000-4000-8000-000000000001"
+UPLOAD = {"id": MEDIA_ID, "petId": PET_ID, "state": "INITIATED", "bytes": "700", "expiresAt": "2026-10-22T04:05:00Z", "assetId": None}
+MEDIA_PATH = {"id": MEDIA_ID}
+MEDIA_NOTES = ("v1 图片闭环仅支持 JPEG/PNG，默认最多 20 MiB、1600 万像素；同宠物主人可用。",)
+EXAMPLES.update({
+    "createUploadSession": Example("创建图片上传会话", "校验本人活动宠物，原子预占字节并创建持久化会话，不在幂等结果中保存签名凭证。",
+        UPLOAD, {"petId": PET_ID, "fileName": "早餐.png", "mime": "image/png", "bytes": "700", "sha256": "a" * 64},
+        notes=MEDIA_NOTES + ("Idempotency-Key 必填；同键同内容重放创建回执，当前状态另查会话；不同内容返回 409。额度不足返回 409，超过大小上限返回 413。",)),
+    "getUploadSession": Example("查询图片上传会话", "仅发起者查询持久化状态；不可用素材不得渲染为上传成功。",
+        UPLOAD, path=MEDIA_PATH, notes=MEDIA_NOTES + ("状态为 INITIATED、READY、CANCELLED、FAILED、EXPIRED；无 JSON 请求体。",)),
+    "createUploadPolicy": Example("签发受限上传表单", "为尚未过期的 INITIATED 会话签发同一期限的 POST 表单；不会延长原会话。",
+        {"sessionId": MEDIA_ID, "uploadUrl": "https://storage.example.invalid/fafa-media",
+         "formFields": {"key": "staging/example/session", "Content-Type": "image/png", "policy": "EXAMPLE", "x-amz-signature": "EXAMPLE"},
+         "expiresAt": "2026-10-22T04:05:00Z"}, path=MEDIA_PATH,
+        notes=MEDIA_NOTES + ("无 JSON 请求体；表单限制对象键、精确字节数及 MIME。用 multipart/form-data 向 uploadUrl 提交全部 formFields，file 字段最后添加。不把 Bearer 发送到对象存储。", "签名属于短期敏感信息，不写日志；重复请求允许重新签发，但不延长期限。配置缺失或存储故障返回 503。")),
+    "completeUpload": Example("核验并完成图片上传", "服务端读取真实对象，校验大小、SHA-256、真实图片格式及像素，保存正式对象和无 EXIF 预览，再同事务结算并生成素材。",
+        dict(UPLOAD, state="READY", assetId=MEDIA_ID), path=MEDIA_PATH,
+        notes=MEDIA_NOTES + ("无 JSON 请求体；按 sessionId 幂等，READY 重试不重复结算。客户端不能提交任意 objectKey 或结算字节。", "图片核验失败返回 400 并标记 FAILED；对象存储故障返回 503，可用原会话重试；到期或状态不允许返回 409。")),
+    "cancelUpload": Example("取消图片上传", "终止会话签发和完成，预占在凭证到期并确认对象清理后释放。",
+        dict(UPLOAD, state="CANCELLED"), path=MEDIA_PATH,
+        notes=MEDIA_NOTES + ("无 JSON 请求体；重复取消幂等，READY 返回 409。不能立即退还仍可凭有效签名重传的对象空间。",)),
+    "getMedia": Example("查询已核验图片", "仅主人读取 READY 图片元数据；宠物删除等待期不签发访问。",
+        {"id": MEDIA_ID, "petId": PET_ID, "bytes": "700", "mime": "image/png", "sha256": "a" * 64, "width": 800, "height": 600},
+        path=MEDIA_PATH, notes=MEDIA_NOTES + ("无 JSON 请求体；非本人返回 404，未完成返回 409。原文件按字节计费；预览属于受限的平台开销。",)),
+    "createMediaAccessTicket": Example("签发图片预览访问凭证", "鉴权后签发去除原始 EXIF 的 PNG 预览地址；当前不开放原文件下载。",
+        {"url": "https://storage.example.invalid/preview.png?signature=EXAMPLE", "expiresAt": "2026-10-22T04:01:00Z"},
+        path=MEDIA_PATH, notes=MEDIA_NOTES + ("无 JSON 请求体；默认 60 秒有效。每次签发重新检查本人权限和宠物状态；归档可读，删除等待期拒绝。已签 URL 有剩余有效期窗口。",)),
+    "getPetAvatar": Example("查询宠物头像引用", "返回头像媒体引用与宠物当前版本，未设置时 mediaId 为 null。",
+        {"petId": PET_ID, "mediaId": MEDIA_ID, "version": 2}, path={"id": PET_ID},
+        notes=("无 JSON 请求体；仅本人可读，删除等待期返回 404。实际预览需调用媒体访问凭证接口。",)),
+    "setPetAvatar": Example("绑定宠物头像", "仅活动宠物可绑定同一主人、同一宠物范围内的 READY 图片；替换仅解除旧引用，不删除原素材。",
+        {"petId": PET_ID, "mediaId": MEDIA_ID, "version": 2}, {"mediaId": MEDIA_ID, "version": 1}, path={"id": PET_ID},
+        notes=("Idempotency-Key 必填；同键重放结果，旧版本返回 409；引用和宠物版本同事务提交。",)),
+})

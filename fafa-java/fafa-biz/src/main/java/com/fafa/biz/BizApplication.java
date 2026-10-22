@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Import;
 @Import({CommonExceptionHandler.class, CommonWebMvcConfiguration.class})
 public class BizApplication {
     public static void main(String[] args) {
+        if(Boolean.getBoolean("fafa.media.pdf-child")) { com.fafa.biz.media.infrastructure.PdfWorker.main(args);return; }
         SpringApplication.run(BizApplication.class, args);
     }
 }

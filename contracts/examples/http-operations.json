@@ -701,7 +701,10 @@
         "status": "ACTIVE",
         "waitingDays": 15,
         "resourceCounts": {
-          "pet": 1
+          "pet": 1,
+          "media": 0,
+          "avatar": 0,
+          "pendingUploads": 0
         }
       },
       "requestId": "example-request-001"
@@ -748,6 +751,205 @@
           }
         ],
         "nextCursor": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "getPetAvatar": {
+    "method": "GET",
+    "path": "/api/v1/pets/{id}/avatar",
+    "pathParameters": {
+      "id": "22000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "petId": "22000000-0000-4000-8000-000000000001",
+        "mediaId": "66000000-0000-4000-8000-000000000001",
+        "version": 2
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "setPetAvatar": {
+    "method": "PUT",
+    "path": "/api/v1/pets/{id}/avatar",
+    "pathParameters": {
+      "id": "22000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": {
+      "mediaId": "66000000-0000-4000-8000-000000000001",
+      "version": 1
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "petId": "22000000-0000-4000-8000-000000000001",
+        "mediaId": "66000000-0000-4000-8000-000000000001",
+        "version": 2
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "createUploadSession": {
+    "method": "POST",
+    "path": "/api/v1/upload-sessions",
+    "pathParameters": {},
+    "query": {},
+    "requestBody": {
+      "petId": "22000000-0000-4000-8000-000000000001",
+      "fileName": "早餐.png",
+      "mime": "image/png",
+      "bytes": "700",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "66000000-0000-4000-8000-000000000001",
+        "petId": "22000000-0000-4000-8000-000000000001",
+        "state": "INITIATED",
+        "bytes": "700",
+        "expiresAt": "2026-10-22T04:05:00Z",
+        "assetId": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "completeUpload": {
+    "method": "POST",
+    "path": "/api/v1/upload-sessions/{id}:complete",
+    "pathParameters": {
+      "id": "66000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "66000000-0000-4000-8000-000000000001",
+        "petId": "22000000-0000-4000-8000-000000000001",
+        "state": "READY",
+        "bytes": "700",
+        "expiresAt": "2026-10-22T04:05:00Z",
+        "assetId": "66000000-0000-4000-8000-000000000001"
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "cancelUpload": {
+    "method": "POST",
+    "path": "/api/v1/upload-sessions/{id}:cancel",
+    "pathParameters": {
+      "id": "66000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "66000000-0000-4000-8000-000000000001",
+        "petId": "22000000-0000-4000-8000-000000000001",
+        "state": "CANCELLED",
+        "bytes": "700",
+        "expiresAt": "2026-10-22T04:05:00Z",
+        "assetId": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "createUploadPolicy": {
+    "method": "POST",
+    "path": "/api/v1/upload-sessions/{id}/upload-policy",
+    "pathParameters": {
+      "id": "66000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "sessionId": "66000000-0000-4000-8000-000000000001",
+        "uploadUrl": "https://storage.example.invalid/fafa-media",
+        "formFields": {
+          "key": "staging/example/session",
+          "Content-Type": "image/png",
+          "policy": "EXAMPLE",
+          "x-amz-signature": "EXAMPLE"
+        },
+        "expiresAt": "2026-10-22T04:05:00Z"
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "createMediaAccessTicket": {
+    "method": "POST",
+    "path": "/api/v1/media/{id}/access-tickets",
+    "pathParameters": {
+      "id": "66000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "url": "https://storage.example.invalid/preview.png?signature=EXAMPLE",
+        "expiresAt": "2026-10-22T04:01:00Z"
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "getUploadSession": {
+    "method": "GET",
+    "path": "/api/v1/upload-sessions/{id}",
+    "pathParameters": {
+      "id": "66000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "66000000-0000-4000-8000-000000000001",
+        "petId": "22000000-0000-4000-8000-000000000001",
+        "state": "INITIATED",
+        "bytes": "700",
+        "expiresAt": "2026-10-22T04:05:00Z",
+        "assetId": null
+      },
+      "requestId": "example-request-001"
+    }
+  },
+  "getMedia": {
+    "method": "GET",
+    "path": "/api/v1/media/{id}",
+    "pathParameters": {
+      "id": "66000000-0000-4000-8000-000000000001"
+    },
+    "query": {},
+    "requestBody": null,
+    "response": {
+      "code": "0",
+      "message": "OK",
+      "data": {
+        "id": "66000000-0000-4000-8000-000000000001",
+        "petId": "22000000-0000-4000-8000-000000000001",
+        "bytes": "700",
+        "mime": "image/png",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "width": 800,
+        "height": 600
       },
       "requestId": "example-request-001"
     }

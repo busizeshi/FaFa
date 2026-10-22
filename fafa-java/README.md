@@ -26,15 +26,15 @@
 
 WP00/WP01 的环境变量、服务器中间件连接信息和补测状态见[后端第一批开发与补测清单](../docs/dev/后端第一批开发与补测清单.md)。Biz 运行需要 MySQL、Redis、HMAC 密钥和邮件发送器配置。
 
-`dev` 配置会关闭 Nacos 配置/服务发现，并使用本地 SMTP 捕获服务；完整部署使用 Nacos。先构建聚合工程，再在不同终端运行打包后的应用：
+Gateway、Admin、Biz 的运行配置由 Nacos 提供。将 [`docs/nacos`](../docs/nacos) 中的配置发布到 `fafa` 命名空间、`FAFA_GROUP` 分组后，再通过环境变量注入 Nacos 登录凭证、数据库/Redis 密码和 HMAC/RPC 密钥。独立启动服务时先设置 `NACOS_SERVER_ADDR`、`NACOS_USERNAME`、`NACOS_PASSWORD`、`NACOS_NAMESPACE=fafa` 及各服务必需的凭证。先构建聚合工程，再在不同终端运行打包后的应用：
 
 ```powershell
 .\mvnw.cmd -DskipTests package
-java -jar fafa-biz/target/fafa-biz-0.1.0-SNAPSHOT.jar --spring.profiles.active=dev
-java -jar fafa-gateway/target/fafa-gateway-0.1.0-SNAPSHOT.jar --spring.profiles.active=dev
+java -jar fafa-biz/target/fafa-biz-0.1.0-SNAPSHOT.jar --spring.profiles.active=nacos
+java -jar fafa-gateway/target/fafa-gateway-0.1.0-SNAPSHOT.jar --spring.profiles.active=nacos
 ```
 
-`/actuator/health` 是服务私有探针。Gateway 将 APP 的 `/api/v1/**` 转发到 Biz 的 `/v1/**`，将管理端 `/api/admin/v1/**` 转发到 Admin 的 `/v1/**`。管理端 v1 业务 API 会在后续批次实现，现有内部 ping 示例保持私有；旧版透传路由默认关闭。数据库、Redis、Nacos 和邮件凭证必须放在 Git 仓库之外。
+`/actuator/health` 是服务私有探针。Gateway 将 APP 的 `/api/v1/**` 转发到 Biz 的 `/v1/**`，将管理端 `/api/admin/v1/**` 转发到 Admin 的 `/v1/**`。管理端 v1 业务 API 会在后续批次实现，现有内部 ping 示例保持私有；旧版透传路由默认关闭。数据库、Redis、Nacos 和邮件凭证必须放在 Git 仓库之外。Nacos 导入使用必需配置，Data ID 缺失或 Nacos 不可用时服务不会带着空配置启动。
 
 ## 离线测试
 

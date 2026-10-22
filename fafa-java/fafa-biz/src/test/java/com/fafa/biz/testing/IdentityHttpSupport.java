@@ -44,7 +44,10 @@ abstract class IdentityHttpSupport {
 
     @BeforeAll void schema() throws Exception {
         for (String path : List.of("db/migration/V001__identity.sql", "db/migration/V002__auth_challenges.sql",
-                "db/migration/V003__pets.sql", "db/migration/V004__storage_quotas.sql")) {
+                "db/migration/V003__pets.sql", "db/migration/V004__storage_quotas.sql", "db/migration/V005__media_upload.sql", "db/migration/V006__media_library.sql", "db/migration/V007__media_processing.sql")) {
+            if (path.endsWith("V005__media_upload.sql") && jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.tables WHERE LOWER(table_name)='upload_session'", Integer.class) > 0) continue;
+            if(path.endsWith("V006__media_library.sql") && jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.columns WHERE LOWER(table_name)='media_asset' AND LOWER(column_name)='media_type'",Integer.class)>0) continue;
+            if(path.endsWith("V007__media_processing.sql") && jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.tables WHERE LOWER(table_name)='media_processing_job'",Integer.class)>0) continue;
             String sql = new ClassPathResource(path).getContentAsString(StandardCharsets.UTF_8)
                     .replace("CHARACTER SET utf8mb4 COLLATE utf8mb4_bin", "")
                     .replace("CHARACTER SET ascii COLLATE ascii_bin", "")
@@ -58,7 +61,7 @@ abstract class IdentityHttpSupport {
         }
     }
     @BeforeEach void clean() {
-        for (String table : List.of("admin_business_operation", "quota_ledger", "quota_reservation", "quota_account", "grant_request",
+        for (String table : List.of("media_reference", "consumer_inbox", "outbox_event", "media_processing_job", "album_item", "album", "media_tag", "media_binding", "media_asset", "upload_session", "admin_business_operation", "quota_ledger", "quota_reservation", "quota_account", "grant_request",
                 "idempotency_request", "pet_deletion_request", "user_preferences", "pet", "user_consent", "user_profile", "auth_ticket", "auth_challenge",
                 "security_audit", "user_account", "legal_document")) jdbc.update("DELETE FROM " + table);
         for (String type : LEGAL.keySet()) jdbc.update("""

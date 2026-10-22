@@ -1,6 +1,10 @@
 spring:
   main:
     web-application-type: none
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
 dubbo:
   enabled: false
 knife4j:

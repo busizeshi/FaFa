@@ -79,6 +79,7 @@ services:
       NACOS_SERVER_ADDR: nacos:8848
       NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
       NACOS_PASSWORD: ${NACOS_PASSWORD:-nacos}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-fafa}
       FAFA_ADMIN_URL: http://fafa-admin:8081
       FAFA_BIZ_URL: http://fafa-biz:8082
       FAFA_PYTHON_URL: http://fafa-python:8000
@@ -99,8 +100,11 @@ services:
       NACOS_SERVER_ADDR: nacos:8848
       NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
       NACOS_PASSWORD: ${NACOS_PASSWORD:-nacos}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-fafa}
       DUBBO_PORT: -1
-      FAFA_ADMIN_DB_URL: jdbc:mysql://mysql:3306/fafa_admin?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+      FAFA_MYSQL_HOST: mysql
+      FAFA_MYSQL_PORT: 3306
+      FAFA_ADMIN_DB_NAME: fafa_admin
       FAFA_ADMIN_DB_USERNAME: fafa_admin
       FAFA_ADMIN_DB_PASSWORD: ${MYSQL_ADMIN_PASSWORD:?Set MYSQL_ADMIN_PASSWORD in .env}
       FAFA_INTERNAL_RPC_SECRET: ${FAFA_INTERNAL_RPC_SECRET:?Set an internal RPC secret of at least 32 characters}
@@ -121,11 +125,15 @@ services:
       NACOS_SERVER_ADDR: nacos:8848
       NACOS_USERNAME: ${NACOS_USERNAME:-nacos}
       NACOS_PASSWORD: ${NACOS_PASSWORD:-nacos}
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-fafa}
       DUBBO_PORT: 50051
-      FAFA_DB_URL: jdbc:mysql://mysql:3306/fafa_biz?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+      FAFA_MYSQL_HOST: mysql
+      FAFA_MYSQL_PORT: 3306
+      FAFA_BIZ_DB_NAME: fafa_biz
       FAFA_DB_USERNAME: fafa
       FAFA_DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
       FAFA_REDIS_HOST: redis
+      FAFA_REDIS_PORT: 6379
       FAFA_REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
       FAFA_AUTH_HMAC_SECRET: ${FAFA_AUTH_HMAC_SECRET:?Set a random HMAC secret of at least 32 characters}
       FAFA_INTERNAL_RPC_SECRET: ${FAFA_INTERNAL_RPC_SECRET:?Set an internal RPC secret of at least 32 characters}

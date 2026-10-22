@@ -1,133 +1,25 @@
-server:
-  port: 8082
-
 spring:
   application:
     name: fafa-biz
-  datasource:
-    url: ${FAFA_DB_URL:jdbc:mysql://localhost:3306/fafa_biz?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true}
-    username: ${FAFA_DB_USERNAME:fafa}
-    password: ${FAFA_DB_PASSWORD:}
-    hikari:
-      transaction-isolation: TRANSACTION_READ_COMMITTED
-      connection-timeout: 5000
-      maximum-pool-size: 10
-  flyway:
-    enabled: true
-  data:
-    redis:
-      host: ${FAFA_REDIS_HOST:localhost}
-      port: ${FAFA_REDIS_PORT:6379}
-      password: ${FAFA_REDIS_PASSWORD:}
-      connect-timeout: 3s
-      timeout: 3s
-  mail:
-    host: ${FAFA_SMTP_HOST:localhost}
-    port: ${FAFA_SMTP_PORT:1025}
-    username: ${FAFA_SMTP_USERNAME:}
-    password: ${FAFA_SMTP_PASSWORD:}
-    properties:
-      "[mail.smtp.auth]": ${FAFA_SMTP_AUTH:true}
-      "[mail.smtp.starttls.enable]": ${FAFA_SMTP_STARTTLS:true}
-      "[mail.smtp.starttls.required]": ${FAFA_SMTP_STARTTLS:true}
-      "[mail.smtp.connectiontimeout]": 5000
-      "[mail.smtp.timeout]": 5000
-      "[mail.smtp.writetimeout]": 5000
-  jackson:
-    deserialization:
-      fail-on-unknown-properties: true
-      fail-on-numbers-for-enums: true
-      accept-float-as-int: false
   profiles:
     default: nacos
+---
+spring:
+  config:
+    activate:
+      on-profile: nacos
+    import:
+      - nacos:common.properties?group=FAFA_GROUP&refreshEnabled=true
+      - nacos:fafa-biz.properties?group=FAFA_GROUP&refreshEnabled=true
   cloud:
     nacos:
       config:
-        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
-        username: ${NACOS_USERNAME:nacos}
-        password: ${NACOS_PASSWORD:nacos}
-        namespace: ${NACOS_NAMESPACE:}
+        server-addr: ${NACOS_SERVER_ADDR:192.168.1.254:8848}
+        username: ${NACOS_USERNAME}
+        password: ${NACOS_PASSWORD}
+        namespace: ${NACOS_NAMESPACE:fafa}
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
-        username: ${NACOS_USERNAME:nacos}
-        password: ${NACOS_PASSWORD:nacos}
-        namespace: ${NACOS_NAMESPACE:}
-  lifecycle:
-    timeout-per-shutdown-phase: 20s
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      probes:
-        enabled: true
-
-dubbo:
-  application:
-    name: fafa-biz
-    logger: slf4j
-  config-center:
-    address: N/A
-  protocol:
-    name: tri
-    port: ${DUBBO_PORT:-1}
-  registry:
-    address: nacos://${NACOS_SERVER_ADDR:localhost:8848}
-    check: false
-    username: ${NACOS_USERNAME:nacos}
-    password: ${NACOS_PASSWORD:nacos}
-    parameters:
-      namespace: ${NACOS_NAMESPACE:}
-
-knife4j:
-  enable: true
-  setting:
-    language: zh_cn
-
-logging:
-  pattern:
-    level: "%5p [${spring.application.name:},%X{requestId:-}]"
-
-mybatis-plus:
-  configuration:
-    map-underscore-to-camel-case: true
-    arg-name-based-constructor-auto-mapping: true
-
-sa-token:
-  token-name: Authorization
-  token-prefix: Bearer
-  timeout: 604800
-  is-concurrent: false
-  is-share: false
-  is-read-cookie: false
-  is-read-body: false
-  is-print: false
-
-fafa:
-  api:
-    default-page-size: 20
-    max-page-size: 100
-  pet:
-    deletion-waiting-days: 15
-  quota:
-    initial-storage-bytes: ${FAFA_INITIAL_STORAGE_BYTES:0}
-  internal-rpc:
-    secret: ${FAFA_INTERNAL_RPC_SECRET:}
-    max-skew-seconds: 120
-  identity:
-    hmac-secret: ${FAFA_AUTH_HMAC_SECRET:}
-    mail-from: ${FAFA_MAIL_FROM:}
-    challenge-ttl-seconds: 600
-    resend-seconds: 60
-    max-attempts: 5
-    email-daily-limit: 10
-    ip-hourly-limit: 30
-    login-window-limit: 10
-    reset-ticket-ttl-seconds: 600
-    default-timezone: Asia/Hong_Kong
-    password-memory-kib: 19456
-    password-iterations: 2
-    trusted-proxy-addresses: ${FAFA_TRUSTED_PROXY_ADDRESSES:}
+        server-addr: ${NACOS_SERVER_ADDR:192.168.1.254:8848}
+        username: ${NACOS_USERNAME}
+        password: ${NACOS_PASSWORD}
+        namespace: ${NACOS_NAMESPACE:fafa}

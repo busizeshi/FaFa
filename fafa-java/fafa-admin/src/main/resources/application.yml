@@ -1,89 +1,25 @@
-server:
-  port: 8081
-
 spring:
   application:
     name: fafa-admin
-  datasource:
-    url: ${FAFA_ADMIN_DB_URL:jdbc:mysql://localhost:3306/fafa_admin?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true}
-    username: ${FAFA_ADMIN_DB_USERNAME:fafa_admin}
-    password: ${FAFA_ADMIN_DB_PASSWORD:}
-    hikari:
-      transaction-isolation: TRANSACTION_READ_COMMITTED
-      connection-timeout: 5000
-      maximum-pool-size: 10
-  flyway:
-    locations: classpath:db/admin-migration
-  jackson:
-    deserialization:
-      fail-on-unknown-properties: true
-      fail-on-numbers-for-enums: true
-      accept-float-as-int: false
   profiles:
     default: nacos
+---
+spring:
+  config:
+    activate:
+      on-profile: nacos
+    import:
+      - nacos:common.properties?group=FAFA_GROUP&refreshEnabled=true
+      - nacos:fafa-admin.properties?group=FAFA_GROUP&refreshEnabled=true
   cloud:
     nacos:
       config:
-        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
-        username: ${NACOS_USERNAME:nacos}
-        password: ${NACOS_PASSWORD:nacos}
-        namespace: ${NACOS_NAMESPACE:}
+        server-addr: ${NACOS_SERVER_ADDR:192.168.1.254:8848}
+        username: ${NACOS_USERNAME}
+        password: ${NACOS_PASSWORD}
+        namespace: ${NACOS_NAMESPACE:fafa}
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
-        username: ${NACOS_USERNAME:nacos}
-        password: ${NACOS_PASSWORD:nacos}
-        namespace: ${NACOS_NAMESPACE:}
-  lifecycle:
-    timeout-per-shutdown-phase: 20s
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      probes:
-        enabled: true
-
-dubbo:
-  consumer:
-    timeout: 5000
-    retries: 0
-  application:
-    name: fafa-admin
-    logger: slf4j
-  config-center:
-    address: N/A
-  protocol:
-    name: tri
-    port: ${DUBBO_PORT:-1}
-  registry:
-    address: nacos://${NACOS_SERVER_ADDR:localhost:8848}
-    check: false
-    username: ${NACOS_USERNAME:nacos}
-    password: ${NACOS_PASSWORD:nacos}
-    parameters:
-      namespace: ${NACOS_NAMESPACE:}
-
-knife4j:
-  enable: true
-  setting:
-    language: zh_cn
-
-logging:
-  pattern:
-    level: "%5p [${spring.application.name:},%X{requestId:-}]"
-
-fafa:
-  internal-rpc:
-    secret: ${FAFA_INTERNAL_RPC_SECRET:}
-    max-skew-seconds: 120
-  admin:
-    session-ttl-seconds: 3600
-    login-window-seconds: 900
-    login-attempt-limit: 10
-    default-page-size: 20
-    max-page-size: 100
-    password-memory-kib: 19456
-    password-iterations: 2
+        server-addr: ${NACOS_SERVER_ADDR:192.168.1.254:8848}
+        username: ${NACOS_USERNAME}
+        password: ${NACOS_PASSWORD}
+        namespace: ${NACOS_NAMESPACE:fafa}

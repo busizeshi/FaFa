@@ -29,6 +29,18 @@ APP_METADATA = {
     "requestFreeQuota": ("提交免费存储额度申请", ["me.grantRequest"]),
     "listMyQuotaRequests": ("查询本人的额度申请状态", ["me.usage"]),
 }
+MEDIA_METADATA = {
+    "createUploadSession": ("创建图片上传会话", ["media.upload", "pet.avatar"]),
+    "getUploadSession": ("查询上传状态", ["media.uploadQueue"]),
+    "createUploadPolicy": ("签发受限上传表单", ["media.uploadQueue"]),
+    "completeUpload": ("核验并完成图片上传", ["media.uploadQueue"]),
+    "cancelUpload": ("取消图片上传", ["media.uploadQueue"]),
+    "getMedia": ("查询已核验图片", ["media.detail"]),
+    "createMediaAccessTicket": ("签发私有预览访问凭证", ["media.detail", "pet.avatar"]),
+    "getPetAvatar": ("查询宠物头像引用", ["pet.detail"]),
+    "setPetAvatar": ("绑定宠物头像", ["pet.edit"]),
+}
+APP_METADATA.update(MEDIA_METADATA)
 ADMIN_METADATA = {
     "createAdminSession": ("管理员登录", ["admin.login"], None),
     "deleteAdminSession": ("管理员退出", ["admin.logout"], None),
@@ -103,14 +115,16 @@ def main() -> None:
     old_schemas = {key: copy.deepcopy(value) for key, value in app["components"]["schemas"].items() if key in WP01_SCHEMAS}
     app["components"]["schemas"].update(actual["components"]["schemas"])
     app["components"]["schemas"].update(old_schemas)
-    app["info"] = {"title": "FaFa 移动端后端接口", "version": "0.2.0", "description": "WP00—WP03 后端契约。字节额度使用十进制字符串；宠物资料支持版本控制与幂等。密码按 Unicode 码点计数，至少 8 位且包含字母和数字。"}
+    app["info"] = {"title": "FaFa 移动端后端接口", "version": "0.3.0", "description": "WP00—WP04-A 后端契约。字节额度使用十进制字符串；宠物资料支持版本控制与幂等。密码按 Unicode 码点计数，至少 8 位且包含字母和数字。"}
     for path, methods in actual["paths"].items():
         if not path.startswith("/v1/"):
             continue
         for method, operation in methods.items():
             identifier = operation["operationId"]
             if identifier in APP_METADATA:
-                enrich(operation, APP_METADATA[identifier], "WP02-WP03")
+                enrich(operation, APP_METADATA[identifier], "WP04-A" if identifier in MEDIA_METADATA else "WP02-WP03")
+                if identifier == "createUploadSession":
+                    operation["responses"]["413"] = {"$ref": "#/components/responses/Error"}
                 app["paths"].setdefault(path[3:], {})[method] = operation
     bootstrap = app["components"]["schemas"]["BootstrapResponse"]["properties"]["data"]["properties"]
     bootstrap["pets"]["items"] = {"$ref": "#/components/schemas/PetView"}
@@ -144,7 +158,7 @@ def main() -> None:
             operation["security"] = [] if operation["operationId"] == "createAdminSession" else [{"bearerAuth": []}]
             admin["paths"].setdefault(path[3:], {})[method] = operation
     for name, document in (("app-v1.yaml", app), ("admin-v1.yaml", admin)):
-        nullable_fields = {"signature", "avatarMediaId", "birthDate", "estimatedBirthMonth", "arrivedOn", "breedId",
+        nullable_fields = {"assetId", "mediaId","signature", "avatarMediaId", "birthDate", "estimatedBirthMonth", "arrivedOn", "breedId",
                            "deleteAfter", "currentPetId", "defaultPetId", "nextCursor", "grantedAmount", "decisionReason", "operatorId", "resultCode"}
         for schema in document["components"]["schemas"].values():
             if {"code", "message", "data", "requestId"}.issubset(schema.get("properties", {})):

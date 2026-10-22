@@ -4,7 +4,9 @@ COPY fafa-java/ fafa-java/
 RUN mvn -f fafa-java/pom.xml -pl fafa-biz -am -DskipTests package
 
 FROM eclipse-temurin:21-jre
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /workspace/fafa-java/fafa-biz/target/fafa-biz-0.1.0-SNAPSHOT.jar /app/app.jar
+USER 10001
 EXPOSE 8082
 ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]

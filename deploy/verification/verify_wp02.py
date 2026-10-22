@@ -51,21 +51,20 @@ class Verification:
             "FAFA_ADMIN_INIT_USERNAME": "verification-admin",
             "FAFA_ADMIN_INIT_PASSWORD": self.private["password"],
             "FAFA_ADMIN_URL": "http://127.0.0.1:18081", "FAFA_BIZ_URL": "http://127.0.0.1:18082",
-            "FAFA_BIZ_RPC_URL": "tri://127.0.0.1:20882",
-            "SPRING_PROFILES_ACTIVE": os.environ.get("FAFA_VERIFY_PROFILE", "dev"),
+            "SPRING_PROFILES_ACTIVE": "nacos",
         })
         for kind, database in DATABASES.items():
             prefix = "FAFA_DB" if kind == "biz" else "FAFA_ADMIN_DB"
-            self.environment.update({f"{prefix}_URL": self.jdbc_url(database),
-                                     f"{prefix}_USERNAME": f"fafa_wp02_{kind}",
+            self.environment.update({f"{prefix}_USERNAME": f"fafa_wp02_{kind}",
                                      f"{prefix}_PASSWORD": self.private[kind]})
+        self.environment.update({"FAFA_MYSQL_HOST": self.host, "FAFA_MYSQL_PORT": "3306",
+                                 "FAFA_BIZ_DB_NAME": DATABASES["biz"], "FAFA_DB_USERNAME": "fafa_wp02_biz",
+                                 "FAFA_ADMIN_DB_NAME": DATABASES["admin"],
+                                 "FAFA_ADMIN_DB_USERNAME": "fafa_wp02_admin"})
         self.processes: list[subprocess.Popen[Any]] = []
         self.logs: list[Any] = []
         self.results: dict[str, Any] = {"databaseHost": self.host, "profile": self.environment["SPRING_PROFILES_ACTIVE"],
                                        "checks": [], "smtp": "未部署；注册使用显式 SENT 测试夹具"}
-
-    def jdbc_url(self, database: str) -> str:
-        return f"jdbc:mysql://{self.host}:3306/{database}?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true"
 
     def connection(self, kind: str) -> Any:
         return pymysql.connect(host=self.host, user=f"fafa_wp02_{kind}", password=self.private[kind],
@@ -89,7 +88,7 @@ class Verification:
         environment["SERVER_PORT"] = str(PORTS[module])
         environment["DUBBO_PORT"] = "20882" if module == "biz" else "-1"
         if init:
-            environment["SPRING_PROFILES_ACTIVE"] = "dev,admin-init"
+            environment["SPRING_PROFILES_ACTIVE"] = "nacos,admin-init"
         jar = ROOT / "fafa-java" / f"fafa-{module}" / "target" / f"fafa-{module}-0.1.0-SNAPSHOT.jar"
         log = (self.run_output / f"{module}{'-init' if init else ''}.log").open("w", encoding="utf-8")
         self.logs.append(log)

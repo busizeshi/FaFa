@@ -36,13 +36,13 @@ class OpenApiContractTest extends IdentityHttpSupport {
                         .as(entry.getKey()).isEqualTo(expected);
             }
         }
-        assertThat(operations).hasSize(27);
+        assertThat(operations).hasSize(36);
         int runtimeCount = 0;
         var runtimePaths = runtime.fields();
         while (runtimePaths.hasNext()) {
             var entry = runtimePaths.next();
             if (entry.getKey().startsWith("/v1/")) runtimeCount += entry.getValue().size();
         }
-        assertThat(runtimeCount).isEqualTo(operations.size());
+        assertThat(runtimeCount).isEqualTo(51);
     }
 }

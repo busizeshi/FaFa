@@ -12,6 +12,11 @@
     <artifactId>fafa-biz</artifactId>
     <name>fafa-biz</name>
     <dependencies>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-amqp</artifactId></dependency>
+        <dependency><groupId>org.apache.pdfbox</groupId><artifactId>pdfbox</artifactId><version>3.0.8</version></dependency>
+        <dependency>
+            <groupId>io.minio</groupId><artifactId>minio</artifactId><version>8.6.0</version>
+        </dependency>
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>

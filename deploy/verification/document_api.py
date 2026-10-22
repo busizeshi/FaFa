@@ -13,6 +13,19 @@ from api_examples import EXAMPLES, Example
 ROOT = Path(__file__).resolve().parents[2]
 DESTINATION = ROOT / "docs" / "api"
 FIELDS = {
+    "fileName": "原文件名，最多 200 字符；只校验并参与幂等摘要，本批不持久化、不用于构造对象键。",
+    "mime": "声明或核验后的媒体类型；本批为 image/jpeg、image/png。",
+    "bytes": "文件字节数的十进制字符串；最大值受服务端图片上限控制。",
+    "sha256": "文件真实字节的 SHA-256 小写十六进制摘要，固定 64 字符。",
+    "state": "上传状态 INITIATED、READY、CANCELLED、FAILED、EXPIRED；READY 之后才是可用素材。",
+    "assetId": "READY 后生成的素材 ID；其他状态为 null。",
+    "sessionId": "本次上传会话标识，后续查询/完成/取消使用。",
+    "uploadUrl": "对象存储 POST 表单目标 URL，不携带业务 Bearer 令牌。",
+    "formFields": "原样提交的短期签名表单键值；file 文件字段最后附加。",
+    "mediaId": "同一宠物范围内的 READY 素材 ID；未设置头像时可为空。",
+    "width": "服务端解码核验的原图片宽度，像素。",
+    "height": "服务端解码核验的原图片高度，像素。",
+    "url": "默认 60 秒有效的私有 PNG 预览地址，不能长期缓存或写日志。",
     "code": "稳定业务编码；成功为字符串 0，失败按 FAFA-* 分支。验证码字段例外，见请求用途。",
     "message": "可展示的安全提示；客户端不得解析消息文本判断业务状态。",
     "data": "本接口的业务数据；无返回数据或部分失败时为 null。",
@@ -109,6 +122,19 @@ FIELDS = {
     "field": "失败字段路径。",
 }
 MODEL_FIELDS = {
+    "fileName": "原文件名，最多 200 字符；只校验并参与幂等摘要，本批不持久化、不用于构造对象键。",
+    "mime": "声明或核验后的媒体类型；本批为 image/jpeg、image/png。",
+    "bytes": "文件字节数的十进制字符串；最大值受服务端图片上限控制。",
+    "sha256": "文件真实字节的 SHA-256 小写十六进制摘要，固定 64 字符。",
+    "state": "上传状态 INITIATED、READY、CANCELLED、FAILED、EXPIRED；READY 之后才是可用素材。",
+    "assetId": "READY 后生成的素材 ID；其他状态为 null。",
+    "sessionId": "本次上传会话标识，后续查询/完成/取消使用。",
+    "uploadUrl": "对象存储 POST 表单目标 URL，不携带业务 Bearer 令牌。",
+    "formFields": "原样提交的短期签名表单键值；file 文件字段最后附加。",
+    "mediaId": "同一宠物范围内的 READY 素材 ID；未设置头像时可为空。",
+    "width": "服务端解码核验的原图片宽度，像素。",
+    "height": "服务端解码核验的原图片高度，像素。",
+    "url": "默认 60 秒有效的私有 PNG 预览地址，不能长期缓存或写日志。",
     "Breed.id": "稳定的品种编码，1—64 位大写字母、数字和下划线，例如 CAT_UNKNOWN。",
     "Breed.status": "ACTIVE 启用、INACTIVE 停用；停用不删除旧引用。",
     "BreedWrite.id": "稳定品种编码；新增时唯一，修改时必须与路径一致。",
@@ -248,7 +274,7 @@ def render(method: str, path: str, operation: dict[str, Any], document: dict[str
 
 def main() -> None:
     DESTINATION.mkdir(parents=True, exist_ok=True)
-    documents: dict[str, list[str]] = {"账号与会话接口.md": [], "宠物与额度接口.md": [], "管理端接口.md": []}
+    documents: dict[str, list[str]] = {"账号与会话接口.md": [], "宠物与额度接口.md": [], "管理端接口.md": [], "媒体接口.md": []}
     index: list[str] = []
     collection: dict[str, Any] = {}
     for admin, contract in ((False, "app-v1.yaml"), (True, "admin-v1.yaml")):
@@ -257,7 +283,7 @@ def main() -> None:
             for method, operation in methods.items():
                 identifier = operation["operationId"]
                 example = EXAMPLES[identifier]
-                filename = "管理端接口.md" if admin else "宠物与额度接口.md" if operation.get("x-stage") == "WP02-WP03" else "账号与会话接口.md"
+                filename = "媒体接口.md" if operation.get("x-stage") == "WP04-A" else "管理端接口.md" if admin else "宠物与额度接口.md" if operation.get("x-stage") == "WP02-WP03" else "账号与会话接口.md"
                 documents[filename].append(render(method, path, operation, document, example, admin))
                 route = ("/api/admin/v1" if admin else "/api/v1") + path
                 index.append(f"| {example.name} | `{method.upper()} {route}` | `{identifier}` | [{filename[:-3]}]({filename}) |")

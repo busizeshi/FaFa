@@ -70,6 +70,19 @@ public class StorageQuota {
         quotas.ledger(owner, operationId, "RELEASE", reservation.amount(), null, "取消或过期上传释放预占");
         return quotas.find(owner).view();
     }
+    /** 仅在确认物理清理成功后退还已用字节；预占记录状态与唯一流水共同防重。 */
+    @Transactional
+    public QuotaView freeUsed(String owner,String operationId) {
+        var balance=locked(owner);var reservation=requireReservation(owner,operationId);
+        if("FREED".equals(reservation.state())) return balance.view();
+        if(!"SETTLED".equals(reservation.state())) conflict();
+        long amount=reservation.settledAmount();
+        if(balance.used()<amount) conflict();
+        quotas.save(owner,new Balance(balance.granted(),balance.used()-amount,balance.reserved(),balance.version()));
+        quotas.finish(operationId,"FREED",amount);
+        quotas.ledger(owner,operationId,"FREE",-amount,null,"物理文件清理完成后释放已用空间");
+        return quotas.find(owner).view();
+    }
     private Balance locked(String owner) {
         users.lock(owner);
         var balance = quotas.find(owner);

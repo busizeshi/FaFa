@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: FaFa 移动端后端接口
-  version: 0.2.0
-  description: WP00—WP03 后端契约。字节额度使用十进制字符串；宠物资料支持版本控制与幂等。密码按 Unicode 码点计数，至少 8 位且包含字母和数字。
+  version: 0.3.0
+  description: WP00—WP04-A 后端契约。字节额度使用十进制字符串；宠物资料支持版本控制与幂等。密码按 Unicode 码点计数，至少 8 位且包含字母和数字。
 servers:
 - url: /api/v1
 paths:
@@ -1218,6 +1218,413 @@ paths:
       - pet.breed
       x-stage: WP02-WP03
       x-idempotency-required: false
+  /pets/{id}/avatar:
+    get:
+      tags:
+      - media-controller
+      operationId: getPetAvatar
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RAvatarView'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '410':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+      security:
+      - bearerAuth: []
+      summary: 查询宠物头像引用
+      x-pages:
+      - pet.detail
+      x-stage: WP04-A
+      x-idempotency-required: false
+    put:
+      tags:
+      - media-controller
+      operationId: setPetAvatar
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvatarChange'
+        required: true
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RAvatarView'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '410':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+      security:
+      - bearerAuth: []
+      summary: 绑定宠物头像
+      x-pages:
+      - pet.edit
+      x-stage: WP04-A
+      x-idempotency-required: true
+  /upload-sessions:
+    post:
+      tags:
+      - media-controller
+      operationId: createUploadSession
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUpload'
+        required: true
+      responses:
+        '201':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RUploadView'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '410':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+        '413':
+          $ref: '#/components/responses/Error'
+      security:
+      - bearerAuth: []
+      summary: 创建图片上传会话
+      x-pages:
+      - media.upload
+      - pet.avatar
+      x-stage: WP04-A
+      x-idempotency-required: true
+  /upload-sessions/{id}:complete:
+    post:
+      tags:
+      - media-controller
+      operationId: completeUpload
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RUploadView'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '410':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+      security:
+      - bearerAuth: []
+      summary: 核验并完成图片上传
+      x-pages:
+      - media.uploadQueue
+      x-stage: WP04-A
+      x-idempotency-required: false
+  /upload-sessions/{id}:cancel:
+    post:
+      tags:
+      - media-controller
+      operationId: cancelUpload
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RUploadView'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '410':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+      security:
+      - bearerAuth: []
+      summary: 取消图片上传
+      x-pages:
+      - media.uploadQueue
+      x-stage: WP04-A
+      x-idempotency-required: false
+  /upload-sessions/{id}/upload-policy:
+    post:
+      tags:
+      - media-controller
+      operationId: createUploadPolicy
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RUploadPolicy'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '410':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+      security:
+      - bearerAuth: []
+      summary: 签发受限上传表单
+      x-pages:
+      - media.uploadQueue
+      x-stage: WP04-A
+      x-idempotency-required: false
+  /media/{id}/access-tickets:
+    post:
+      tags:
+      - media-controller
+      operationId: createMediaAccessTicket
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RAccessTicket'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '410':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+      security:
+      - bearerAuth: []
+      summary: 签发私有预览访问凭证
+      x-pages:
+      - media.detail
+      - pet.avatar
+      x-stage: WP04-A
+      x-idempotency-required: false
+  /upload-sessions/{id}:
+    get:
+      tags:
+      - media-controller
+      operationId: getUploadSession
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RUploadView'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '410':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+      security:
+      - bearerAuth: []
+      summary: 查询上传状态
+      x-pages:
+      - media.uploadQueue
+      x-stage: WP04-A
+      x-idempotency-required: false
+  /media/{id}:
+    get:
+      tags:
+      - media-controller
+      operationId: getMedia
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RAssetView'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/Error'
+        '409':
+          $ref: '#/components/responses/Error'
+        '410':
+          $ref: '#/components/responses/Error'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Error'
+      security:
+      - bearerAuth: []
+      summary: 查询已核验图片
+      x-pages:
+      - media.detail
+      x-stage: WP04-A
+      x-idempotency-required: false
 components:
   securitySchemes:
     bearerAuth:
@@ -2267,6 +2674,208 @@ components:
           type: string
         data:
           $ref: '#/components/schemas/CursorPageBreed'
+          nullable: true
+        requestId:
+          type: string
+      required:
+      - code
+      - message
+      - data
+      - requestId
+    AvatarChange:
+      type: object
+      properties:
+        mediaId:
+          type: string
+          minLength: 1
+          nullable: true
+        version:
+          type: integer
+          format: int64
+          minimum: 1
+      required:
+      - mediaId
+      - version
+    AvatarView:
+      type: object
+      properties:
+        petId:
+          type: string
+        mediaId:
+          type: string
+          nullable: true
+        version:
+          type: integer
+          format: int64
+    RAvatarView:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/AvatarView'
+          nullable: true
+        requestId:
+          type: string
+      required:
+      - code
+      - message
+      - data
+      - requestId
+    CreateUpload:
+      type: object
+      properties:
+        petId:
+          type: string
+          minLength: 1
+        fileName:
+          type: string
+          maxLength: 200
+          minLength: 0
+        mime:
+          type: string
+          minLength: 1
+          pattern: image/(jpeg|png)
+        bytes:
+          type: string
+          minLength: 1
+          pattern: '[1-9][0-9]{0,8}'
+        sha256:
+          type: string
+          minLength: 1
+          pattern: '[a-f0-9]{64}'
+      required:
+      - bytes
+      - fileName
+      - mime
+      - petId
+      - sha256
+    RUploadView:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/UploadView'
+          nullable: true
+        requestId:
+          type: string
+      required:
+      - code
+      - message
+      - data
+      - requestId
+    UploadView:
+      type: object
+      properties:
+        id:
+          type: string
+        petId:
+          type: string
+        state:
+          type: string
+          enum:
+          - INITIATED
+          - READY
+          - CANCELLED
+          - FAILED
+          - EXPIRED
+        bytes:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        assetId:
+          type: string
+          nullable: true
+    RUploadPolicy:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/UploadPolicy'
+          nullable: true
+        requestId:
+          type: string
+      required:
+      - code
+      - message
+      - data
+      - requestId
+    UploadPolicy:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        uploadUrl:
+          type: string
+        formFields:
+          type: object
+          additionalProperties:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+    AccessTicket:
+      type: object
+      properties:
+        url:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+    RAccessTicket:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/AccessTicket'
+          nullable: true
+        requestId:
+          type: string
+      required:
+      - code
+      - message
+      - data
+      - requestId
+    AssetView:
+      type: object
+      properties:
+        id:
+          type: string
+        petId:
+          type: string
+        bytes:
+          type: string
+        mime:
+          type: string
+        sha256:
+          type: string
+        width:
+          type: integer
+          format: int32
+        height:
+          type: integer
+          format: int32
+    RAssetView:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/AssetView'
           nullable: true
         requestId:
           type: string
