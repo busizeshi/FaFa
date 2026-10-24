@@ -1,1 +1,0 @@
-"""FaFa Python service package."""
