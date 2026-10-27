@@ -124,3 +124,15 @@ dist/
 
 .agents/
 assets/
+
+docs/design-v2.1/
+# 设计稿压缩包（219MB，超出 GitHub/Gitee 单文件上限，走对象存储或本地留存）
+docs/design-v2.1.rar
+
+# ---------- 含明文凭据的内部文档（禁止入库/推送到远端仓库）----------
+# 该文档记录开发环境 MySQL/Redis/Nacos/RabbitMQ/COS/SMTP 明文账号密码，
+# 仅限本地留存；团队共享请走密码管理工具。
+docs/FaFa_中间件环境与账号信息_v1.0.md
+
+# ---------- 部署时的本地变量（凭据不进库，模板见 deploy/.env.example）----------
+deploy/.env

@@ -1,0 +1,14 @@
+-- ==================================================================
+-- fafa_biz 基线迁移（V1）
+-- 数据库：fafa_biz（MySQL 8.x / InnoDB / utf8mb4）
+--
+-- 说明（架构规范 §3 / §13）：
+--   1. 本文件为 Flyway 版本管理基线，不创建任何业务表；
+--   2. 所有业务表变更从 V2 开始，按模块顺序提交；
+--   3. 迁移必须向前兼容、可回滚或有修复脚本，禁止手工修改生产库；
+--   4. 命名建议：V2__create_identity_user.sql、V3__create_family_household.sql ...
+--   5. 全局约定：主键 BIGINT AUTO_INCREMENT（或 ULID 由应用生成）、
+--      created_at/updated_at DATETIME(6) DEFAULT UTC_TIMESTAMP、
+--      金额用最小货币单位整数、测量值用 DECIMAL、时间一律 UTC。
+-- ==================================================================
+-- 基线：无表结构变更

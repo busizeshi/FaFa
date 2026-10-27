@@ -1,0 +1,68 @@
+﻿# ==================================================================
+# fafa-gateway 开发环境配置（dev）
+#
+# 分层说明（优先级从高到低）：
+#   Nacos: fafa-gateway.yml（路由/HTTP客户端/CORS） / common.yml > 本文件 > application.yml > 代码默认值
+#
+# 中间件连接配置在 Nacos 配置中心（namespace=fafa）：
+#   - 路由表 / HTTP 客户端 / 默认过滤器 / CORS → nacos: fafa-gateway.yml
+#   - Redis（Sa-Token 会话共享）               → nacos: common.yml
+#   本地副本与变更流程：docs/nacos配置文件/
+#
+# ⚠️ 路由表必须放 Nacos（fafa-gateway.yml），不要放本文件：
+#    SCA 2025.0.0.0 + Boot 3.5 组合下，本地文件中 spring.cloud.nacos.*
+#    连接参数与 spring.cloud.gateway.server.webflux.routes 同处可绑定属性源时，
+#    routes 绑定被破坏（2026-10-26 对照实验定位），路由放远程始终生效且支持热更。
+#
+# 本文件只保留：
+#   1. Nacos 连接参数（启动引导项，必须本地——解析 nacos: import 时不可远程提供）；
+#   2. 服务发现上报 IP 修正（多网卡环境）。
+#
+# 凭据：Nacos 中各项已带开发默认值，无需设环境变量即可启动。
+# ==================================================================
+
+spring:
+  cloud:
+    # ---- Nacos 连接参数（启动引导项，必须本地） ----
+    nacos:
+      server-addr: ${NACOS_ADDR:192.168.1.254:8848}
+      username: ${NACOS_USERNAME:fafa-svc}
+      password: ${NACOS_PASSWORD:FafaSvc2026!}
+      config:
+        # 开发环境命名空间（Namespace ID=fafa）
+        namespace: ${NACOS_NAMESPACE:fafa}
+      discovery:
+        namespace: ${NACOS_NAMESPACE:fafa}
+        # 本机开发：优先上报本机内网 IP，避免多网卡注册错误地址
+        ip: ${LOCAL_IP:}
+    inetutils:
+      # 多网卡环境：优先使用 192.168.1.x 网段注册（避免注册成 169.254 链路本地地址）
+      preferred-networks: ${PREFERRED_NETWORKS:192.168.1.}
+
+  # ---- Nacos 配置中心：公共参数（common.yml）与网关专属（fafa-gateway.yml） ----
+  config:
+    import:
+      - optional:nacos:common.yml
+      - optional:nacos:${spring.application.name}.yml
+
+server:
+  # 本地开发端口；注意服务器 8080 已被 Nacos 控制台占用，部署时另行规划（见中间件文档 §6）
+  port: 9090
+  # 优雅停机：等待在途请求完成（SSE 场景尤为重要）
+  shutdown: graceful
+  forward-headers-strategy: framework
+
+# ---- Sa-Token 宠主会话（与 fafa-biz 逐项一致，共享 Redis 会话存储） ----
+sa-token:
+  token-name: fafa-token
+  timeout: 2592000
+  active-timeout: 1800
+  is-read-cookie: false
+  is-read-header: true
+  token-style: uuid
+  is-concurrent: true
+  is-share: false
+  is-log: false
+
+logging:
+  config: classpath:logback-spring.xml

@@ -1,0 +1,128 @@
+# ==================================================================
+# fafa-biz 开发环境配置（dev）
+#
+# 分层说明（优先级从高到低）：
+#   本文件 > Nacos: fafa-biz.yml / common.yml > application.yml > 代码默认值
+#
+# 中间件连接配置在 Nacos 配置中心（namespace=fafa）：
+#   - 数据源 / COS 凭据 → nacos: fafa-biz.yml
+#   - Redis / RabbitMQ / SMTP / Dubbo / 认证运营参数 → nacos: common.yml
+#   本地副本与变更流程：docs/nacos配置文件/
+#
+# 本文件只保留（放这里而不能放 Nacos 的"启动引导项"）：
+#   1. Nacos 连接参数（server-addr/username/password/config.namespace）——
+#      spring.config.import 解析 nacos: 前缀时本文件尚未加载完成，
+#      这些项必须在本地 profile 文件，否则客户端回退默认值（踩坑记录见下）；
+#   2. 服务发现上报 IP 修正（多网卡环境）；
+#   3. 通用层迁移来的跨环境无关项（Jackson/Flyway/MyBatis/Sa-Token/端口等）。
+#
+# ⚠️ 踩坑记录：spring.config.import 的 nacos: 前缀解析发生在 profile 文件
+#      加载之前（针对 config.import 自身所在的层级），因此 Nacos 连接参数
+#      必须与本文件的 import 语句同级存在，写在 Nacos 里会形成循环依赖。
+#
+# 凭据：Nacos 中各项已带开发默认值（见中间件文档 §8），无需设环境变量即可启动；
+#      如需覆盖（如个人改过本地中间件端口），设对应环境变量即可。
+# ==================================================================
+
+spring:
+  cloud:
+    # ---- Nacos 连接参数（启动引导项，必须本地） ----
+    nacos:
+      server-addr: ${NACOS_ADDR:192.168.1.254:8848}
+      username: ${NACOS_USERNAME:fafa-svc}
+      password: ${NACOS_PASSWORD:FafaSvc2026!}
+      config:
+        namespace: ${NACOS_NAMESPACE:fafa}
+      discovery:
+        namespace: ${NACOS_NAMESPACE:fafa}
+        # 本机开发如遇多网卡注册错误 IP，可显式指定 LOCAL_IP 覆盖
+        ip: ${LOCAL_IP:}
+    inetutils:
+      # 多网卡环境：优先使用 192.168.1.x 网段注册（避免注册成 169.254 链路本地地址）
+      preferred-networks: ${PREFERRED_NETWORKS:192.168.1.}
+
+  # ---- Nacos 配置中心：优先级高于本地文件；optional 保证无远程配置时也能启动 ----
+  config:
+    import:
+      - optional:nacos:common.yml
+      - optional:nacos:${spring.application.name}.yml
+
+  # ---- Jackson：时间序列化统一 ISO 8601 + UTC（架构规范 §7 / §9.1） ----
+  jackson:
+    time-zone: UTC
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+  # ---- Flyway：数据库迁移版本管理（架构规范 §3：禁止手工改生产库） ----
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    # 迁移执行前校验 checksum，防止已发布脚本被篡改
+    validate-on-migrate: true
+
+server:
+  port: 8081
+  shutdown: graceful
+  # 处置不完整请求头等边界场景
+  max-http-request-header-size: 16KB
+
+# ---- MyBatis-Plus ----
+mybatis-plus:
+  configuration:
+    # 数据库列 snake_case → Java 驼峰
+    map-underscore-to-camel-case: true
+    # 开发期打印 SQL（生产环境关闭：在 Nacos 环境专属配置覆盖）
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  global-config:
+    banner: false
+    db-config:
+      # 逻辑删除列约定（业务表按需启用，删除生命周期遵循架构规范 §6.5）
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# ---- Sa-Token 宠主会话基础配置 ----
+# 注意：gateway 与 biz 的 sa-token 配置必须逐项一致（共享 Redis 会话存储），
+# token-name / timeout / active-timeout / is-concurrent / is-share 任何一侧修改都要同步
+sa-token:
+  token-name: fafa-token
+  # 会话有效期 30 天（秒）
+  timeout: 2592000
+  # 无操作 30 分钟后冻结
+  active-timeout: 1800
+  # 仅从请求头读取，不写 Cookie（移动端为主）
+  is-read-cookie: false
+  is-read-header: true
+  # UUID 令牌风格
+  token-style: uuid
+  # 允许多设备同时在线（/me/sessions 远程下线管理）
+  is-concurrent: true
+  # 每次登录签发新 token（区分设备）
+  is-share: false
+  is-log: false
+
+# ---- 运维观测 ----
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      # 细节仅授权查看，避免泄露数据源/依赖拓扑
+      show-details: when-authorized
+
+# ---- API 文档（生产关闭：在 Nacos 环境专属配置覆盖） ----
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  config: classpath:logback-spring.xml

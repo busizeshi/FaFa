@@ -1,0 +1,24 @@
+# ==================================================================
+# 流水线必需插件（Jenkins 启动时由 jenkins-plugin-cli 安装）
+#
+# 说明：
+#   1. 只装最小集合，避免插件冲突拖慢启动；
+#   2. 未装 Gitee 插件：Webhook 采用 Jenkins 原生「触发远程构建」token 方式，
+#      避免依赖需公网回调的 Gitee 插件；代码拉取用原生 git 插件即可。
+# ==================================================================
+workflow-aggregator
+workflow-job
+workflow-cps
+workflow-basic-steps
+workflow-durable-task-step
+workflow-scm-step
+git
+git-client
+credentials
+credentials-binding
+plain-credentials
+script-security
+timestamper
+build-timeout
+ws-cleanup
+pipeline-stage-view

@@ -1,0 +1,107 @@
+# ==================================================================
+# fafa-admin 开发环境配置（dev）
+#
+# 分层说明（优先级从高到低）：
+#   本文件 > Nacos: fafa-admin.yml / common.yml > application.yml > 代码默认值
+#
+# 中间件连接配置在 Nacos 配置中心（namespace=fafa）：
+#   - 数据源 → nacos: fafa-admin.yml
+#   - Redis / RabbitMQ / SMTP / Dubbo / 认证运营参数 → nacos: common.yml
+#   本地副本与变更流程：docs/nacos配置文件/
+#
+# 本文件只保留：
+#   1. Nacos 连接参数（启动引导项，必须本地——解析 nacos: import 时不可远程提供）；
+#   2. 服务发现上报 IP 修正（多网卡环境）；
+#   3. 通用层迁移来的跨环境无关项（Jackson/Flyway/MyBatis/Sa-Token/端口等）。
+#
+# 凭据：Nacos 中各项已带开发默认值，无需设环境变量即可启动。
+# ==================================================================
+
+spring:
+  cloud:
+    # ---- Nacos 连接参数（启动引导项，必须本地） ----
+    nacos:
+      server-addr: ${NACOS_ADDR:192.168.1.254:8848}
+      username: ${NACOS_USERNAME:fafa-svc}
+      password: ${NACOS_PASSWORD:FafaSvc2026!}
+      config:
+        namespace: ${NACOS_NAMESPACE:fafa}
+      discovery:
+        namespace: ${NACOS_NAMESPACE:fafa}
+        # 服务器上部署时默认上报本机内网 IP；本机开发可设 LOCAL_IP 覆盖
+        ip: ${LOCAL_IP:}
+    inetutils:
+      # 多网卡环境：优先使用 192.168.1.x 网段注册（避免注册成 169.254 链路本地地址）
+      preferred-networks: ${PREFERRED_NETWORKS:192.168.1.}
+
+  # ---- Nacos 配置中心 ----
+  config:
+    import:
+      - optional:nacos:common.yml
+      - optional:nacos:${spring.application.name}.yml
+
+  # ---- Jackson：ISO 8601 + UTC ----
+  jackson:
+    time-zone: UTC
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+  # ---- Flyway ----
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+server:
+  port: 8082
+  shutdown: graceful
+  max-http-request-header-size: 16KB
+
+# ---- MyBatis-Plus ----
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    # 开发期打印 SQL（生产环境关闭：在 Nacos 环境专属配置覆盖）
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  global-config:
+    banner: false
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# ---- Sa-Token 员工会话（独立命名空间，禁止与宠主 token 混用） ----
+# token-name 与宠主端（fafa-token）刻意区分，认证模块实施时配置独立 audience 与校验规则
+sa-token:
+  token-name: fafa-admin-token
+  # 员工会话 12 小时（后台操作不做过期续期，超时重新登录）
+  timeout: 43200
+  active-timeout: 3600
+  is-read-cookie: false
+  is-read-header: true
+  is-log: false
+
+# ---- 运维观测 ----
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+
+# ---- API 文档（生产关闭：在 Nacos 环境专属配置覆盖） ----
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  config: classpath:logback-spring.xml

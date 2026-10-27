@@ -1,0 +1,35 @@
+# ==================================================================
+# Nacos 服务专属配置（fafa-admin）
+#
+# 导入位置：
+#   Namespace : fafa（Namespace ID，开发环境）
+#   Group     : DEFAULT_GROUP
+#   dataId    : fafa-admin.yml
+#   格式      : yaml
+#
+# 使用约定：
+#   1. 放 fafa-admin 服务专属的中间件连接（数据源）与运营期可调整参数；
+#      共享中间件（Redis/RabbitMQ/SMTP/Dubbo）在 common.yml；
+#      仅启动引导项（Nacos 连接、应用名、端口）留本地 yml；
+#   2. ⚠️ 密码类凭据一律 ${ENV_VAR} 占位符并带开发默认值（由部署环境覆盖），
+#      见 docs/FaFa_中间件环境与账号信息_v1.0.md §8；
+#   3. 优先级：application-{profile}.yml > 本文件 > application.yml > 代码默认值。
+# ==================================================================
+
+spring:
+  datasource:
+    # 单一业务库 fafa（biz/admin 共库，见中间件文档 §4.1；DDL 脚本见 docs/MySQL脚本.sql）
+    # 注意：characterEncoding 需用 Java 编码名 UTF-8（Connector/J 自动映射 utf8mb4）
+    url: jdbc:mysql://${MYSQL_HOST:192.168.1.254}:3306/fafa?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME:fafa}
+    password: ${MYSQL_PASSWORD:fafa_123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 3000
+
+  flyway:
+    # biz/admin 共库：Flyway history 表必须按服务隔离，否则两边迁移互相覆盖；
+    # admin 建表统一使用 admin_ 前缀（见 V1__init_admin_baseline.sql 说明）
+    table: flyway_schema_history_admin

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  FaFa Java 微服务父工程
+
+  职责（对应《FaFa_企业级技术架构与服务端开发规范_v1.0》§3/§5）：
+    1. 统一 Java 21 编译基线与字符集；
+    2. 统一锁定 Spring Boot / Spring Cloud / Spring Cloud Alibaba / Dubbo 兼容组合，
+       升级时必须整组验证后同步修改此处版本号，禁止单点覆盖；
+    3. 统一管理第三方依赖版本与构建插件。
+
+  版本兼容矩阵（2026-10-26 冻结，来源官方版本说明页）：
+    - Spring Boot             3.5.16   （3.5.x 线最后一版 OSS 发布，见架构规范 §3）
+    - Spring Cloud            2025.0.3 （Northfields，适配 Boot 3.5.x）
+    - Spring Cloud Alibaba    2025.0.0.0（适配 Boot 3.5.x / Cloud 2025.0.x）
+    - Apache Dubbo            3.3.6    （官方最新 3.3 特性版本，Java 内部同步 RPC）
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.fafa</groupId>
+    <artifactId>fafa-java</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>FaFa Java Parent</name>
+    <description>FaFa 后端 Java 微服务父工程：gateway（网关）/ admin（运营后台）/ biz（业务服务）+ common（公共契约库）</description>
+
+    <!-- 模块聚合：common 必须在最前，供其余模块依赖 -->
+    <modules>
+        <module>fafa-common</module>
+        <module>fafa-gateway</module>
+        <module>fafa-admin</module>
+        <module>fafa-biz</module>
+    </modules>
+
+    <properties>
+        <!-- ===== 编译基线 ===== -->
+        <java.version>21</java.version>
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- ===== 框架 BOM 版本（整组升级，禁止单点改动） ===== -->
+        <spring-boot.version>3.5.16</spring-boot.version>
+        <spring-cloud.version>2025.0.3</spring-cloud.version>
+        <spring-cloud-alibaba.version>2025.0.0.0</spring-cloud-alibaba.version>
+        <dubbo.version>3.3.6</dubbo.version>
+
+        <!-- ===== 三方组件版本 ===== -->
+        <mybatis-plus.version>3.5.17</mybatis-plus.version>
+        <sa-token.version>1.46.0</sa-token.version>
+        <springdoc.version>2.10.0</springdoc.version>
+        <hutool.version>5.8.38</hutool.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring Boot 官方 BOM：管理 spring-boot-*、mysql-connector-j、flyway、micrometer 等版本 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Spring Cloud BOM：Gateway / LoadBalancer / 熔断等组件版本 -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Spring Cloud Alibaba BOM：Nacos Discovery/Config 客户端版本（不得单独覆盖 nacos-client） -->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${spring-cloud-alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Dubbo BOM：dubbo-spring-boot-starter 等模块版本 -->
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-bom</artifactId>
+                <version>${dubbo.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Sa-Token BOM：认证组件（宠主/员工两套身份空间） -->
+            <dependency>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-bom</artifactId>
+                <version>${sa-token.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- MyBatis-Plus（Spring Boot 3 专用 starter） -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+
+            <!--
+              MyBatis-Plus 内置拦截器模块（3.5.9 起拆分）：
+              PaginationInnerInterceptor / BlockAttackInnerInterceptor 等依赖 jsqlparser
+              的拦截器在此 artifact 中，使用分页与防全表攻击插件时必须一并引入。
+            -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-jsqlparser</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+
+            <!-- springdoc-openapi（Boot 3.5 兼容的 v2 线；
+                 注：Knife4j 4.5.0 内置 springdoc 2.2 与 Boot 3.5 存在兼容风险，待上游适配后再评估切换 UI） -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+
+            <!-- Hutool：仅允许小范围通用工具，禁止替代业务规则（架构规范 §3） -->
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-core</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+
+            <!-- 内部公共契约库 -->
+            <dependency>
+                <groupId>com.fafa</groupId>
+                <artifactId>fafa-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- 编译插件：release 21 与运行时 JDK 一致（架构规范 §3） -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.13.0</version>
+                    <configuration>
+                        <release>21</release>
+                        <encoding>UTF-8</encoding>
+                        <!-- 保留方法参数名：Spring Boot 3.2+ 官方要求；@RateLimit 的 SpEL key 依赖参数名绑定 -->
+                        <parameters>true</parameters>
+                    </configuration>
+                </plugin>
+
+                <!-- Spring Boot 打包插件：仅在各可运行服务模块中声明执行 -->
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+
+                <!-- 单元测试插件：保留默认配置，业务模块按需扩展 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.2.5</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  fafa-gateway：外部统一入口（Spring Cloud Gateway / WebFlux）
+
+  职责边界（架构规范 §4.1）：
+    - TLS/HTTPS 终结（生产由外部 LB 或本服务承担）、路由、CORS、基础限流、请求体大小限制；
+    - 生成/透传 requestId、剥离客户端伪造身份头、SSE 透传；
+    - ❌ 不访问业务表、不判断资源权限、不承载业务写入。
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.fafa</groupId>
+        <artifactId>fafa-java</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>fafa-gateway</artifactId>
+    <packaging>jar</packaging>
+    <name>FaFa Gateway</name>
+    <description>Spring Cloud Gateway 外部统一入口：路由、基础认证校验、限流、requestId 与 SSE 透传</description>
+
+    <dependencies>
+        <!--
+          Spring Cloud Gateway（WebFlux 反应式实现）。
+          注意：Spring Cloud 2025.0 起坐标更名为 spring-cloud-starter-gateway-server-webflux，
+          旧坐标 spring-cloud-starter-gateway 已标记迁移。
+        -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
+        </dependency>
+
+        <!-- Nacos 服务发现：按服务名路由到 fafa-biz / fafa-admin -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+
+        <!-- Nacos 配置中心：加载 common.yml（公共参数热更）与 fafa-gateway.yml -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+        </dependency>
+
+        <!-- 负载均衡器：lb:// 路由所需 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+
+        <!-- 健康探针与指标（架构规范 §11.1：liveness/readiness + Prometheus 暴露） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
+        <!-- 链路追踪：W3C traceparent 传播，traceId 写入 MDC 供日志输出 -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
+
+        <!-- 内部公共契约库：请求头常量（X-Request-Id 等）与统一响应结构 -->
+        <dependency>
+            <groupId>com.fafa</groupId>
+            <artifactId>fafa-common</artifactId>
+        </dependency>
+
+        <!-- Sa-Token 响应式版：Gateway 与 biz 共享 Redis 会话，网关先行校验（架构规范 §4.1） -->
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-reactor-spring-boot3-starter</artifactId>
+        </dependency>
+        <!-- Sa-Token 会话数据存 Redis（与 biz 使用同一存储，key 风格一致） -->
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-redis-template</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- 测试 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- 生成可执行 fat-jar -->
+                    <mainClass>com.fafa.gateway.GatewayApplication</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

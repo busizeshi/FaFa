@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  fafa-biz 日志配置
+
+  约定（架构规范 §11.2）：
+    - traceId/spanId 由 micrometer-tracing 写入 MDC；requestId 由网关透传，
+      在 Web 过滤器/拦截器中放入 MDC 后即可在本 pattern 输出；
+    - 生产改为 stdout JSON 结构化，由 Loki 采集；
+    - 禁止在日志中输出密码、完整病历、验证码、长期签名 URL（架构规范 §10）。
+-->
+<configuration>
+
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="fafa-biz"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [${APP_NAME}] [traceId=%X{traceId:-}] [spanId=%X{spanId:-}] [requestId=%X{requestId:-}] [%thread] %logger{40} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 开发环境：业务代码 DEBUG，SQL 由 mybatis log-impl 输出 -->
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <logger name="com.fafa" level="DEBUG"/>
+    </springProfile>
+
+    <!-- 生产环境：INFO 为主 -->
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+</configuration>

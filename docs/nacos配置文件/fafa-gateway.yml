@@ -1,0 +1,60 @@
+# ==================================================================
+# Nacos 服务专属配置（fafa-gateway）
+#
+# 导入位置：
+#   Namespace : fafa（Namespace ID，开发环境）
+#   Group     : DEFAULT_GROUP
+#   dataId    : fafa-gateway.yml
+#   格式      : yaml
+#
+# 使用约定：
+#   1. 网关专属、需要运营期调整/热更的参数（限流阈值、CORS 白名单等）；
+#   2. ⚠️ 路由表必须放本文件（Nacos）：本地 application-dev.yml 与
+#      spring.cloud.nacos.* 连接参数同文件时，GatewayProperties 的
+#      routes 绑定会被破坏（SCA 2025.0.0.0 + Boot 3.5 组合的属性源
+#      顺序问题，2026-10-26 实验定位），路由放远程则始终生效；
+#   3. 修改后发布即热生效（Spring Cloud Gateway 监听 RefreshEvent）。
+# ==================================================================
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # ---- 底层 HTTP 客户端超时（架构规范 §4.1）----
+          httpclient:
+            connect-timeout: 2000
+            # 全局响应超时；SSE 长连接请通过路由级 metadata 单独放宽
+            response-timeout: 30s
+            pool:
+              max-idle-time: 30s
+          # ---- 默认过滤器：限制请求体大小，防御超大 payload ----
+          default-filters:
+            - name: RequestSize
+              args:
+                # 10MB：正常业务 JSON + 小附件元数据足够，媒体直传 COS 不经过网关
+                maxSize: 10MB
+          # ---- 路由规则：客户端只访问网关，绝不直连业务服务 ----
+          routes:
+            - id: fafa-biz
+              # 宠主端业务 API
+              uri: lb://fafa-biz
+              predicates:
+                - Path=/api/v1/**
+            - id: fafa-admin
+              # 运营后台 API
+              uri: lb://fafa-admin
+              predicates:
+                - Path=/admin/api/v1/**
+          # ---- 全局 CORS：开发期允许本地前端；生产收敛为正式域名 ----
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origin-patterns:
+                  - "http://localhost:*"
+                allowed-methods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
+                allowed-headers: "*"
+                # 暴露 requestId 便于前端报障
+                exposed-headers: [X-Request-Id]
+                allow-credentials: true
+                max-age: 3600

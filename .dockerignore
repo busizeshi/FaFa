@@ -1,0 +1,33 @@
+# ==================================================================
+# Docker 构建上下文忽略规则（根目录，作用于 deploy/java 的 Java 镜像构建）
+#
+# Java 镜像只需要 target/*.jar，其余全部排除，避免把 Android 构建产物、
+# 设计稿 PNG、Python 虚拟环境等数百 MB 内容传给 docker daemon。
+#
+# ⚠️ target 目录必须"先排除子项再放行 jar"，直接排除 target 目录会导致
+#    构建时找不到 jar 文件。
+# ==================================================================
+.git/
+.gitignore
+.agents/
+.idea/
+.vscode/
+
+# Android 客户端与设计稿不进后端镜像构建上下文
+FaFaAndroid/
+docs/
+assets/
+
+# Python 服务单独构建（fafa-python/Dockerfile 有自己的 .dockerignore）
+fafa-python/
+
+# Maven 产物：只放行最终 jar，其余（classes/依赖/报告）不传输
+**/target/*
+!**/target/*.jar
+
+**/build/
+**/out/
+**/.venv/
+**/__pycache__/
+**/*.log
+logs/

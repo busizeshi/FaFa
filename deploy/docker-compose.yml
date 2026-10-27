@@ -1,0 +1,167 @@
+# ==================================================================
+# FaFa 开发环境应用编排（Jenkins 一键部署目标）
+#
+# 位置：仓库内 deploy/docker-compose.yml
+# 运行：docker compose -f deploy/docker-compose.yml up -d --build
+#
+# 前置依赖（已在服务器 /home/busizeshi/docker 部署，本文件不管理）：
+#   - MySQL / Redis / MinIO（docker-compose.yml）
+#   - Nacos / RabbitMQ / PowerJob（middleware/docker-compose.yml）
+#   - 共享网络 docker_fafa-network（external）
+#
+# 端口策略：仅 gateway 暴露 9090，biz/admin/python 只在 docker 网络内可达，
+#          外部统一经网关进入（与生产形态一致，见中间件文档 §6）。
+#
+# 应用配置来源：Nacos 配置中心（namespace=fafa，dataId=common.yml / fafa-{service}.yml）
+#   本文件只注入"容器内互联地址"类的环境变量（服务名替代宿主机 IP）。
+# ==================================================================
+name: fafa-dev
+
+# ---- 通用日志策略：单文件 50MB × 3 ----
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "3"
+
+# ---- Java 服务公共构建定义（同一 Dockerfile，仅 JAR_FILE 不同）----
+x-java-build: &java-build
+  context: ..
+  dockerfile: deploy/java/Dockerfile
+
+services:
+  # ==================== 宠主业务 API ====================
+  fafa-biz:
+    build:
+      <<: *java-build
+      args:
+        JAR_FILE: fafa-java/fafa-biz/target/fafa-biz-1.0.0-SNAPSHOT.jar
+    image: fafa/fafa-biz:${IMAGE_TAG:-dev}
+    container_name: fafa-biz
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_PROFILES_ACTIVE: dev
+      # ---- 容器内以服务名互联（同一 docker_fafa-network）----
+      NACOS_ADDR: fafa-nacos:8848
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-fafa}
+      NACOS_USERNAME: ${NACOS_USERNAME:-fafa-svc}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:-FafaSvc2026!}
+      MYSQL_HOST: mysql
+      MYSQL_USERNAME: ${MYSQL_USERNAME:-fafa}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-fafa_123456}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-fafa-redis}
+      RABBITMQ_HOST: fafa-rabbitmq
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-fafa}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-FafaRabbit2026!}
+      SMTP_USERNAME: ${SMTP_USERNAME:-13127103609@163.com}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-JEfE2tMqVgbWHmij}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8081/actuator/health/liveness"]
+      interval: 15s
+      timeout: 3s
+      retries: 20
+      start_period: 60s
+    logging: *default-logging
+    networks:
+      - fafa-network
+
+  # ==================== 运营后台 API ====================
+  fafa-admin:
+    build:
+      <<: *java-build
+      args:
+        JAR_FILE: fafa-java/fafa-admin/target/fafa-admin-1.0.0-SNAPSHOT.jar
+    image: fafa/fafa-admin:${IMAGE_TAG:-dev}
+    container_name: fafa-admin
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_PROFILES_ACTIVE: dev
+      NACOS_ADDR: fafa-nacos:8848
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-fafa}
+      NACOS_USERNAME: ${NACOS_USERNAME:-fafa-svc}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:-FafaSvc2026!}
+      MYSQL_HOST: mysql
+      MYSQL_USERNAME: ${MYSQL_USERNAME:-fafa}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-fafa_123456}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-fafa-redis}
+      RABBITMQ_HOST: fafa-rabbitmq
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-fafa}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-FafaRabbit2026!}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8082/actuator/health/liveness"]
+      interval: 15s
+      timeout: 3s
+      retries: 20
+      start_period: 60s
+    logging: *default-logging
+    networks:
+      - fafa-network
+
+  # ==================== AI 服务（FastAPI）====================
+  fafa-python:
+    build:
+      context: ../fafa-python
+      dockerfile: Dockerfile
+    image: fafa/fafa-python:${IMAGE_TAG:-dev}
+    container_name: fafa-python
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      FAFA_ENVIRONMENT: dev
+      FAFA_LOG_LEVEL: ${PY_LOG_LEVEL:-INFO}
+      # 容器内直接调用 biz（不走宿主机 IP）
+      FAFA_BIZ_API_BASE_URL: http://fafa-biz:8081
+      FAFA_RABBITMQ_URL: amqp://${RABBITMQ_USERNAME:-fafa}:${RABBITMQ_PASSWORD:-FafaRabbit2026!}@fafa-rabbitmq:5672/%2Ffafa
+      FAFA_MINIO_ENDPOINT: fafa-minio:9000
+      FAFA_QDRANT_URL: http://fafa-qdrant:6333
+      # 未配置时 readyz 会如实标记 NOT_CONFIGURED（不影响存活）
+      FAFA_DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+    logging: *default-logging
+    networks:
+      - fafa-network
+
+  # ==================== 统一入口（唯一对外端口）====================
+  fafa-gateway:
+    build:
+      <<: *java-build
+      args:
+        JAR_FILE: fafa-java/fafa-gateway/target/fafa-gateway-1.0.0-SNAPSHOT.jar
+    image: fafa/fafa-gateway:${IMAGE_TAG:-dev}
+    container_name: fafa-gateway
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_PROFILES_ACTIVE: dev
+      NACOS_ADDR: fafa-nacos:8848
+      NACOS_NAMESPACE: ${NACOS_NAMESPACE:-fafa}
+      NACOS_USERNAME: ${NACOS_USERNAME:-fafa-svc}
+      NACOS_PASSWORD: ${NACOS_PASSWORD:-FafaSvc2026!}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-fafa-redis}
+    ports:
+      # 仅网关对外；9090 与本地开发端口一致，便于 App/Postman 切换
+      - "${GATEWAY_PORT:-9090}:9090"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9090/actuator/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 20
+      start_period: 45s
+    depends_on:
+      fafa-biz:
+        condition: service_healthy
+      fafa-admin:
+        condition: service_healthy
+    logging: *default-logging
+    networks:
+      - fafa-network
+
+# 与中间件共用同一 bridge 网络（middleware/compose 已声明 external）
+networks:
+  fafa-network:
+    external: true
+    name: docker_fafa-network

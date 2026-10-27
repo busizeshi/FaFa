@@ -1,0 +1,136 @@
+# ==================================================================
+# Nacos 公共配置（跨服务共享）
+#
+# 导入位置：
+#   Namespace : fafa（Namespace ID，开发环境）
+#   Group     : DEFAULT_GROUP
+#   dataId    : common.yml
+#   格式      : yaml
+#
+# 使用约定：
+#   1. 放【跨服务共享 + 运营期可调整】的参数与【共享中间件连接】
+#      （Redis / RabbitMQ / SMTP / Dubbo）；服务专属项（如各自的数据源）放
+#      fafa-{service}.yml；仅启动引导项（Nacos 连接、应用名、端口）留本地 yml；
+#   2. ⚠️ 密码类凭据一律 ${ENV_VAR} 占位符并带开发默认值（由部署环境覆盖），
+#      见 docs/FaFa_中间件环境与账号信息_v1.0.md §8；COS 凭据在 fafa-biz.yml；
+#   3. 修改本文件后在 Nacos 控制台发布即热生效（logging.level / @ConfigurationProperties
+#      均由 Spring Cloud Context 自动刷新，无需重启；数据源等启动项变更需重启）；
+#   4. 优先级：application-{profile}.yml > 本文件 > application.yml > 代码默认值。
+#      因此不要把本文件已管理的参数再写回本地 profile 文件（会被本地覆盖且双层维护）。
+# ==================================================================
+
+# ==================== 共享中间件连接 ====================
+
+# ---- Redis（Sa-Token 会话共享 + 缓存 + 限流；三服务共用同一实例） ----
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:192.168.1.254}
+      port: 6379
+      password: ${REDIS_PASSWORD:fafa-redis}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 4
+
+  # ---- RabbitMQ（异步任务与领域事件；vhost=/fafa，见中间件文档 §4.4） ----
+  rabbitmq:
+    host: ${RABBITMQ_HOST:192.168.1.254}
+    port: 5672
+    username: ${RABBITMQ_USERNAME:fafa}
+    password: ${RABBITMQ_PASSWORD:FafaRabbit2026!}
+    virtual-host: /fafa
+    # 发布确认与返回回调（Outbox 发布器依赖，架构规范 §6.3）
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
+    listener:
+      simple:
+        # 消费者并发与预取：上限受限（架构规范 §12）
+        concurrency: 2
+        max-concurrency: 5
+        prefetch: 10
+        # 手动 ACK：消费者在持久副作用完成后确认
+        acknowledge-mode: manual
+
+  # ---- SMTP：网易 163 邮箱（验证码/密码重置邮件，M00） ----
+  # 发件账号与授权码见中间件文档 §5
+  mail:
+    host: smtp.163.com
+    port: 465
+    username: ${SMTP_USERNAME:13127103609@163.com}
+    password: ${SMTP_PASSWORD:JEfE2tMqVgbWHmij}
+    default-encoding: UTF-8
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.ssl.enable: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 10000
+      mail.smtp.writetimeout: 10000
+
+# ---- Dubbo（Java 服务间强类型 RPC，Triple 协议；registry 复用 Nacos） ----
+dubbo:
+  application:
+    name: ${spring.application.name}
+    logger: slf4j
+  registry:
+    address: nacos://${NACOS_ADDR:192.168.1.254:8848}
+    username: ${NACOS_USERNAME:fafa-svc}
+    password: ${NACOS_PASSWORD:FafaSvc2026!}
+    parameters:
+      namespace: ${NACOS_NAMESPACE:fafa}
+    # 服务级注册（应用级，3.x 推荐）
+    register-mode: instance
+  protocol:
+    name: tri
+    # -1：自动分配可用端口，避免多服务本地联调端口冲突
+    port: -1
+  consumer:
+    # 默认超时与重试：具体 RPC 接口必须显式覆盖（架构规范 §9.2）
+    timeout: 3000
+    check: false
+    # 非幂等写调用禁止自动重试
+    retries: 0
+
+# ==================== 运营参数 ====================
+
+# ---- 认证与账号策略（M00；代码默认值见 AuthProperties，此处为运营基线） ----
+fafa:
+  auth:
+    # 验证码：6 位数字，10 分钟有效，重发冷却 60 秒，单邮箱每日上限 10 条，单挑战最多尝试 5 次
+    code-length: 6
+    code-ttl-minutes: 10
+    resend-cooldown-seconds: 60
+    daily-send-limit: 10
+    max-verify-attempts: 5
+    # 密码策略：8-64 位，须同时包含字母与数字
+    password-min-length: 8
+    password-max-length: 64
+    # 登录限流：同一 IP 20 次/5 分钟；同一邮箱 5 次/15 分钟
+    login-ip-limit: 20
+    login-ip-window-minutes: 5
+    login-email-limit: 5
+    login-email-window-minutes: 15
+    # 找回密码一次性凭据有效期（分钟）
+    reset-credential-ttl-minutes: 10
+    legal:
+      # 当前生效协议版本（客户端内置文本以此对齐；版本升级时在此修改并同步客户端）
+      user-agreement-version: "1.0"
+      privacy-policy-version: "1.0"
+  mail:
+    # 邮件发件显示名
+    from-name: "FaFa 宠物照护"
+
+# ---- 日志级别基线（可热更） ----
+# 说明：com.fafa 的级别不放公共文件——dev 由 logback-spring.xml 控制为 DEBUG，
+# 生产环境在环境专属配置中按需覆盖，避免公共文件锁死环境差异。
+logging:
+  level:
+    org.flywaydb: info
+
+# ---- API 文档开关（三服务统一控制；生产置为 false，见架构规范 §3） ----
+springdoc:
+  api-docs:
+    enabled: true

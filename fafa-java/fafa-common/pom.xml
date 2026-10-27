@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  fafa-common：跨服务公共契约库
+
+  放置边界（对应架构规范 §5.1，必须严格遵守）：
+    ✅ 允许：API 统一响应/错误码约定、内部调用身份上下文接口、事件信封、少量稳定常量；
+    ❌ 禁止：MyBatis 实体、Repository 实现、领域聚合、业务 DTO 大全集、可变业务规则、万能工具类。
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.fafa</groupId>
+        <artifactId>fafa-java</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>fafa-common</artifactId>
+    <packaging>jar</packaging>
+    <name>FaFa Common</name>
+    <description>跨服务稳定契约：统一响应结构、错误码、业务异常与公共常量（不含任何业务实体）</description>
+
+    <dependencies>
+        <!-- 仅依赖 Servlet/Jakarta 之外的最小 API：保持本库零 Spring 依赖，可被 gateway（WebFlux）安全引用 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+    </dependencies>
+</project>

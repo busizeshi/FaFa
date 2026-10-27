@@ -1,0 +1,76 @@
+# ==================================================================
+# FaFa Jenkins（CI/CD 服务）
+#
+# 位置：/home/busizeshi/docker/jenkins/docker-compose.yml
+# 访问：http://192.168.1.254:9095
+#
+# 关键设计：
+#   1. 挂载宿主机 /var/run/docker.sock —— Jenkins 直接用宿主机 dockerd 构建镜像，
+#      无需 docker-in-docker（pip 缓存/镜像层复用、构建更快）；
+#   2. 同时挂载宿主机 docker CLI 与 compose 插件（服务器无法访问
+#      download.docker.com，容器内装不了 docker-ce-cli，只能复用宿主机二进制）；
+#   3. 挂载 /home/busizeshi/docker/ci-workspace 与 /home/busizeshi/docker/dev：
+#      工作区路径在容器内外保持一致，`docker run -v $WORKSPACE` 才能命中宿主机目录；
+#   4. 首次启动由 init.groovy.d 初始化管理员、关闭安装向导，并安装插件清单。
+#
+# 启动：
+#   cd /home/busizeshi/docker/jenkins && docker compose up -d
+# ==================================================================
+name: fafa-jenkins
+
+services:
+  jenkins:
+    image: docker.m.daocloud.io/jenkins/jenkins:lts-jdk21
+    container_name: fafa-jenkins
+    restart: unless-stopped
+    # 需要 root：访问 docker.sock 与写工作区目录
+    user: root
+    ports:
+      # 宿主机 8080 已被 Nacos 控制台占用，Jenkins 用 9095
+      - "9095:8080"
+      # 如后续接入 Jenkins Agent（JNLP）再启用
+      - "50000:50000"
+    environment:
+      TZ: Asia/Shanghai
+      JENKINS_URL: http://192.168.1.254:9095/
+      JENKINS_ADMIN_ID: ${JENKINS_ADMIN_ID:-admin}
+      JENKINS_ADMIN_PASSWORD: ${JENKINS_ADMIN_PASSWORD:-FafaJenkins2026!}
+      JAVA_OPTS: >-
+        -Duser.timezone=Asia/Shanghai
+        -Djenkins.install.runSetupWizard=false
+        -Dhudson.model.DownloadService.noSignatureCheck=true
+        -Xmx1024m
+    volumes:
+      # ---- Jenkins 主目录 ----
+      - ./data:/var/jenkins_home
+      # ---- 初始化脚本（管理员/URL/插件）----
+      - ./init.groovy.d:/var/jenkins_home/init.groovy.d:ro
+      - ./plugins.txt:/usr/share/jenkins/ref/plugins.txt:ro
+      # ---- 复用宿主机 Docker ----
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker:ro
+      - /usr/libexec/docker/cli-plugins:/usr/libexec/docker/cli-plugins:ro
+      # ---- 工作区与部署目录（容器内外同路径）----
+      - /home/busizeshi/docker/ci-workspace:/home/busizeshi/docker/ci-workspace
+      - /home/busizeshi/docker/dev:/home/busizeshi/docker/dev
+    command: >
+      bash -c "jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt
+               && /usr/local/bin/jenkins.sh"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/login >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 20
+      start_period: 180s
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - fafa-network
+
+networks:
+  fafa-network:
+    external: true
+    name: docker_fafa-network
