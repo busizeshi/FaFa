@@ -93,10 +93,14 @@
             <artifactId>sa-token-spring-boot3-starter</artifactId>
         </dependency>
 
-        <!-- ===== API 文档 ===== -->
+        <!-- ===== API 文档：springdoc-openapi + Knife4j（doc.html 增强 UI） ===== -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
         </dependency>
 
         <!-- ===== 运维观测 ===== -->

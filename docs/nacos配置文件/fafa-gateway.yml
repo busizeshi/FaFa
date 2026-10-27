@@ -46,6 +46,21 @@ spring:
               uri: lb://fafa-admin
               predicates:
                 - Path=/admin/api/v1/**
+            # ---- Knife4j 聚合文档源：/{服务}/v3/api-docs → 下游 /v3/api-docs ----
+            # 网关 /doc.html 把这两个地址作为文档源；StripPrefix=1 去掉服务前缀。
+            # 加这两条路由，浏览器（或文档页）才能经网关取到各服务的 OpenAPI 契约。
+            - id: docs-fafa-biz
+              uri: lb://fafa-biz
+              predicates:
+                - Path=/fafa-biz/v3/api-docs
+              filters:
+                - StripPrefix=1
+            - id: docs-fafa-admin
+              uri: lb://fafa-admin
+              predicates:
+                - Path=/fafa-admin/v3/api-docs
+              filters:
+                - StripPrefix=1
           # ---- 全局 CORS：开发期允许本地前端；生产收敛为正式域名 ----
           globalcors:
             cors-configurations:

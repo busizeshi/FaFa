@@ -15,6 +15,8 @@ import com.fafa.biz.interfaces.auth.dto.ResetCredentialResponse;
 import com.fafa.common.api.ApiResponse;
 import com.fafa.common.constant.HeaderConstants;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -123,6 +125,7 @@ public class AuthController {
     @PostMapping("/auth/challenges/{id}/verify")
     @Operation(summary = "验证码校验（注册验证 / 找回密码第一步校验）")
     public ApiResponse<AuthApplicationService.VerifyChallengeResponse> verifyChallenge(
+            @Parameter(description = "挑战 ID（注册/找回密码发送步骤返回）", required = true)
             @PathVariable("id") Long challengeId,
             @Valid @RequestBody ChallengeVerifyRequest request,
             HttpServletRequest httpRequest) {
@@ -157,6 +160,7 @@ public class AuthController {
     @PostMapping("/auth/password-reset-challenges/{id}/verify")
     @Operation(summary = "找回密码：校验验证码换一次性凭据")
     public ApiResponse<ResetCredentialResponse> verifyPasswordResetChallenge(
+            @Parameter(description = "找回密码挑战 ID", required = true)
             @PathVariable("id") Long challengeId,
             @Valid @RequestBody PasswordResetVerifyRequest request,
             HttpServletRequest httpRequest) {
@@ -190,6 +194,7 @@ public class AuthController {
      */
     @PostMapping("/auth/logout")
     @Operation(summary = "退出登录（需会话）")
+    @SecurityRequirement(name = "fafa-token")
     public ApiResponse<Void> logout() {
         authService.logout();
         return ApiResponse.ok(null);

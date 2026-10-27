@@ -74,6 +74,15 @@
             <artifactId>fafa-common</artifactId>
         </dependency>
 
+        <!--
+          Knife4j 网关聚合文档：在网关暴露统一的 /doc.html，
+          按 MANUAL 路由配置通过服务发现拉取各下游服务的 /v3/api-docs 并在一个页面展示。
+        -->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-gateway-spring-boot-starter</artifactId>
+        </dependency>
+
         <!-- Sa-Token 响应式版：Gateway 与 biz 共享 Redis 会话，网关先行校验（架构规范 §4.1） -->
         <dependency>
             <groupId>cn.dev33</groupId>

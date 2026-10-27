@@ -4,6 +4,8 @@ import com.fafa.biz.application.auth.AuthApplicationService;
 import com.fafa.biz.interfaces.auth.dto.SessionView;
 import com.fafa.common.api.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +26,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/me")
 @Tag(name = "SESSIONS · 会话管理", description = "会话列表与远程下线（M00）")
+@SecurityRequirement(name = "fafa-token")
 public class MeSessionController {
 
     private final AuthApplicationService authService;
@@ -54,7 +57,9 @@ public class MeSessionController {
      */
     @DeleteMapping("/sessions/{id}")
     @Operation(summary = "撤销会话（远程下线）")
-    public ApiResponse<Void> terminateSession(@PathVariable("id") String id) {
+    public ApiResponse<Void> terminateSession(
+            @Parameter(description = "会话 ID（会话列表返回的 sessionId）", required = true)
+            @PathVariable("id") String id) {
         authService.terminateSession(id);
         return ApiResponse.ok(null);
     }

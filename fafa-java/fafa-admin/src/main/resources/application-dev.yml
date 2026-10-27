@@ -40,6 +40,12 @@ spring:
       - optional:nacos:common.yml
       - optional:nacos:${spring.application.name}.yml
 
+  # ---- 关闭 Knife4j 自动配置（4.5.0 按 springdoc 2.2 编译，与 2.10 不兼容）----
+  # 仅保留 knife4j-openapi3-ui 的静态 doc.html，OpenAPI 契约仍由 springdoc 生成
+  autoconfigure:
+    exclude:
+      - com.github.xiaoymin.knife4j.spring.configuration.Knife4jAutoConfiguration
+
   # ---- Jackson：ISO 8601 + UTC ----
   jackson:
     time-zone: UTC
@@ -95,13 +101,18 @@ management:
         enabled: true
       show-details: when-authorized
 
-# ---- API 文档（生产关闭：在 Nacos 环境专属配置覆盖） ----
+# ---- API 文档（生产关闭：在 Nacos 环境专属配置覆盖 api-docs.enabled=false） ----
 springdoc:
   api-docs:
     enabled: true
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+# ---- Knife4j 文档页：http://localhost:8082/doc.html ----
+# Knife4j 4.5.0 的自动配置按 springdoc 2.2 编译，与本项目的 springdoc 2.10 不兼容
+# （Knife4jOpenApiCustomizer 会抛 NoSuchMethodError: getGroupConfigs），
+# 已在文件顶部 spring.autoconfigure.exclude 关闭其自动配置，仅使用静态 doc.html。
 
 logging:
   config: classpath:logback-spring.xml

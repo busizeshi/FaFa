@@ -1,6 +1,8 @@
 package com.fafa.biz.interfaces;
 
 import com.fafa.common.api.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +29,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/v1")
+@Tag(name = "HEALTH · 健康检查", description = "服务标识与服务器时间（联调链路验证）")
 public class HealthController {
 
     private static final Logger log = LoggerFactory.getLogger(HealthController.class);
@@ -37,6 +40,7 @@ public class HealthController {
      * @return 服务名、状态与服务器当前时间（ISO 8601 带时区）
      */
     @GetMapping("/health")
+    @Operation(summary = "健康检查（公开）：验证网关 → Nacos → biz 链路")
     public ApiResponse<Map<String, String>> health() {
         log.info("[健康检查] biz 服务收到健康检查请求");
 

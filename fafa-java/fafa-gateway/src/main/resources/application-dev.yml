@@ -64,5 +64,24 @@ sa-token:
   is-share: false
   is-log: false
 
+# ---- Knife4j 网关聚合文档：统一入口 http://localhost:9090/doc.html ----
+# strategy=MANUAL：显式列出要聚合的服务；服务实例由 Nacos 发现，
+# 文档由网关侧直接向各实例的 /v3/api-docs 拉取，无需为文档额外加网关路由。
+knife4j:
+  gateway:
+    enabled: true
+    strategy: MANUAL
+    tags-sorter: order
+    operations-sorter: order
+    routes:
+      - name: 宠主业务 API（fafa-biz）
+        url: /fafa-biz/v3/api-docs
+        service-name: fafa-biz
+        order: 1
+      - name: 运营后台 API（fafa-admin）
+        url: /fafa-admin/v3/api-docs
+        service-name: fafa-admin
+        order: 2
+
 logging:
   config: classpath:logback-spring.xml

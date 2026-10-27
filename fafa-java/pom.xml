@@ -52,6 +52,7 @@
         <mybatis-plus.version>3.5.17</mybatis-plus.version>
         <sa-token.version>1.46.0</sa-token.version>
         <springdoc.version>2.10.0</springdoc.version>
+        <knife4j.version>4.5.0</knife4j.version>
         <hutool.version>5.8.38</hutool.version>
     </properties>
 
@@ -120,12 +121,29 @@
                 <version>${mybatis-plus.version}</version>
             </dependency>
 
-            <!-- springdoc-openapi（Boot 3.5 兼容的 v2 线；
-                 注：Knife4j 4.5.0 内置 springdoc 2.2 与 Boot 3.5 存在兼容风险，待上游适配后再评估切换 UI） -->
+            <!-- springdoc-openapi（Boot 3.5 兼容的 v2 线）：
+                 Knife4j 4.5.0 的自动配置是按 springdoc 2.2 编译的，与 2.10 不兼容
+                 （其 Knife4jOpenApiCustomizer 调用已变更的 getGroupConfigs）；
+                 而 springdoc 2.2 又用不了 Spring Framework 6.2（ControllerAdviceBean(Object) 已移除）。
+                 结论：springdoc 保持 2.10 + 关闭 Knife4j 自动配置，只用其静态 doc.html 界面。 -->
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc.version}</version>
+            </dependency>
+
+            <!-- Knife4j（OpenAPI3 / Jakarta）：
+                 - spring-boot-starter：biz/admin（Spring MVC）提供 doc.html 文档页；
+                 - gateway-spring-boot-starter：网关侧聚合各服务文档（WebFlux，不依赖 springdoc）。 -->
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+                <version>${knife4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-gateway-spring-boot-starter</artifactId>
+                <version>${knife4j.version}</version>
             </dependency>
 
             <!-- Hutool：仅允许小范围通用工具，禁止替代业务规则（架构规范 §3） -->

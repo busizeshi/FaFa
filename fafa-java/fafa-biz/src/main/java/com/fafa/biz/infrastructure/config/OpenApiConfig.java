@@ -44,8 +44,10 @@ public class OpenApiConfig {
                                 所有写操作建议携带 Idempotency-Key；并发修改需携带 revision。
                                 """)
                         .version("v1"))
-                // 文档页调试用的本地地址（生产不暴露）
-                .addServersItem(new Server().url("http://localhost:8081").description("本地开发"))
+                // 调试用服务地址："/" 表示当前访问入口（网关聚合页即网关根路径，直连即本服务），
+                // 因此同一份文档既能从网关 /doc.html 调试，也能从本服务 /doc.html 调试
+                .addServersItem(new Server().url("/").description("当前访问入口（网关或直连）"))
+                .addServersItem(new Server().url("http://localhost:8081").description("本地直连 8081"))
                 // 请求头令牌认证：调试点 Authorize 后统一携带
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .components(new io.swagger.v3.oas.models.Components()
