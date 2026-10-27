@@ -53,9 +53,11 @@ services:
       # ---- 工作区与部署目录（容器内外同路径）----
       - /home/busizeshi/docker/ci-workspace:/home/busizeshi/docker/ci-workspace
       - /home/busizeshi/docker/dev:/home/busizeshi/docker/dev
-    command: >
-      bash -c "jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt
-               && /usr/local/bin/jenkins.sh"
+    # 用 exec 形式避免多行折叠把 && 拆到第二行导致 bash 语法错误
+    command:
+      - bash
+      - -c
+      - jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt && /usr/local/bin/jenkins.sh
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/login >/dev/null || exit 1"]
       interval: 30s
