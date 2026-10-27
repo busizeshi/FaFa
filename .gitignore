@@ -136,3 +136,6 @@ docs/FaFa_中间件环境与账号信息_v1.0.md
 
 # ---------- 部署时的本地变量（凭据不进库，模板见 deploy/.env.example）----------
 deploy/.env
+
+# ---------- Jenkins 拉取 Gitee 用的部署私钥（仅在服务器上生成，禁止入库）----------
+deploy/jenkins/ssh/

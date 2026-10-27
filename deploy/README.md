@@ -13,6 +13,7 @@
 │   ├── docker-compose.yml
 │   ├── plugins.txt
 │   ├── init.groovy.d/
+│   ├── ssh/                      # Gitee 部署私钥 + known_hosts（挂到容器 /root/.ssh）
 │   └── data/                     # JENKINS_HOME（勿手工改）
 ├── ci-workspace/                 # Jenkins 工作区（容器内外同路径，供 docker -v 使用）
 └── dev/fafa/                     # 应用运行目录预留
@@ -43,26 +44,34 @@ docker logs -f fafa-jenkins      # 等待 "Jenkins is fully up and running"
 
 访问 `http://192.168.1.254:9095`，默认账号 `admin`，密码 `FafaJenkins2026!`（可用 `JENKINS_ADMIN_PASSWORD` 环境变量覆盖，改后需删除 `data/` 重建或手工改密）。
 
-### 2.2 添加 Gitee 凭据
+### 2.2 Gitee 拉取授权（部署公钥）
 
-Jenkins → 系统管理 → 凭据 → 全局 → 添加凭据：
+代码托管已迁移到 Gitee 私有仓库：`git@gitee.com:without-thinking-it-is/FaFa.git`（`github` 远端保留作备份）。
 
-- 类型：`Username with password`
-- ID：`gitee-credentials`
-- 用户名/密码：Gitee 账号与**私人令牌**（Gitee → 设置 → 私人令牌，勾选 `projects` 权限）
+Jenkins 容器内 `HOME=/root`，采用**挂载部署私钥**的方式授权（不用 Jenkins 凭据，因为容器 OpenSSH 10 读取凭据里存的 ed25519 会报 `error in libcrypto`）：
 
-### 2.3 创建流水线任务
+```bash
+cd /home/busizeshi/docker/jenkins
+ssh-keygen -t ed25519 -N '' -C 'fafa-jenkins-deploy' -f ssh/id_ed25519
+cat ssh/id_ed25519.pub        # 整行贴到 Gitee 仓库 → 管理 → 部署公钥管理
+ssh-keyscan -t rsa,ecdsa,ed25519 gitee.com > ssh/known_hosts
+docker compose up -d --force-recreate
+docker exec fafa-jenkins ssh -T git@gitee.com   # 出现 successfully authenticated 即可
+```
 
-新建任务 → 名称 `fafa-deploy` → 类型 **Pipeline**：
+`ssh/` 目录以 `./ssh:/root/.ssh:ro` 挂进容器，`id_ed25519`（部署公钥，只读权限）+ `known_hosts`（Gitee 主机指纹）随容器重建持久生效。
+
+### 2.3 流水线任务（已创建）
+
+任务 `fafa-deploy` 已通过 Jenkins API 创建，等价于在界面上：
 
 - 定义：`Pipeline script from SCM`
-- SCM：`Git`，仓库填 Gitee 地址，凭据选 `gitee-credentials`
-- 分支：`*/main`
-- 脚本路径：`Jenkinsfile`
+- SCM：`Git` → `git@gitee.com:without-thinking-it-is/FaFa.git`，凭据留空（走挂载私钥）
+- 分支：`*/main`；脚本路径：`Jenkinsfile`
 
 ### 2.4 触发方式
 
-- **SCM 轮询（默认可用）**：Jenkinsfile 已内置 `pollSCM('H/2 * * * *')`，2 分钟内有新提交自动构建。
+- **SCM 轮询（当前生效）**：任务级 `SCMTrigger` 为 `H/5 * * * *`，Gitee 有新提交 5 分钟内自动构建。
 - **Gitee Webhook（需公网可达）**：当前 Jenkins 在内网，Gitee 无法回调。具备公网地址（如 frp / 端口映射 / 域名）后：
   1. 任务配置勾选「触发远程构建」，设置身份验证令牌 `fafa-ci-token`；
   2. Gitee 仓库 → 管理 → WebHooks → 添加：
@@ -85,7 +94,7 @@ Jenkins → 系统管理 → 凭据 → 全局 → 添加凭据：
 | `deploy/docker-compose.yml` | 四个应用容器编排（仅网关暴露 9090） |
 | `deploy/.env.example` | 部署变量模板（compose 默认读取；`.env` 不入库） |
 | `deploy/maven/settings.xml` | CI 用 Maven 配置（阿里云镜像加速） |
-| `deploy/jenkins/*` | Jenkins 服务编排、插件清单、初始化脚本 |
+| `deploy/jenkins/*` | Jenkins 服务编排、插件清单、初始化脚本、Gitee 部署私钥目录 `ssh/` |
 | `Jenkinsfile` | 流水线定义（构建 → 测试 → 镜像 → 部署 → 健康检查） |
 
 ## 5. 已知环境约束（排障先看这里）
@@ -97,3 +106,5 @@ Jenkins → 系统管理 → 凭据 → 全局 → 添加凭据：
 | 网关 503 | 下游未注册到 Nacos 或未启动 | 先看 `fafa-biz` / `fafa-admin` 健康状态，再看 Nacos 服务列表 |
 | 网关路由不生效 | 本地 yml 里同时存在 `spring.cloud.nacos.*` 与 `gateway.routes` 会打断绑定 | 路由只放 Nacos `fafa-gateway.yml`（见该文件注释） |
 | 容器内存不足 | 宿主机 20G，Nacos/PowerJob 已占较多 | Java 容器 `-XX:MaxRAMPercentage=75`，如需更紧可加 `mem_limit` |
+| 流水线报 `Load key ...: error in libcrypto` | 容器 OpenSSH 10 + OpenSSL 3.5 读不了 Jenkins 凭据里存的 ed25519 文本 | 不给 SCM 配凭据，改用 `./ssh:/root/.ssh:ro` 挂载私钥（见 2.2） |
+| 流水线报 `No ED25519 host key is known for gitee.com` | git 插件严格校验 host key，且容器 `HOME=/root` | `ssh-keyscan gitee.com > ssh/known_hosts` 后重建容器 |
