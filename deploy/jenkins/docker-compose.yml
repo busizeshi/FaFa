@@ -53,6 +53,9 @@ services:
       # ---- 工作区与部署目录（容器内外同路径）----
       - /home/busizeshi/docker/ci-workspace:/home/busizeshi/docker/ci-workspace
       - /home/busizeshi/docker/dev:/home/busizeshi/docker/dev
+      # ---- Gitee 凭据：容器内 HOME=/root，直接把宿主生成的部署私钥与 known_hosts 挂进去 ----
+      # （容器 OpenSSH 10 读取 Jenkins 凭据里存的 key 会报 error in libcrypto，故改用文件挂载）
+      - ./ssh:/root/.ssh:ro
     # 用 exec 形式避免多行折叠把 && 拆到第二行导致 bash 语法错误
     command:
       - bash

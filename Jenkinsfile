@@ -13,7 +13,7 @@
 //   3. 镜像拉取走 docker.m.daocloud.io 镜像站（服务器无法直连 Docker Hub）。
 //
 // 触发方式：
-//   - SCM 轮询（默认，每 2 分钟）—— 内网 Jenkins 无公网入口时唯一可用方案；
+//   - SCM 轮询（默认，每 5 分钟）—— 内网 Jenkins 无公网入口时唯一可用方案；
 //   - Gitee Webhook —— 待 Jenkins 具备公网可达地址后，在 Gitee 仓库
 //     「管理 → WebHooks」指向 JENKINS_URL/job/<job>/build?token=<TOKEN>。
 // ==================================================================
@@ -46,7 +46,7 @@ pipeline {
         PYTHON_IMAGE  = "${REGISTRY}/library/python:3.12-slim"
         COMPOSE_CMD   = 'docker compose -f deploy/docker-compose.yml --env-file deploy/.env.example'
         PIP_INDEX     = 'https://mirrors.aliyun.com/pypi/simple/'
-        IMAGE_TAG     = params.IMAGE_TAG?.trim() ? params.IMAGE_TAG.trim() : "build-${env.BUILD_NUMBER}"
+        IMAGE_TAG     = "${params.IMAGE_TAG?.trim() ? params.IMAGE_TAG.trim() : 'build-' + env.BUILD_NUMBER}"
     }
 
     stages {
