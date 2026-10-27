@@ -21,12 +21,19 @@ ehthumbs.db
 *.ipr
 *.iws
 .vscode/
+.fleet/
+.history/
+.sts4-cache/
+.factorypath
 *.code-workspace
+*.sublime-project
+*.sublime-workspace
 .classpath
 .project
 .settings/
 bin/
 *.swp
+*.swo
 *~
 
 # ---------- 环境变量与密钥（百炼 API Key、OSS、MySQL 等）----------
@@ -36,8 +43,13 @@ bin/
 *.pem
 *.key
 *.p12
+*.p8
 *.jks
+*.keystore
 !keystore-placeholder.jks
+keystore.properties
+signing.properties
+secrets.properties
 application-local.yml
 application-local.yaml
 application-local.properties
@@ -49,8 +61,17 @@ out/
 *.war
 *.ear
 *.nar
+*.hprof
 hs_err_pid*
 replay_pid*
+# Maven Release / flatten 插件的临时产物
+dependency-reduced-pom.xml
+.flattened-pom.xml
+release.properties
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.next
+pom.xml.bak
 
 # ---------- Gradle ----------
 .gradle/
@@ -74,8 +95,15 @@ venv/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.tox/
+.nox/
+.hypothesis/
+pip-wheel-metadata/
+*.whl
+.installed.cfg
 .coverage
 .coverage.*
+coverage.xml
 htmlcov/
 .ipynb_checkpoints/
 .langgraph_api/
@@ -86,10 +114,12 @@ local.properties
 captures/
 .externalNativeBuild/
 .cxx/
+.kotlin/
 *.apk
 *.aab
 *.ap_
 *.dex
+*.hprof
 output.json
 
 # ---------- iOS（Swift / UIKit / Xcode）----------
@@ -116,14 +146,38 @@ MemoryCaptures/
 # ---------- 日志与运行时数据 ----------
 logs/
 *.log
+*.log.*
 qdrant_storage/
+# 中间件本地数据卷（deploy 下按需启动时生成）
+deploy/**/data/
+deploy/**/volumes/
 
 # ---------- 前端工具链（如后续引入脚本/原型工具）----------
 node_modules/
 dist/
+.next/
+.nuxt/
+.vite/
+.turbo/
+.cache/
+coverage/
+*.tsbuildinfo
+.eslintcache
 
+# ---------- 临时文件 / 系统残留 ----------
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+~$*
+*.crdownload
+*.part
+.Trash-*
+
+# ---------- 本地工具/素材目录（仅根目录，避免误伤 Android src/main/assets）----------
 .agents/
-assets/
+/assets/
 
 docs/design-v2.1/
 # 设计稿压缩包（219MB，超出 GitHub/Gitee 单文件上限，走对象存储或本地留存）
@@ -139,3 +193,5 @@ deploy/.env
 
 # ---------- Jenkins 拉取 Gitee 用的部署私钥（仅在服务器上生成，禁止入库）----------
 deploy/jenkins/ssh/
+.screenshots/
+docs/FaFa.pen
